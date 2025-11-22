@@ -3,23 +3,24 @@
 
 #include "CameraActor.h"
 #include "Source/Runtime/Engine/Animation/BlendSpace2D.h"
-#include "Windows/SWindow.h"
-#include "Windows/SSplitterV.h"
-#include "Windows/SDetailsWindow.h"
-#include "Windows/SControlPanel.h"
-#include "Windows/ControlPanelWindow.h"
-#include "Windows/SViewportWindow.h"
-#include "Windows/PreviewWindow.h"
-#include "Windows/BlendSpace2DEditorWindow.h"
-#include "Windows/ConsoleWindow.h"
-#include "Windows/ContentBrowserWindow.h"
-#include "Widgets/MainToolbarWidget.h"
-#include "Widgets/ConsoleWidget.h"
+#include "Source/Slate/Core/Windows/SWindow.h"
+#include "Source/Slate/Core/Windows/SSplitterV.h"
+#include "Source/Slate/Core/Windows/SDetailsWindow.h"
+#include "Source/Slate/Core/Windows/SControlPanel.h"
+#include "Source/Slate/UObject/Windows/ControlPanelWindow.h"
+#include "Source/Slate/Core/Windows/SViewportWindow.h"
+#include "Source/Slate/UObject/Windows/PreviewWindow.h"
+#include "Source/Slate/UObject/Windows/BlendSpace2DEditorWindow.h"
+#include "Source/Slate/UObject/Windows/ConsoleWindow.h"
+#include "Source/Slate/UObject/Windows/ContentBrowserWindow.h"
+#include "Source/Slate/UObject/Windows/SlateTestWindow.h"
+#include "Source/Slate/UObject/Widgets/MainToolbarWidget.h"
+#include "Source/Slate/UObject/Widgets/ConsoleWidget.h"
 #include "FViewportClient.h"
 #include "UIManager.h"
 #include "GlobalConsole.h"
 #include "ThumbnailManager.h"
-#include "Windows/AnimStateMachineWindow.h"
+#include "Source/Slate/UObject/Windows/AnimStateMachineWindow.h"
 
 IMPLEMENT_CLASS(USlateManager)
 
@@ -265,6 +266,30 @@ void USlateManager::CloseBlendSpace2DEditor()
 
     delete BlendSpace2DEditorWindow;
     BlendSpace2DEditorWindow = nullptr;
+}
+
+void USlateManager::OpenSlateTestWindow()
+{
+    if (SlateTestWindow)
+    {
+        // 이미 열려있으면 그냥 반환
+        return;
+    }
+
+    // 새 윈도우 생성
+    SlateTestWindow = NewObject<USlateTestWindow>();
+    SlateTestWindow->Initialize();
+}
+
+void USlateManager::CloseSlateTestWindow()
+{
+    if (!SlateTestWindow)
+    {
+        return;
+    }
+
+    // UObject이므로 delete 하지 않고 null만 설정 (GC가 관리)
+    SlateTestWindow = nullptr;
 }
 
 void USlateManager::CreateAnimStateMachineWindowIfNeeded()
@@ -529,6 +554,12 @@ void USlateManager::Render()
     if (AnimStateMachineWindow)
     {
         AnimStateMachineWindow->OnRender();
+    }
+
+    // Slate Test Window 렌더링
+    if (SlateTestWindow)
+    {
+        SlateTestWindow->RenderWindow();
     }
 }
 
