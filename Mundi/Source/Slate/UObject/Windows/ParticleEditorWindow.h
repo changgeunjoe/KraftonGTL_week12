@@ -38,32 +38,32 @@ private:
 	SHorizontalBox* TopToolbar = nullptr;
 	SHorizontalBox* MainContentArea = nullptr;
 
-	// Left Panel - Emitter List
-	SVerticalBox* LeftPanel = nullptr;
-	STextBlock* EmitterListTitle = nullptr;
-	STreeView* EmitterTreeView = nullptr;
-	SHorizontalBox* EmitterButtonRow = nullptr;
-	SButton* AddEmitterButton = nullptr;
-	SButton* RemoveEmitterButton = nullptr;
-
-	// Center Panel - Preview Viewport
-	SVerticalBox* CenterPanel = nullptr;
-	STextBlock* ViewportTitle = nullptr;
+	// Left Column (Viewport + Details)
+	SVerticalBox* LeftColumn = nullptr;
+	SVerticalBox* ViewportPanel = nullptr;
 	SViewportPanel* ViewportPlaceholder = nullptr;
-	SHorizontalBox* ViewportToolbar = nullptr;
-	SButton* PlayButton = nullptr;
-	SButton* PauseButton = nullptr;
-	SButton* ResetButton = nullptr;
-
-	// Right Panel - Module Details
-	SVerticalBox* RightPanel = nullptr;
+	SVerticalBox* DetailsPanel = nullptr;
 	STextBlock* DetailsTitle = nullptr;
 	SScrollBox* DetailsScrollBox = nullptr;
-	SListView* ModuleListView = nullptr;
-	SButton* AddModuleButton = nullptr;
+
+	// Right Column (Emitters + Curve Editor)
+	SVerticalBox* RightColumn = nullptr;
+	SVerticalBox* EmittersPanel = nullptr;
+	STextBlock* EmittersTitle = nullptr;
+	SScrollBox* EmittersScrollBox = nullptr;
+	SHorizontalBox* EmittersListRow = nullptr;
+
+	SVerticalBox* CurveEditorPanel = nullptr;
+	STextBlock* CurveEditorTitle = nullptr;
+	SPanel* CurveEditorPlaceholder = nullptr;
 
 	// Top Toolbar Widgets
 	STextBlock* TitleText = nullptr;
+	SButton* PlayButton = nullptr;
+	SButton* PauseButton = nullptr;
+	SButton* ResetButton = nullptr;
+	SButton* RestartSimButton = nullptr;
+	SButton* RestartLevelButton = nullptr;
 	STextBlock* StatusText = nullptr;
 
 	// Preview Viewport
@@ -73,23 +73,21 @@ private:
 
 	// State
 	bool bIsOpen = true;
-	FString SelectedEmitterName;
-	uint32 SelectedModuleIndex = 0;
 	bool bIsPlaying = false;
 
 	void CreateLayout();
 	void CreateTopToolbar();
-	void CreateLeftPanel();      // Emitter list
-	void CreateCenterPanel();    // Preview viewport
-	void CreateRightPanel();     // Module details
+	void CreateLeftColumn();
+	void CreateViewportPanel();
+	void CreateDetailsPanel();
+	void CreateRightColumn();
+	void CreateEmittersPanel();
+	void CreateCurveEditorPanel();
 
 	// Event handlers
-	void OnEmitterSelected(STreeNode* Node);
-	void OnAddEmitter();
-	void OnRemoveEmitter();
 	void OnPlayClicked();
 	void OnPauseClicked();
 	void OnResetClicked();
-	void OnModuleSelected(uint32 Index, const FString& ModuleName);
-	void OnAddModule();
+	void OnRestartSimClicked();
+	void OnRestartLevelClicked();
 };
