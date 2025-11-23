@@ -73,17 +73,17 @@ void USlateTestWindow::CreateLayout()
 
 	// 툴바 구성
 	Toolbar->AddSlot()
-		.AutoWidth()
+		.FixedWidth(100.0f)
 		.SetPadding(5.0f)
 		.AttachWidget(Button1);
 
 	Toolbar->AddSlot()
-		.AutoWidth()
+		.FixedWidth(100.0f)
 		.SetPadding(5.0f)
 		.AttachWidget(Button2);
 
 	Toolbar->AddSlot()
-		.AutoWidth()
+		.FixedWidth(100.0f)
 		.SetPadding(5.0f)
 		.AttachWidget(Button3);
 

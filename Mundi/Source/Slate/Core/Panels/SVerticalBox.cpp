@@ -61,7 +61,13 @@ float SVerticalBox::CalculateAutoHeight(const FSlot& Slot) const
 	if (!Slot.Widget)
 		return 0.0f;
 
-	return Slot.Widget->GetHeight() + Slot.Padding.Top + Slot.Padding.Bottom;
+	float Height = Slot.Widget->GetHeight() + Slot.Padding.Top + Slot.Padding.Bottom;
+
+	// 최소 크기 보장 (SGridPanel과 동일하게)
+	if (Height < 30.0f)
+		Height = 30.0f;
+
+	return Height;
 }
 
 void SVerticalBox::CalculateSlotSizes()
@@ -161,8 +167,10 @@ void SVerticalBox::ArrangeChildren()
 	static int callCount = 0;
 	if (callCount < 5) // 처음 5번만 로그
 	{
-		UE_LOG("SVerticalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Slots: %d",
-			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, (int)Slots.Num());
+		float Width = Rect.GetWidth();
+		float Height = Rect.GetHeight();
+		UE_LOG("SVerticalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Size: (%.1f x %.1f), Slots: %d",
+			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, Width, Height, (int)Slots.Num());
 		callCount++;
 	}
 
@@ -186,14 +194,14 @@ void SVerticalBox::ArrangeChildren()
 		float ChildY = CurrentY + Slot.Padding.Top;
 		float ChildHeight = 0.0f;
 
-		if (Slot.VAlign == VAlign_Fill || Slot.SizeRule == SizeRule_Fill)
+		if (Slot.VAlign == VAlign_Fill || Slot.SizeRule == SizeRule_Fill || Slot.SizeRule == SizeRule_Fixed)
 		{
-			// Fill인 경우 전체 높이 사용
+			// Fill 또는 Fixed인 경우 전체 높이 사용
 			ChildHeight = ContentHeight;
 		}
 		else
 		{
-			// 위젯의 실제 높이 사용
+			// 위젯의 실제 높이 사용 (Auto인 경우)
 			ChildHeight = Slot.Widget->GetHeight();
 
 			// 정렬 적용
@@ -227,4 +235,9 @@ void SVerticalBox::ArrangeChildren()
 
 		CurrentY += SlotHeight;
 	}
+}
+
+void SVerticalBox::RenderContent()
+{
+	// VerticalBox는 자식들만 렌더링
 }

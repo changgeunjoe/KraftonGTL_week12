@@ -61,7 +61,13 @@ float SHorizontalBox::CalculateAutoWidth(const FSlot& Slot) const
 	if (!Slot.Widget)
 		return 0.0f;
 
-	return Slot.Widget->GetWidth() + Slot.Padding.Left + Slot.Padding.Right;
+	float Width = Slot.Widget->GetWidth() + Slot.Padding.Left + Slot.Padding.Right;
+
+	// 최소 크기 보장 (SGridPanel과 동일하게)
+	if (Width < 50.0f)
+		Width = 50.0f;
+
+	return Width;
 }
 
 void SHorizontalBox::CalculateSlotSizes()
@@ -151,8 +157,10 @@ void SHorizontalBox::ArrangeChildren()
 	static int callCount = 0;
 	if (callCount < 5)
 	{
-		UE_LOG("SHorizontalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Slots: %d",
-			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, (int)Slots.Num());
+		float Width = Rect.GetWidth();
+		float Height = Rect.GetHeight();
+		UE_LOG("SHorizontalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Size: (%.1f x %.1f), Slots: %d",
+			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, Width, Height, (int)Slots.Num());
 		callCount++;
 	}
 
@@ -176,14 +184,14 @@ void SHorizontalBox::ArrangeChildren()
 		float ChildX = CurrentX + Slot.Padding.Left;
 		float ChildWidth = 0.0f;
 
-		if (Slot.HAlign == HAlign_Fill || Slot.SizeRule == SizeRule_Fill)
+		if (Slot.HAlign == HAlign_Fill || Slot.SizeRule == SizeRule_Fill || Slot.SizeRule == SizeRule_Fixed)
 		{
-			// Fill인 경우 전체 너비 사용
+			// Fill 또는 Fixed인 경우 전체 너비 사용
 			ChildWidth = ContentWidth;
 		}
 		else
 		{
-			// 위젯의 실제 너비 사용
+			// 위젯의 실제 너비 사용 (Auto인 경우)
 			ChildWidth = Slot.Widget->GetWidth();
 
 			// 정렬 적용
@@ -233,4 +241,9 @@ void SHorizontalBox::ArrangeChildren()
 
 		CurrentX += SlotWidth;
 	}
+}
+
+void SHorizontalBox::RenderContent()
+{
+	// HorizontalBox는 자식들만 렌더링
 }

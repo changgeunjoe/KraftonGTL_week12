@@ -23,6 +23,15 @@ void SButton::RenderContent()
 	float Width = Rect.GetWidth();
 	float Height = Rect.GetHeight();
 
+	// 디버그: Rect 크기 확인
+	static int renderCount = 0;
+	if (renderCount < 3)
+	{
+		UE_LOG("[SButton::Render] Text='%s', Rect=(%.1f,%.1f,%.1f,%.1f), Size=(%.1f,%.1f)\n",
+			Text.c_str(), Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, Width, Height);
+		renderCount++;
+	}
+
 	ImVec2 ButtonMin(Rect.Left, Rect.Top);
 	ImVec2 ButtonMax(Rect.Right, Rect.Bottom);
 

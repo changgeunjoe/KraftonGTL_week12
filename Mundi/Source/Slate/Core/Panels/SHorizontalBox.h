@@ -121,6 +121,7 @@ public:
 	// ===== 레이아웃 =====
 	virtual void ArrangeChildren() override;
 	virtual void OnPanelResized() override;
+	virtual void RenderContent() override;
 
 private:
 	void CalculateSlotSizes();
