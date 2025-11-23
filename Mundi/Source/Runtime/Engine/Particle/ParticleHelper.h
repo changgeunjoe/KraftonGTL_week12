@@ -1,6 +1,19 @@
 ﻿#pragma once
 
 /*-----------------------------------------------------------------------------
+	Helper macros.
+-----------------------------------------------------------------------------*/
+#define DECLARE_PARTICLE(Name,Address)	\
+FBaseParticle& Name = *((FBaseParticle*) (Address));
+
+#define SPAWN_INIT																									\
+const int32		ActiveParticles	= Context.Owner.ActiveParticles;													\
+const uint32	ParticleStride	= Context.Owner.ParticleStride;														\
+uint32			CurrentOffset	= Context.Offset;																	\
+FBaseParticle*	ParticleBase	= Context.ParticleBase;																\
+FBaseParticle&	Particle		= *(ParticleBase);
+
+/*-----------------------------------------------------------------------------
 	FBaseParticle
 -----------------------------------------------------------------------------*/
 
@@ -33,7 +46,7 @@ struct FBaseParticle
 	FLinearColor	BaseColor;			// 파티클의 기본 색상
 
 	float			RelativeTime;
-	float			OneOverMaxLifeTime; // lifetime의 역수
+	float			OneOverMaxLifetime; // lifetime의 역수
 	float			Placeholder0;
 	float			Placeholder1;
 };

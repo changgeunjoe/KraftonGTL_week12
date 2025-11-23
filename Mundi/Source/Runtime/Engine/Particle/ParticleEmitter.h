@@ -70,6 +70,8 @@ public:
 
 	//~End UObject Interface.
 
+	virtual void SetToSensibleDefaults() {}
+
 	/** 모듈 리스트를 갱신하고 오프셋을 재계산한다. */
 	virtual void UpdateModuleLists();
 

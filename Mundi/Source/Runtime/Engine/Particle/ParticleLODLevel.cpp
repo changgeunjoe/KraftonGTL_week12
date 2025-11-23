@@ -40,7 +40,7 @@ void UParticleLODLevel::UpdateModuleLists()
 		{
 			SpawnModules.Add(Module);
 		}
-		if (Module->bUpdateModule || Module->bFinalUdpateModule)
+		if (Module->bUpdateModule || Module->bFinalUpdateModule)
 		{
 			UpdateModules.Add(Module);
 		}

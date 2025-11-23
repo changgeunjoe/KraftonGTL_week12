@@ -7,6 +7,7 @@ class UParticleModuleSpawnBase;
 class UParticleModuleRequired;
 
 UCLASS()
+
 class UParticleLODLevel : public UObject
 {
 	DECLARE_CLASS(UParticleLODLevel, UObject)
@@ -16,7 +17,7 @@ public:
 	int32 Level;
 
 	/** LOD 레벨이 활성화되어있으면 True이며, 업데이트되고 렌더링되어야 함을 의미 */
-	uint32 bEnabled:1;
+	uint32 bEnabled : 1;
 
 	/** 이 LOD 레벨에 의해 요구되는 모듈 */
 	UParticleModuleRequired* RequiredModule;

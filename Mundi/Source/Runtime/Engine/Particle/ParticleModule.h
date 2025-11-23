@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+class UParticleEmitter;
 class UParticleModuleTypeDataBase;
 struct FBaseParticle;
 struct FParticleEmitterInstance;
@@ -16,13 +17,13 @@ public:
 	uint8 bUpdateModule:1;
 
 	/** true일 경우, 모듈은 마지막 업데이트 동안 파티클에 대하여 연산을 한다.		*/
-	uint8 bFinalUdpateModule:1;
+	uint8 bFinalUpdateModule:1;
 
 	/** true일 경우, 모듈은 활성화된다.										*/
 	uint8 bEnabled:1;
 
 public:
-	UParticleModule() = default;
+	UParticleModule();
 
 	virtual ~UParticleModule() = default;
 
@@ -104,6 +105,13 @@ public:
 	 * @return
 	 */
 	virtual uint32 PrepPerInstanceBlock(FParticleEmitterInstance* Owner, void* InstData);
+
+	/**
+	 * 모듈이 생성될때 호출되어서, 값들을 적절한 디폴트 값으로 초기화한다.
+	 *
+	 * @param Owner			모듈이 추가될 UParticleEmitter
+	 */
+	virtual void SetToSensibleDefaults(UParticleEmitter* Owner);
 };
 
 

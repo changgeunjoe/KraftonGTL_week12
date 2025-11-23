@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+struct FDynamicEmitterReplayDataBase;
+struct FDynamicEmitterDataBase;
 class UParticleModule;
 struct FBaseParticle;
 class UParticleLODLevel;
@@ -40,6 +42,8 @@ public:
 	FVector Location;
 	/** 이미터 로컬 공간에서 시뮬레이션 공간으로의 변환							*/
 	FMatrix EmitterToSimulation;
+	/** 컴포넌트는 이 이미터의 렌더링과 틱을 비활성화 할 수 있음					*/
+	uint8 bEnabled : 1;
 	/** 파티클 데이터의 총 크기 (바이트)				                        */
 	int32 ParticleSize;
 	/** ParticleData 배열에서 파티클 간의 스트라이드							*/
@@ -54,8 +58,20 @@ public:
 	float SpawnFraction;
 	/** 인스턴스가 생성된 이후 흐른 시간 (초)									*/
 	float SecondsSinceCreation;
+	/** 현재 루프 내에서의 시간 (EmitterDuration에 도달하면 루프하거나 종료)	*/
+	float EmitterTime;
+	/** */
+	float LastDeltaTime;
 	/** 인스턴스의 이전 위치												*/
 	FVector OldLocation;
+	/** 현재 루프에 적용된 지연 시간										*/
+	float CurrentDelay;
+	/** 이 인스턴스에 의해 완료된 루프의 수									*/
+	int32 LoopCount;
+	/** 이미터 인스턴스의 총 지속시간										*/
+	float EmitterDuration;
+	/** 이 인스턴스의 각 LOD 레벨에 대한 이미터 지속시간						*/
+	TArray<float> EmitterDurations;
 
 	/** 이 인스턴스를 렌더링할 때 사용할 머티리얼								*/
 	UMaterialInterface* CurrentMaterial;
@@ -65,7 +81,7 @@ public:
 
 	virtual ~FParticleEmitterInstance();
 
-	virtual void InitParamters(UParticleEmitter* InTemplate);
+	virtual void InitParameters(UParticleEmitter* InTemplate);
 	virtual void Init();
 
 	/**
@@ -77,7 +93,53 @@ public:
 	 */
 	virtual bool Resize(int32 NewMaxActiveParticles, bool bSetMaxActiveCount = true);
 
-	virtual void Tick(float DeltaTime/**, bool bSuppressSpawning*/);
+	virtual void Tick(float DeltaTime, bool bSuppressSpawning);
+
+	/**
+	 * EmitterTime 설정, 루핑(looping) 등을 처리하는 틱(Tick) 하위 함수이다.
+	 *
+	 * @param DeltaTime        현재 타임 슬라이스(프레임 시간).
+	 * @param InCurrentLODLevel  인스턴스의 현재 LOD 레벨.
+	 *
+	 * @return    float        이미터 지연 시간(EmitterDelay).
+	 */
+	virtual float Tick_EmitterTimeSetup(float DeltaTime, UParticleLODLevel* InCurrentLODLevel);
+
+	/**
+	 * 파티클의 스폰(spawning)을 처리하는 틱 하위 함수이다.
+	 *
+	 * @param DeltaTime        현재 타임 슬라이스.
+	 * @param InCurrentLODLevel  인스턴스의 현재 LOD 레벨.
+	 * @param bSuppressSpawning 소유 중인 파티클 시스템 컴포넌트에서 스폰이 억제(suppress)된 경우 true.
+	 * @param bFirstTime       이 인스턴스가 처음으로 틱(tick) 되는 경우 true.
+	 *
+	 * @return    float        남은 스폰 분수(SpawnFraction, 정수 스폰 후 남은 소수점 단위 값).
+	 */
+	virtual float Tick_SpawnParticles(float DeltaTime, UParticleLODLevel* InCurrentLODLevel, bool bSuppressSpawning, bool bFirstTime);
+
+	/**
+	 * 모듈 업데이트를 처리하는 틱 하위 함수이다.
+	 *
+	 * @param DeltaTime        현재 타임 슬라이스.
+	 * @param InCurrentLODLevel  인스턴스의 현재 LOD 레벨.
+	 */
+	virtual void Tick_ModuleUpdate(float DeltaTime, UParticleLODLevel* InCurrentLODLevel);
+
+	/**
+	 * 모듈의 포스트(후) 업데이트를 처리하는 틱 하위 함수이다.
+	 *
+	 * @param DeltaTime        현재 타임 슬라이스.
+	 * @param InCurrentLODLevel  인스턴스의 현재 LOD 레벨.
+	 */
+	virtual void Tick_ModulePostUpdate(float DeltaTime, UParticleLODLevel* InCurrentLODLevel);
+
+	/**
+	 * 모듈의 최종(FINAL) 업데이트를 처리하는 틱 하위 함수이다.
+	 *
+	 * @param DeltaTime        현재 타임 슬라이스.
+	 * @param InCurrentLODLevel  인스턴스의 현재 LOD 레벨.
+	 */
+	virtual void Tick_ModuleFinalUpdate(float DeltaTime, UParticleLODLevel* InCurrentLODLevel);
 
 	/**
 	 * 이 이미터 타입이 필요로하는 파티클 당 바이트를 반환한다.
@@ -88,6 +150,8 @@ public:
 	uint32 GetModuleDataOffset(UParticleModule* Module);
 	/** 특정 모듈을 위한 이미터 인스턴스 페이로드 데이터의 포인터를 가져온다. */
 	uint8* GetModuleInstanceData(UParticleModule* Module);
+	virtual uint32 CalculateParticleStride(uint32 ParticleSize);
+	virtual void ResetParticleParameters(float DeltaTime);
 
 	/**
 	 * 이 이미터 인스턴스에 대한 파티클을 스폰한다.
@@ -145,4 +209,55 @@ public:
 	 * 현재 LOD 레벨을 가져오고 유효한지 검증한다.
 	 */
 	UParticleLODLevel* GetCurrentLODLevelChecked();
+};
+
+/*-----------------------------------------------------------------------------
+	ParticleSpriteEmitterInstance
+-----------------------------------------------------------------------------*/
+
+struct FParticleSpriteEmitterInstance : public FParticleEmitterInstance
+{
+	FParticleSpriteEmitterInstance(UParticleSystemComponent* InComponent);
+
+	virtual ~FParticleSpriteEmitterInstance();
+
+	/**
+	 *	Retrieves the dynamic data for the emitter
+	 */
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel) override;
+
+	/**
+	 *	Retrieves replay data for the emitter
+	 *
+	 *	@return	The replay data, or NULL on failure
+	 */
+	virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
+
+	/**
+	 *	Retrieve the allocated size of this instance.
+	 *
+	 *	@param	OutNum			The size of this instance
+	 *	@param	OutMax			The maximum size of this instance
+	 */
+	virtual void GetAllocatedSize(int32& OutNum, int32& OutMax) override;
+
+	/**
+	 * Returns the size of the object/ resource for display to artists/ LDs in the Editor.
+	 *
+	 * @param	Mode	Specifies which resource size should be displayed. ( see EResourceSizeMode::Type )
+	 * @return  Size of resource as to be displayed to artists/ LDs in the Editor.
+	 */
+	virtual void GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize) override;
+
+protected:
+
+	/**
+	 * Captures dynamic replay data for this particle system.
+	 *
+	 * @param	OutData		[Out] Data will be copied here
+	 *
+	 * @return Returns true if successful
+	 */
+	virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData ) override;
+
 };

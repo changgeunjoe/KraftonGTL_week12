@@ -2,7 +2,7 @@
 
 #include "ParticleEmitter.h"
 
-#include "ParticleEmitterInstance.h"
+#include "ParticleEmitterInstances.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleTypeDataBase.h"
 

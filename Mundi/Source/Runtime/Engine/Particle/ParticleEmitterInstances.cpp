@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "ParticleEmitterInstance.h"
+#include "ParticleEmitterInstances.h"
 
 #include "ParticleEmitter.h"
 #include "ParticleHelper.h"
@@ -7,6 +7,7 @@
 #include "ParticleModule.h"
 #include "ParticleModuleRequired.h"
 #include "ParticleModuleSpawn.h"
+#include "ParticleModuleTypeDataBase.h"
 #include "ParticleSystemComponent.h"
 
 /*-----------------------------------------------------------------------------
@@ -14,7 +15,31 @@
 -----------------------------------------------------------------------------*/
 const float FParticleEmitterInstance::PeakActiveParticleUpdateDelta = 0.05f;
 
-void FParticleEmitterInstance::InitParamters(UParticleEmitter* InTemplate)
+FParticleEmitterInstance::FParticleEmitterInstance(UParticleSystemComponent* InComponent)
+	: SpriteTemplate(nullptr)
+	, Component(InComponent)
+	, CurrentLODLevel(nullptr)
+	, CurrentLODLevelIndex(0)
+	, ParticleData(nullptr)
+	, ParticleIndices(nullptr)
+	, InstanceData(nullptr)
+	, InstancePayloadSize(0)
+	, PayloadOffset(0)
+	, ParticleSize(0)
+	, ParticleStride(0)
+	, ActiveParticles(0)
+	, MaxActiveParticles(0)
+	, SpawnFraction(0.0f)
+	, SecondsSinceCreation(0.0f)
+{
+}
+
+FParticleEmitterInstance::~FParticleEmitterInstance()
+{
+	// @todo realloc으로 할당한 메모리 초기화
+}
+
+void FParticleEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
 {
 	SpriteTemplate = InTemplate;
 	SetupEmitterDuration();
@@ -37,17 +62,8 @@ void FParticleEmitterInstance::Init()
 	if (bNeedsInit)
 	{
 		// 사전 계산된 값 복사
-		// bRequiresLoopNotification = SpriteTemplate->bRequiresLoopNotification;
-		// bAxisLockEnabled = SpriteTemplate->bAxisLockEnabled;
-		// LockAxisFlags = SpriteTemplate->LockAxisFlags;
-		// DynamicParameterDataOffset = SpriteTemplate->DynamicParameterDataOffset;
-		// LightDataOffset = SpriteTemplate->LightDataOffset;
-		// LightVolumetricScatteringIntensity = SpriteTemplate->LightVolumetricScatteringIntensity;
-		// CameraPayloadOffset = SpriteTemplate->CameraPayloadOffset;
 		ParticleSize = SpriteTemplate->ParticleSize;
-		// PivotOffset = SpriteTemplate->PivotOffset;
-		// TypeDataOffset = SpriteTemplate->TypeDataOffset;
-		// TypeDataInstanceOffset = SpriteTemplate->TypeDataInstanceOffset;
+		PayloadOffset = ParticleSize;
 
 		if ((InstanceData == nullptr || (SpriteTemplate->ReqInstanceBytes > InstancePayloadSize)))
 		{
@@ -82,7 +98,7 @@ void FParticleEmitterInstance::Init()
 		// ParticleSize = Align(ParticleSize, 16);
 
 		// E.g. trail emitters store trailing particles directly after leading one.
-		// ParticleStride = CalculateParticleStride(ParticleSize);
+		ParticleStride = CalculateParticleStride(ParticleSize);
 	}
 
 	SetMeshMaterials(SpriteTemplate->MeshMaterials);
@@ -145,10 +161,144 @@ bool FParticleEmitterInstance::Resize(int32 NewMaxActiveParticles, bool bSetMaxA
 	}
 
 	MaxActiveParticles = NewMaxActiveParticles;
+
+	return true;
 }
 
-void FParticleEmitterInstance::Tick(float DeltaTime)
+void FParticleEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
 {
+	assert(SpriteTemplate);
+	assert(SpriteTemplate->LODLevels.Num() > 0);
+
+	bool bFirstTime = (SecondsSinceCreation > 0.0f) ? false : true;
+
+	UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+
+	float EmitterDelay = Tick_EmitterTimeSetup(DeltaTime, LODLevel);
+
+	if (bEnabled)
+	{
+		KillParticles();
+
+		ResetParticleParameters(DeltaTime);
+
+		CurrentMaterial = LODLevel->RequiredModule->Material;
+		Tick_ModuleUpdate(DeltaTime, LODLevel);
+
+		SpawnFraction = Tick_SpawnParticles(DeltaTime, LODLevel, bSuppressSpawning, bFirstTime);
+
+		Tick_ModulePostUpdate(DeltaTime, LODLevel);
+
+		if (ActiveParticles > 0)
+		{
+			// @todo
+			// UpdateOrbitData(DeltaTime);
+			// UpdateBoundingBox(DeltaTime);
+		}
+
+		Tick_ModuleFinalUpdate(DeltaTime, LODLevel);
+
+		// CheckEmitterFinished();
+		//
+		// IsRenderingDataDirty = 1;
+	}
+
+	// EmitterTime += EmitterDelay;
+	//
+	// LastDeltaTime = DeltaTime;
+	//
+	// PositionOffsetThisTick = FVector::Zero();
+}
+
+float FParticleEmitterInstance::Tick_EmitterTimeSetup(float DeltaTime, UParticleLODLevel* InCurrentLODLevel)
+{
+	OldLocation = Location;
+	Location	= Component->GetWorldLocation();
+
+	UpdateTransforms();
+	SecondsSinceCreation += DeltaTime;
+
+	bool bLooped = false;
+	EmitterTime += DeltaTime;
+	bLooped = (EmitterDuration > 0.0f) && (EmitterTime >= EmitterDuration);
+
+	float EmitterDelay = CurrentDelay;
+
+	if (bLooped)
+	{
+		LoopCount++;
+
+		EmitterTime -= EmitterDuration;
+
+		// @todo
+		// if ((InCurrentLODLevel->RequiredModule->bDurationRecalcEachLoop == true)
+		// 	|| ((InCurrentLODLevel->RequiredModule->bDelayFirstLoopOnly == true) && (LoopCount == 1))
+		// 	)
+		// {
+		// 	SetupEmitterDuration();
+		// }
+		// if (bRequiresLoopNotification)
+		// {
+		//
+		// }
+	}
+}
+
+float FParticleEmitterInstance::Tick_SpawnParticles(float DeltaTime, UParticleLODLevel* InCurrentLODLevel, bool bSuppressSpawning, bool bFirstTime)
+{
+	// EmitterLoops가 0일 경우, 항상 스폰한다. (무한루프)
+	if ((InCurrentLODLevel->RequiredModule->EmitterLoops == 0) ||
+		(LoopCount < InCurrentLODLevel->RequiredModule->EmitterLoops) ||
+		(SecondsSinceCreation < (EmitterDuration * InCurrentLODLevel->RequiredModule->EmitterLoops)) ||
+		bFirstTime)
+	{
+		bFirstTime = false;
+		SpawnFraction = Spawn(DeltaTime);
+	}
+
+	return SpawnFraction;
+}
+
+void FParticleEmitterInstance::Tick_ModuleUpdate(float DeltaTime, UParticleLODLevel* InCurrentLODLevel)
+{
+	UParticleLODLevel* HighestLODLevel = SpriteTemplate->LODLevels[0];
+	assert(HighestLODLevel);
+	for (int32 ModuleIndex = 0; ModuleIndex < InCurrentLODLevel->UpdateModules.Num(); ModuleIndex++)
+	{
+		UParticleModule* CurrentModule = InCurrentLODLevel->UpdateModules[ModuleIndex];
+		if (CurrentModule && CurrentModule->bEnabled && CurrentModule->bUpdateModule)
+		{
+			CurrentModule->Update({*this, (int32)GetModuleDataOffset(HighestLODLevel->UpdateModules[ModuleIndex]), DeltaTime});
+		}
+	}
+}
+
+void FParticleEmitterInstance::Tick_ModulePostUpdate(float DeltaTime, UParticleLODLevel* InCurrentLODLevel)
+{
+	if (InCurrentLODLevel->TypeDataModule)
+	{
+		// @todo
+		// InCurrentLODLevel->TypeDataModule->Update({*this, TypeDataOffset, DeltaTime});
+	}
+}
+
+void FParticleEmitterInstance::Tick_ModuleFinalUpdate(float DeltaTime, UParticleLODLevel* InCurrentLODLevel)
+{
+	UParticleLODLevel* HighestLODLevel = SpriteTemplate->LODLevels[0];
+	assert(HighestLODLevel);
+	for (int32 ModuleIndex = 0; ModuleIndex < InCurrentLODLevel->UpdateModules.Num(); ModuleIndex++)
+	{
+		UParticleModule* CurrentModule = InCurrentLODLevel->UpdateModules[ModuleIndex];
+		if (CurrentModule && CurrentModule->bEnabled && CurrentModule->bFinalUpdateModule)
+		{
+			CurrentModule->FinalUpdate({*this, (int32)GetModuleDataOffset(HighestLODLevel->UpdateModules[ModuleIndex]), DeltaTime});
+		}
+	}
+
+	if (InCurrentLODLevel->TypeDataModule && InCurrentLODLevel->TypeDataModule->bEnabled && InCurrentLODLevel->TypeDataModule->bFinalUpdateModule)
+	{
+		InCurrentLODLevel->TypeDataModule->FinalUpdate({*this, (int32)GetModuleDataOffset(HighestLODLevel->TypeDataModule), DeltaTime});
+	}
 }
 
 uint32 FParticleEmitterInstance::RequiredBytes()
@@ -190,6 +340,28 @@ uint8* FParticleEmitterInstance::GetModuleInstanceData(UParticleModule* Module)
 		}
 	}
 	return nullptr;
+}
+
+uint32 FParticleEmitterInstance::CalculateParticleStride(uint32 ParticleSize)
+{
+	return ParticleSize;
+}
+
+void FParticleEmitterInstance::ResetParticleParameters(float DeltaTime)
+{
+	UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+	UParticleLODLevel* HighestLODLevel = SpriteTemplate->LODLevels[0];
+	assert(HighestLODLevel);
+
+	// @todo Orbit
+
+	for (int32 ParticleIndex = 0; ParticleIndex < ActiveParticles; ParticleIndex++)
+	{
+		DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[ParticleIndex]);
+		Particle.Velocity = Particle.BaseVelocity;
+		Particle.Size = Particle.BaseSize;
+		Particle.RotationRate = Particle.BaseRotationRate;
+	}
 }
 
 float FParticleEmitterInstance::Spawn(float DeltaTime)
@@ -353,6 +525,32 @@ void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float Interpol
 	 // }
 	Particle->OldLocation = Particle->Location;
 	Particle->Location = FVector(Particle->Velocity) * SpawnTime;
+}
+
+void FParticleEmitterInstance::SetupEmitterDuration()
+{
+	if (SpriteTemplate == nullptr)
+	{
+		return;
+	}
+
+	int32 EDCount = EmitterDurations.Num();
+	if ((EDCount == 0) || (EDCount != SpriteTemplate->LODLevels.Num()))
+	{
+		EmitterDurations.Empty();
+		EmitterDurations.SetNum(SpriteTemplate->LODLevels.Num());
+	}
+
+	// 각 LOD 레벨에 대하여 지속시간 계산
+	for (int32 LODIndex = 0; LODIndex < SpriteTemplate->LODLevels.Num(); LODIndex++)
+	{
+		UParticleLODLevel* TempLOD = SpriteTemplate->LODLevels[LODIndex];
+		UParticleModuleRequired* RequiredModule = TempLOD->RequiredModule;
+
+		EmitterDurations[TempLOD->Level] = RequiredModule->EmitterDuration + CurrentDelay;
+	}
+
+	EmitterDuration = EmitterDurations[CurrentLODLevelIndex];
 }
 
 UParticleLODLevel* FParticleEmitterInstance::GetCurrentLODLevelChecked()

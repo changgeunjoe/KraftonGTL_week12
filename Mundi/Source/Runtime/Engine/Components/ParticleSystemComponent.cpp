@@ -2,7 +2,7 @@
 #include "ParticleSystemComponent.h"
 
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
-#include "Source/Runtime/Engine/Particle/ParticleEmitterInstance.h"
+#include "Source/Runtime/Engine/Particle/ParticleEmitterInstances.h"
 #include "Source/Runtime/Engine/Particle/ParticleLODLevel.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
 

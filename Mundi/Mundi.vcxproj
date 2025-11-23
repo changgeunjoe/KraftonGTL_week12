@@ -465,13 +465,14 @@
     <ClCompile Include="Source\Runtime\Engine\GameFramework\World.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\WorldPartitionManager.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitter.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitterInstance.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleHelper.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModule.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleLODLevel.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Scripting\GameObject.cpp" />
@@ -773,7 +774,7 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\StaticMeshActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\World.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitter.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitterInstance.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleHelper.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModule.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleLODLevel.h" />
@@ -781,6 +782,7 @@
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\GameObject.h" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaBindHelpers.h" />
