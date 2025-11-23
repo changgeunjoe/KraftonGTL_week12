@@ -14,7 +14,7 @@ class UConsoleWindow; // 오버레이 콘솔 윈도우
 class UContentBrowserWindow;
 class SAnimStateMachineWindow;
 class USlateTestWindow;
-class UParticleEditorWindow;
+class SParticleEditorWindow;
 
 // 중앙 레이아웃/입력 라우팅/뷰포트 관리 매니저 (위젯 아님)
 class USlateManager : public UObject
@@ -156,7 +156,7 @@ private:
     USlateTestWindow* SlateTestWindow = nullptr;
 
     // Particle Editor Window
-    UParticleEditorWindow* ParticleEditorWindow = nullptr;
+    SParticleEditorWindow* ParticleEditorWindow = nullptr;
 
     // Content Browser (Bottom panel overlay with animation)
     UContentBrowserWindow* ContentBrowserWindow = nullptr;

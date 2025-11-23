@@ -70,7 +70,11 @@ void SButton::RenderContent()
 			ButtonMin.x + (Width - TextSize.x) * 0.5f,
 			ButtonMin.y + (Height - TextSize.y) * 0.5f
 		);
+
+		// 클리핑 영역 설정 (텍스트가 버튼 영역을 벗어나지 않도록)
+		DrawList->PushClipRect(ButtonMin, ButtonMax, true);
 		DrawList->AddText(TextPos, Style.TextColor, Text.c_str());
+		DrawList->PopClipRect();
 	}
 }
 

@@ -131,6 +131,20 @@ void SVerticalBox::CalculateSlotSizes()
 			RemainingHeight, TotalHeight, UsedHeight, TotalFillWeight);
 	}
 
+	// 공간이 부족하면 Fixed/Auto 모두 동일하게 비율적으로 축소
+	if (UsedHeight > TotalHeight && TotalHeight > 0.0f)
+	{
+		float Scale = TotalHeight / UsedHeight;
+		for (uint32 i = 0; i < static_cast<uint32>(Slots.Num()); ++i)
+		{
+			if (Slots[i].SizeRule != SizeRule_Fill)
+			{
+				ComputedHeights[i] *= Scale;
+			}
+		}
+		RemainingHeight = 0.0f;
+	}
+
 	for (uint32 i = 0; i < static_cast<uint32>(Slots.Num()); ++i)
 	{
 		const FSlot& Slot = Slots[i];

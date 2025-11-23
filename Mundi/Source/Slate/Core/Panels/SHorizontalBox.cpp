@@ -125,6 +125,20 @@ void SHorizontalBox::CalculateSlotSizes()
 	// 2단계: Fill 크기 계산
 	float RemainingWidth = std::max(0.0f, TotalWidth - UsedWidth);
 
+	// 공간이 부족하면 Fixed/Auto 모두 동일하게 비율적으로 축소
+	if (UsedWidth > TotalWidth && TotalWidth > 0.0f)
+	{
+		float Scale = TotalWidth / UsedWidth;
+		for (size_t i = 0; i < Slots.Num(); ++i)
+		{
+			if (Slots[i].SizeRule != SizeRule_Fill)
+			{
+				ComputedWidths[i] *= Scale;
+			}
+		}
+		RemainingWidth = 0.0f;
+	}
+
 	for (size_t i = 0; i < Slots.Num(); ++i)
 	{
 		const FSlot& Slot = Slots[i];
@@ -155,13 +169,16 @@ void SHorizontalBox::ArrangeChildren()
 
 	// 디버그 로그
 	static int callCount = 0;
-	if (callCount < 5)
+	static float lastWidth = 0.0f;
+	float Width = Rect.GetWidth();
+	float Height = Rect.GetHeight();
+
+	if (callCount < 5 || std::abs(Width - lastWidth) > 1.0f)
 	{
-		float Width = Rect.GetWidth();
-		float Height = Rect.GetHeight();
 		UE_LOG("SHorizontalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Size: (%.1f x %.1f), Slots: %d",
 			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, Width, Height, (int)Slots.Num());
 		callCount++;
+		lastWidth = Width;
 	}
 
 	for (size_t i = 0; i < Slots.Num(); ++i)

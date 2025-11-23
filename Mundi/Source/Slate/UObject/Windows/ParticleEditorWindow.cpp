@@ -4,24 +4,29 @@
 #include "Source/Slate/Core/Panels/SHorizontalBox.h"
 #include "Source/Slate/Core/Panels/SScrollBox.h"
 #include "Source/Slate/Core/Panels/SPanel.h"
+#include "Source/Slate/Core/Panels/SViewportPanel.h"
 #include "Source/Slate/Core/Widgets/SButton.h"
 #include "Source/Slate/Core/Widgets/STextBlock.h"
 #include "Source/Slate/Core/Widgets/STreeView.h"
 #include "Source/Slate/Core/Widgets/SListView.h"
+#include "Source/Runtime/Engine/SkeletalViewer/SkeletalViewerBootstrap.h"
+#include "Source/Runtime/Engine/SkeletalViewer/ViewerState.h"
+#include "Source/Runtime/Renderer/FViewport.h"
 #include "ImGui/imgui.h"
 
-IMPLEMENT_CLASS(UParticleEditorWindow)
-
-UParticleEditorWindow::UParticleEditorWindow()
+SParticleEditorWindow::SParticleEditorWindow()
 {
-	FUIWindowConfig Config;
-	Config.WindowTitle = "Particle Editor";
-	Config.DefaultSize = ImVec2(1200, 800);
-	SetConfig(Config);
 }
 
-UParticleEditorWindow::~UParticleEditorWindow()
+SParticleEditorWindow::~SParticleEditorWindow()
 {
+	// Destroy ViewerState
+	if (PreviewState)
+	{
+		SkeletalViewerBootstrap::DestroyViewerState(PreviewState);
+		PreviewState = nullptr;
+	}
+
 	if (RootLayout)
 	{
 		delete RootLayout;
@@ -29,13 +34,25 @@ UParticleEditorWindow::~UParticleEditorWindow()
 	}
 }
 
-void UParticleEditorWindow::Initialize()
+bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, float Height, UWorld* InWorld, ID3D11Device* InDevice)
 {
-	UUIWindow::Initialize();
+	Device = InDevice;
+	SetRect(StartX, StartY, StartX + Width, StartY + Height);
+	bIsOpen = true;
+
+	// Create ViewerState for preview viewport
+	PreviewState = SkeletalViewerBootstrap::CreateViewerState("Particle Preview", InWorld, InDevice);
+	if (!PreviewState)
+	{
+		UE_LOG("Failed to create ViewerState for Particle Editor");
+		return false;
+	}
+
 	CreateLayout();
+	return true;
 }
 
-void UParticleEditorWindow::CreateLayout()
+void SParticleEditorWindow::CreateLayout()
 {
 	// Root layout
 	RootLayout = new SVerticalBox();
@@ -53,23 +70,23 @@ void UParticleEditorWindow::CreateLayout()
 	// LEFT: Emitter List Panel (Fixed width 250px)
 	CreateLeftPanel();
 	MainContentArea->AddSlot()
-		.FixedWidth(250.0f)
+		.FillWidth(1.0f)
 		.SetPadding(0.0f)
 		.AttachWidget(LeftPanel);
-	//
-	// // CENTER: Preview Viewport (Fills remaining width)
-	// CreateCenterPanel();
-	// MainContentArea->AddSlot()
-	// 	.FillWidth(1.0f)
-	// 	.SetPadding(0.0f)
-	// 	.AttachWidget(CenterPanel);
-	//
-	// // RIGHT: Module Details Panel (Fixed width 300px)
-	// CreateRightPanel();
-	// MainContentArea->AddSlot()
-	// 	.FixedWidth(300.0f)
-	// 	.SetPadding(0.0f)
-	// 	.AttachWidget(RightPanel);
+
+	// CENTER: Preview Viewport (Fills remaining width)
+	CreateCenterPanel();
+	MainContentArea->AddSlot()
+		.FillWidth(1.0f)
+		.SetPadding(0.0f)
+		.AttachWidget(CenterPanel);
+
+	// RIGHT: Module Details Panel (Fixed width 300px)
+	CreateRightPanel();
+	MainContentArea->AddSlot()
+		.FillWidth(1.0f)
+		.SetPadding(0.0f)
+		.AttachWidget(RightPanel);
 
 	RootLayout->AddSlot()
 		.FillHeight(1.0f)
@@ -77,7 +94,7 @@ void UParticleEditorWindow::CreateLayout()
 		.AttachWidget(MainContentArea);
 }
 
-void UParticleEditorWindow::CreateTopToolbar()
+void SParticleEditorWindow::CreateTopToolbar()
 {
 	TopToolbar = new SHorizontalBox();
 
@@ -107,7 +124,7 @@ void UParticleEditorWindow::CreateTopToolbar()
 		.AttachWidget(StatusText);
 }
 
-void UParticleEditorWindow::CreateLeftPanel()
+void SParticleEditorWindow::CreateLeftPanel()
 {
 	LeftPanel = new SVerticalBox();
 
@@ -161,7 +178,7 @@ void UParticleEditorWindow::CreateLeftPanel()
 		.AttachWidget(EmitterButtonRow);
 }
 
-void UParticleEditorWindow::CreateCenterPanel()
+void SParticleEditorWindow::CreateCenterPanel()
 {
 	CenterPanel = new SVerticalBox();
 
@@ -176,8 +193,7 @@ void UParticleEditorWindow::CreateCenterPanel()
 		.AttachWidget(ViewportTitle);
 
 	// Viewport Area (Fills center)
-	// For now, use placeholder
-	ViewportPlaceholder = new SPanel();
+	ViewportPlaceholder = new SViewportPanel("ParticleEditorViewport");
 	CenterPanel->AddSlot()
 		.FillHeight(1.0f)
 		.SetPadding(10.0f)
@@ -237,7 +253,7 @@ void UParticleEditorWindow::CreateCenterPanel()
 		.AttachWidget(ViewportToolbar);
 }
 
-void UParticleEditorWindow::CreateRightPanel()
+void SParticleEditorWindow::CreateRightPanel()
 {
 	RightPanel = new SVerticalBox();
 
@@ -276,30 +292,62 @@ void UParticleEditorWindow::CreateRightPanel()
 		.AttachWidget(AddModuleButton);
 }
 
-void UParticleEditorWindow::RenderWidget() const
+void SParticleEditorWindow::OnRender()
 {
-	if (RootLayout)
+	if (!bIsOpen)
 	{
-		RootLayout->Invalidate();
-
-		// Get available content region
-		ImVec2 ContentMin = ImGui::GetCursorScreenPos();
-		ImVec2 ContentRegionAvail = ImGui::GetContentRegionAvail();
-
-		// Set layout bounds
-		RootLayout->SetRect(
-			ContentMin.x, ContentMin.y,
-			ContentMin.x + ContentRegionAvail.x,
-			ContentMin.y + ContentRegionAvail.y
-		);
-
-		RootLayout->OnRender();
+		return;
 	}
+
+	// 첫 프레임에만 윈도우 크기 설정
+	static bool bFirstFrame = true;
+	if (bFirstFrame)
+	{
+		ImGui::SetNextWindowSize(ImVec2(1200.0f, 800.0f), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(160.0f, 90.0f), ImGuiCond_FirstUseEver);
+		bFirstFrame = false;
+	}
+
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings;
+
+	if (ImGui::Begin("Particle Editor", &bIsOpen, flags))
+	{
+		// 윈도우 Rect 업데이트 (마우스 입력 감지용)
+		ImVec2 WinPos = ImGui::GetWindowPos();
+		ImVec2 WinSize = ImGui::GetWindowSize();
+		SetRect(WinPos.x, WinPos.y, WinPos.x + WinSize.x, WinPos.y + WinSize.y);
+
+		if (RootLayout)
+		{
+			RootLayout->Invalidate();
+
+			// Get available content region
+			ImVec2 ContentMin = ImGui::GetCursorScreenPos();
+			ImVec2 ContentRegionAvail = ImGui::GetContentRegionAvail();
+
+			// Set layout bounds
+			RootLayout->SetRect(
+				ContentMin.x, ContentMin.y,
+				ContentMin.x + ContentRegionAvail.x,
+				ContentMin.y + ContentRegionAvail.y
+			);
+
+			// Render Slate layout
+			RootLayout->OnRender();
+
+			// Update preview viewport rect from ViewportPlaceholder widget
+			if (ViewportPlaceholder)
+			{
+				PreviewViewportRect = ViewportPlaceholder->GetRect();
+			}
+		}
+	}
+	ImGui::End();
 }
 
 // Event Handlers
 
-void UParticleEditorWindow::OnEmitterSelected(STreeNode* Node)
+void SParticleEditorWindow::OnEmitterSelected(STreeNode* Node)
 {
 	if (Node)
 	{
@@ -309,7 +357,7 @@ void UParticleEditorWindow::OnEmitterSelected(STreeNode* Node)
 	}
 }
 
-void UParticleEditorWindow::OnAddEmitter()
+void SParticleEditorWindow::OnAddEmitter()
 {
 	// Add root node to tree
 	static uint32 EmitterCount = 0;
@@ -321,7 +369,7 @@ void UParticleEditorWindow::OnAddEmitter()
 	UE_LOG("Added emitter: %s", EmitterName.c_str());
 }
 
-void UParticleEditorWindow::OnRemoveEmitter()
+void SParticleEditorWindow::OnRemoveEmitter()
 {
 	if (!SelectedEmitterName.empty())
 	{
@@ -335,35 +383,35 @@ void UParticleEditorWindow::OnRemoveEmitter()
 	}
 }
 
-void UParticleEditorWindow::OnPlayClicked()
+void SParticleEditorWindow::OnPlayClicked()
 {
 	bIsPlaying = true;
 	StatusText->SetText("Playing");
 	UE_LOG("Play clicked");
 }
 
-void UParticleEditorWindow::OnPauseClicked()
+void SParticleEditorWindow::OnPauseClicked()
 {
 	bIsPlaying = false;
 	StatusText->SetText("Paused");
 	UE_LOG("Pause clicked");
 }
 
-void UParticleEditorWindow::OnResetClicked()
+void SParticleEditorWindow::OnResetClicked()
 {
 	bIsPlaying = false;
 	StatusText->SetText("Reset");
 	UE_LOG("Reset clicked");
 }
 
-void UParticleEditorWindow::OnModuleSelected(uint32 Index, const FString& ModuleName)
+void SParticleEditorWindow::OnModuleSelected(uint32 Index, const FString& ModuleName)
 {
 	SelectedModuleIndex = Index;
 	StatusText->SetText("Module: " + ModuleName);
 	UE_LOG("Module selected: %s (Index: %d)", ModuleName.c_str(), Index);
 }
 
-void UParticleEditorWindow::OnAddModule()
+void SParticleEditorWindow::OnAddModule()
 {
 	// Add module to list
 	static uint32 ModuleCount = 0;
@@ -373,4 +421,53 @@ void UParticleEditorWindow::OnAddModule()
 	ModuleListView->AddItem(ModuleName);
 	StatusText->SetText("Added module: " + ModuleName);
 	UE_LOG("Added module: %s", ModuleName.c_str());
+}
+
+void SParticleEditorWindow::OnMouseMove(FVector2D MousePos)
+{
+	if (!PreviewState || !PreviewState->Viewport) return;
+
+	if (PreviewViewportRect.Contains(MousePos))
+	{
+		FVector2D LocalPos = MousePos - FVector2D(PreviewViewportRect.Left, PreviewViewportRect.Top);
+		PreviewState->Viewport->ProcessMouseMove((int32)LocalPos.X, (int32)LocalPos.Y);
+	}
+}
+
+void SParticleEditorWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
+{
+	if (!PreviewState || !PreviewState->Viewport) return;
+
+	if (PreviewViewportRect.Contains(MousePos))
+	{
+		FVector2D LocalPos = MousePos - FVector2D(PreviewViewportRect.Left, PreviewViewportRect.Top);
+		PreviewState->Viewport->ProcessMouseButtonDown((int32)LocalPos.X, (int32)LocalPos.Y, (int32)Button);
+	}
+}
+
+void SParticleEditorWindow::OnMouseUp(FVector2D MousePos, uint32 Button)
+{
+	if (!PreviewState || !PreviewState->Viewport) return;
+
+	if (PreviewViewportRect.Contains(MousePos))
+	{
+		FVector2D LocalPos = MousePos - FVector2D(PreviewViewportRect.Left, PreviewViewportRect.Top);
+		PreviewState->Viewport->ProcessMouseButtonUp((int32)LocalPos.X, (int32)LocalPos.Y, (int32)Button);
+	}
+}
+
+void SParticleEditorWindow::OnRenderViewport()
+{
+	// Render the 3D preview viewport
+	if (PreviewState && PreviewState->Viewport &&
+		PreviewViewportRect.GetWidth() > 0 && PreviewViewportRect.GetHeight() > 0)
+	{
+		const uint32 NewStartX = static_cast<uint32>(PreviewViewportRect.Left);
+		const uint32 NewStartY = static_cast<uint32>(PreviewViewportRect.Top);
+		const uint32 NewWidth = static_cast<uint32>(PreviewViewportRect.Right - PreviewViewportRect.Left);
+		const uint32 NewHeight = static_cast<uint32>(PreviewViewportRect.Bottom - PreviewViewportRect.Top);
+
+		PreviewState->Viewport->Resize(NewStartX, NewStartY, NewWidth, NewHeight);
+		PreviewState->Viewport->Render();
+	}
 }

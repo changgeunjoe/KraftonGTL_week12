@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "USlateManager.h"
 
 #include "CameraActor.h"
@@ -301,9 +301,14 @@ void USlateManager::OpenParticleEditorWindow()
         return;
     }
 
-    // 새 윈도우 생성
-    ParticleEditorWindow = NewObject<UParticleEditorWindow>();
-    ParticleEditorWindow->Initialize();
+    // 새 윈도우 생성 (SWindow이므로 new 사용)
+    ParticleEditorWindow = new SParticleEditorWindow();
+    if (!ParticleEditorWindow->Initialize(160.0f, 90.0f, 1200.0f, 800.0f, World, Device))
+    {
+        delete ParticleEditorWindow;
+        ParticleEditorWindow = nullptr;
+        UE_LOG("Failed to initialize Particle Editor Window");
+    }
 }
 
 void USlateManager::CloseParticleEditorWindow()
@@ -313,7 +318,8 @@ void USlateManager::CloseParticleEditorWindow()
         return;
     }
 
-    // UObject이므로 delete 하지 않고 null만 설정 (GC가 관리)
+    // SWindow이므로 delete 사용
+    delete ParticleEditorWindow;
     ParticleEditorWindow = nullptr;
 }
 
@@ -587,10 +593,17 @@ void USlateManager::Render()
         SlateTestWindow->RenderWindow();
     }
 
-    // Particle Editor Window 렌더링
+    // Particle Editor Window 렌더링 (SWindow)
     if (ParticleEditorWindow)
     {
-        ParticleEditorWindow->RenderWindow();
+        ParticleEditorWindow->OnRender();
+
+        // 창이 닫혔으면 제거
+        if (!ParticleEditorWindow->IsOpen())
+        {
+            delete ParticleEditorWindow;
+            ParticleEditorWindow = nullptr;
+        }
     }
 }
 
@@ -604,6 +617,11 @@ void USlateManager::RenderAfterUI()
     if (BlendSpace2DEditorWindow)
     {
         BlendSpace2DEditorWindow->OnRenderViewport();
+    }
+
+    if (ParticleEditorWindow && ParticleEditorWindow->IsOpen())
+    {
+        ParticleEditorWindow->OnRenderViewport();
     }
 }
 
@@ -781,6 +799,13 @@ void USlateManager::OnMouseMove(FVector2D MousePos)
         return;
     }
 
+    // Route to Particle editor if hovered
+    if (ParticleEditorWindow && ParticleEditorWindow->IsHover(MousePos))
+    {
+        ParticleEditorWindow->OnMouseMove(MousePos);
+        return;
+    }
+
     if (ActiveViewport)
     {
         ActiveViewport->OnMouseMove(MousePos);
@@ -802,6 +827,12 @@ void USlateManager::OnMouseDown(FVector2D MousePos, uint32 Button)
     if (BlendSpace2DEditorWindow && BlendSpace2DEditorWindow->Rect.Contains(MousePos))
     {
         BlendSpace2DEditorWindow->OnMouseDown(MousePos, Button);
+        return;
+    }
+
+    if (ParticleEditorWindow && ParticleEditorWindow->Rect.Contains(MousePos))
+    {
+        ParticleEditorWindow->OnMouseDown(MousePos, Button);
         return;
     }
 
@@ -849,6 +880,12 @@ void USlateManager::OnMouseUp(FVector2D MousePos, uint32 Button)
     if (BlendSpace2DEditorWindow && BlendSpace2DEditorWindow->Rect.Contains(MousePos))
     {
         BlendSpace2DEditorWindow->OnMouseUp(MousePos, Button);
+        // do not return; still allow panels to finish mouse up
+    }
+
+    if (ParticleEditorWindow && ParticleEditorWindow->Rect.Contains(MousePos))
+    {
+        ParticleEditorWindow->OnMouseUp(MousePos, Button);
         // do not return; still allow panels to finish mouse up
     }
 

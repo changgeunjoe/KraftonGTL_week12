@@ -1,5 +1,5 @@
 #pragma once
-#include "UIWindow.h"
+#include "Source/Slate/Core/Windows/SWindow.h"
 
 class SVerticalBox;
 class SHorizontalBox;
@@ -9,19 +9,28 @@ class STextBlock;
 class STreeView;
 class SListView;
 class SPanel;
+class SViewportPanel;
+class ViewerState;
 
 class STreeNode;
 
-class UParticleEditorWindow : public UUIWindow
+class SParticleEditorWindow : public SWindow
 {
 public:
-	DECLARE_CLASS(UParticleEditorWindow, UUIWindow)
+	SParticleEditorWindow();
+	virtual ~SParticleEditorWindow();
 
-	UParticleEditorWindow();
-	virtual ~UParticleEditorWindow();
+	bool Initialize(float StartX, float StartY, float Width, float Height, class UWorld* InWorld, ID3D11Device* InDevice);
 
-	virtual void Initialize() override;
-	virtual void RenderWidget() const override;
+	virtual void OnRender() override;
+	virtual void OnMouseDown(FVector2D MousePos, uint32 Button) override;
+	virtual void OnMouseUp(FVector2D MousePos, uint32 Button) override;
+	virtual void OnMouseMove(FVector2D MousePos) override;
+
+	void OnRenderViewport();
+
+	bool IsOpen() const { return bIsOpen; }
+	void Close() { bIsOpen = false; }
 
 private:
 	// Layout hierarchy
@@ -40,7 +49,7 @@ private:
 	// Center Panel - Preview Viewport
 	SVerticalBox* CenterPanel = nullptr;
 	STextBlock* ViewportTitle = nullptr;
-	SPanel* ViewportPlaceholder = nullptr;
+	SViewportPanel* ViewportPlaceholder = nullptr;
 	SHorizontalBox* ViewportToolbar = nullptr;
 	SButton* PlayButton = nullptr;
 	SButton* PauseButton = nullptr;
@@ -57,7 +66,13 @@ private:
 	STextBlock* TitleText = nullptr;
 	STextBlock* StatusText = nullptr;
 
+	// Preview Viewport
+	ViewerState* PreviewState = nullptr;
+	FRect PreviewViewportRect = FRect(0, 0, 0, 0);
+	ID3D11Device* Device = nullptr;
+
 	// State
+	bool bIsOpen = true;
 	FString SelectedEmitterName;
 	uint32 SelectedModuleIndex = 0;
 	bool bIsPlaying = false;

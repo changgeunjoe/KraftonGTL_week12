@@ -503,6 +503,7 @@
     <ClCompile Include="Source\Slate\Core\Panels\SPanel.cpp" />
     <ClCompile Include="Source\Slate\Core\Panels\SScrollBox.cpp" />
     <ClCompile Include="Source\Slate\Core\Panels\SVerticalBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SViewportPanel.cpp" />
     <ClCompile Include="Source\Slate\Core\Widgets\SButton.cpp" />
     <ClCompile Include="Source\Slate\Core\Widgets\SCheckBox.cpp" />
     <ClCompile Include="Source\Slate\Core\Widgets\SColorPicker.cpp" />
@@ -825,6 +826,7 @@
     <ClInclude Include="Source\Slate\Core\Panels\SPanel.h" />
     <ClInclude Include="Source\Slate\Core\Panels\SScrollBox.h" />
     <ClInclude Include="Source\Slate\Core\Panels\SVerticalBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SViewportPanel.h" />
     <ClInclude Include="Source\Slate\Core\Widgets\SButton.h" />
     <ClInclude Include="Source\Slate\Core\Widgets\SCheckBox.h" />
     <ClInclude Include="Source\Slate\Core\Widgets\SColorPicker.h" />
