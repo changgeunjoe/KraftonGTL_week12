@@ -2,8 +2,11 @@
 #include "ParticleLODLevel.h"
 #include "ParticleModule.h"
 
+UCLASS()
 class UParticleModuleSpawnBase : public UParticleModule
 {
+	DECLARE_CLASS(UParticleModuleSpawnBase, UParticleModule)
+
 public:
 	/** * true이면, 이미터(emitter)의 SpawnModule에 있는 SpawnRate가 처리된다.
 	 * 이미터에 여러 개의 Spawn 모듈이 '쌓여(stacked)' 있는 경우,
@@ -49,8 +52,11 @@ public:
 	virtual float GetEstimatedSpawnRate() { return 0.0f; }
 };
 
+UCLASS()
 class UParticleModuleSpawn : public UParticleModuleSpawnBase
 {
+	DECLARE_CLASS(UParticleModuleSpawn, UParticleModuleSpawnBase)
+
 public:
 	// @todo 현재는 float를 사용하지만, 언리얼엔진에서는 FRawDistributionFloat 사용한다. 이후 필요에따라 커브 데이터를 활용할 수 있다.
 	float Rate;

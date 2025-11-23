@@ -155,7 +155,7 @@ bool FParticleEmitterInstance::Resize(int32 NewMaxActiveParticles, bool bSetMaxA
 	}
 	ParticleIndices = (uint16*) std::realloc(ParticleIndices, sizeof(uint16) * (NewMaxActiveParticles + 1));
 
-	for (int32 i = MaxActiveParticles; i < NewMaxActiveParticles + 1; i++)
+	for (int32 i = MaxActiveParticles; i < NewMaxActiveParticles; i++)
 	{
 		ParticleIndices[i] = i;
 	}
@@ -242,6 +242,8 @@ float FParticleEmitterInstance::Tick_EmitterTimeSetup(float DeltaTime, UParticle
 		//
 		// }
 	}
+
+	return EmitterDelay;
 }
 
 float FParticleEmitterInstance::Tick_SpawnParticles(float DeltaTime, UParticleLODLevel* InCurrentLODLevel, bool bSuppressSpawning, bool bFirstTime)
@@ -553,6 +555,62 @@ void FParticleEmitterInstance::SetupEmitterDuration()
 	EmitterDuration = EmitterDurations[CurrentLODLevelIndex];
 }
 
+void FParticleEmitterInstance::KillParticles()
+{
+	if (ActiveParticles > 0)
+	{
+		UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+
+		bool bFoundCorruptIndices = false;
+		for (int32 i = ActiveParticles - 1; i >= 0; i--)
+		{
+			const int32 CurrentIndex = ParticleIndices[i];
+			if (CurrentIndex < MaxActiveParticles)
+			{
+				const uint8* ParticleBase = ParticleData + CurrentIndex * ParticleStride;
+				FBaseParticle& Particle = *((FBaseParticle*)ParticleBase);
+
+				if (Particle.RelativeTime > 1.0f)
+				{
+					ParticleIndices[i] = ParticleIndices[ActiveParticles - 1];
+					ParticleIndices[ActiveParticles - 1] = CurrentIndex;
+					ActiveParticles--;
+				}
+			}
+			else
+			{
+				bFoundCorruptIndices = true;
+			}
+		}
+
+		if (bFoundCorruptIndices)
+		{
+			// @todo Fixup 로직 필요
+		}
+	}
+}
+
+void FParticleEmitterInstance::KillParticle(int32 Index)
+{
+	if (Index < ActiveParticles)
+	{
+		UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+
+		int32 KillIndex = ParticleIndices[Index];
+
+		for (int32 i = Index; i < ActiveParticles - 1; i++)
+		{
+			ParticleIndices[i] = ParticleIndices[i + 1];
+		}
+		ParticleIndices[ActiveParticles - 1] = KillIndex;
+		ActiveParticles--;
+	}
+}
+
+void FParticleEmitterInstance::UpdateTransforms()
+{
+}
+
 UParticleLODLevel* FParticleEmitterInstance::GetCurrentLODLevelChecked()
 {
 	assert(SpriteTemplate != nullptr);
@@ -560,4 +618,120 @@ UParticleLODLevel* FParticleEmitterInstance::GetCurrentLODLevelChecked()
 	assert(LODLevel != nullptr);
 	assert(LODLevel->RequiredModule != nullptr);
 	return LODLevel;
+}
+
+bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+	if (!SpriteTemplate)
+	{
+		return false;
+	}
+
+	if (ActiveParticles <= 0 || !bEnabled)
+	{
+		return false;
+	}
+
+	UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+	if ((LODLevel == nullptr) || (LODLevel->bEnabled == false))
+	{
+		return false;
+	}
+
+	assert(MaxActiveParticles >= ActiveParticles);
+
+	OutData.eEmitterType = DET_Unknown;
+	OutData.ActiveParticleCount = ActiveParticles;
+	OutData.ParticleStride = ParticleStride;
+	OutData.Scale = Component->GetRelativeScale();
+
+	int32 ParticleMemSize = MaxActiveParticles * ParticleStride;
+
+	OutData.DataContainer.Alloc(ParticleMemSize, MaxActiveParticles);
+
+	std::memcpy(OutData.DataContainer.ParticleData, ParticleData, ParticleMemSize);
+	std::memcpy(OutData.DataContainer.ParticleIndices, ParticleIndices, MaxActiveParticles * sizeof(uint16));
+
+	{
+		FDynamicSpriteEmitterReplayDataBase* NewReplayData =
+			static_cast<FDynamicSpriteEmitterReplayDataBase*>(&OutData);
+
+		NewReplayData->RequiredModule = LODLevel->RequiredModule;
+		NewReplayData->ScreenAlignment = LODLevel->RequiredModule->ScreenAlignment;
+		NewReplayData->bUseLocalSpace = LODLevel->RequiredModule->bUseLocalSpace;
+	}
+
+	return true;
+}
+
+FParticleSpriteEmitterInstance::FParticleSpriteEmitterInstance(UParticleSystemComponent* InComponent)
+	: FParticleEmitterInstance(InComponent)
+{
+	// @todo
+}
+
+FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected)
+{
+	UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+	if (!bEnabled)
+	{
+		return nullptr;
+	}
+
+	FDynamicSpriteEmitterData* NewEmitterData = new FDynamicSpriteEmitterData(LODLevel->RequiredModule);
+
+	if (!FillReplayData(NewEmitterData->Source))
+	{
+		delete NewEmitterData;
+		return nullptr;
+	}
+
+	NewEmitterData->Init(bSelected);
+
+	return NewEmitterData;
+}
+
+FDynamicEmitterReplayDataBase* FParticleSpriteEmitterInstance::GetReplayData()
+{
+	if (ActiveParticles <= 0 || !bEnabled)
+	{
+		return nullptr;
+	}
+
+	FDynamicEmitterReplayDataBase* NewEmitterReplayData = new FDynamicSpriteEmitterReplayDataBase();
+	assert(NewEmitterReplayData != nullptr);
+
+	if (!FillReplayData(*NewEmitterReplayData))
+	{
+		delete NewEmitterReplayData;
+		return nullptr;
+	}
+
+	return NewEmitterReplayData;
+}
+
+bool FParticleSpriteEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+	if (ActiveParticles <= 0)
+	{
+		return false;
+	}
+
+	if (!FParticleEmitterInstance::FillReplayData(OutData))
+	{
+		return false;
+	}
+
+	OutData.eEmitterType = DET_Sprite;
+
+	FDynamicSpriteEmitterReplayDataBase* NewReplayData = static_cast<FDynamicSpriteEmitterReplayDataBase*>(&OutData);
+
+	NewReplayData->MaterialInterface = GetCurrentMaterial();
+
+	return true;
+}
+
+UMaterialInterface* FParticleSpriteEmitterInstance::GetCurrentMaterial()
+{
+	return CurrentMaterial;
 }

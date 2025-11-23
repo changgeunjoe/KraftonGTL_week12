@@ -3,90 +3,109 @@
 
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitterInstances.h"
+#include "Source/Runtime/Engine/Particle/ParticleHelper.h"
 #include "Source/Runtime/Engine/Particle/ParticleLODLevel.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
 
+IMPLEMENT_CLASS(UFXSystemComponent, UPrimitiveComponent)
+
+IMPLEMENT_CLASS(UParticleSystemComponent, UFXSystemComponent)
+
+UParticleSystemComponent::UParticleSystemComponent()
+	: Template(nullptr)
+	, bSuppressSpawning(false)
+	, bWasDeactivated(false)
+	, bWasCompleted(true)
+	, LODLevel(0)
+	, TotalActiveParticles(0)
+{
+}
+
+UParticleSystemComponent::~UParticleSystemComponent()
+{
+	ResetParticles(true);
+	ClearDynamicData();
+}
+
 void UParticleSystemComponent::InitParticles()
 {
-	if (Template != nullptr)
+	if (Template == nullptr)
 	{
-		int32 NumInstances = EmitterInstances.Num();
-		int32 NumEmitters = Template->Emitters.Num();
-		const bool bIsFirstCreate = NumInstances == 0;
-		/** @note 언리얼엔진에서는 SetNumZeroed를 활용한다. */
-		EmitterInstances.SetNum(NumEmitters, nullptr);
+		return;
+	}
 
-		bWasComplete = bIsFirstCreate ? false : bWasComplete;
+	if (EmitterInstances.Num() > 0)
+	{
+		ResetParticles(true);
+	}
 
-		int32 PreferredLODLevel = LODLevel;
-		bool bSetLodLevels = LODLevel > 0; // 요청된 LOD가 0이 아닐 경우, 모든 이미터를 생성할 때 LOD 레벨을 설정해야 함
+	const int32 NumEmitters = Template->Emitters.Num();
+	EmitterInstances.SetNum(NumEmitters);
 
-		for (int32 Idx = 0; Idx < NumEmitters; Idx++)
+	for (int32 Idx = 0; Idx < NumEmitters; Idx++)
+	{
+		UParticleEmitter* Emitter = Template->Emitters[Idx];
+		if (Emitter)
 		{
-			UParticleEmitter* Emitter = Template->Emitters[Idx];
-			if (Emitter)
+			FParticleEmitterInstance* Instance = Emitter->CreateInstance(this);
+			if (Instance)
 			{
-				/** @todo NumInstances == 0의 이유 확인 */
-				FParticleEmitterInstance* Instance = NumInstances == 0 ? nullptr : EmitterInstances[Idx];
+				EmitterInstances.Add(Instance);
 
-				if (Instance)
-				{
-					Instance->SetHaltSpawning(false);
-					Instance->SetHaltSpawningExternal(false);
-				}
-				else
-				{
-					Instance = Emitter->CreateInstance(this);
-					EmitterInstances[Idx] = Instance;
-				}
+				Instance->InitParameters(Emitter);
+				Instance->Init();
+				Instance->CurrentLODLevelIndex = LODLevel;
 
-				if (Instance)
+				if (Emitter->LODLevels.Num() > 0)
 				{
-					Instance->bEnabled = true;
-					Instance->InitParameters(Emitter);
-					Instance->Init();
-
-					PreferredLODLevel = FMath::Min(PreferredLODLevel, Emitter->LODLevels.Num());
-					bSetLodLevels |= !bIsFirstCreate; // LOD 레벨은 인스턴스를 초기화하고, 처음 생성 시점이 아닐때만 설정됨
+					Instance->CurrentLODLevel = Emitter->LODLevels[0];
 				}
 			}
 		}
 
-		if (bSetLodLevels)
+		bWasCompleted = false;
+		bWasDeactivated = false;
+		bSuppressSpawning = false;
+	}
+}
+
+void UParticleSystemComponent::ResetParticles(bool bEmptyInstances)
+{
+	for (int32 i = 0; i < EmitterInstances.Num(); i++)
+	{
+		if (EmitterInstances[i])
 		{
-			if (PreferredLODLevel != LODLevel)
-			{
-				assert(PreferredLODLevel < LODLevel);
-				LODLevel = PreferredLODLevel;
-			}
-
-			for (int32 Idx = 0; Idx < EmitterInstances.Num(); Idx++)
-			{
-				FParticleEmitterInstance* Instance = EmitterInstances[Idx];
-				// 여기서 LOD 레벨을 설정함
-				if (Instance)
-				{
-					Instance->CurrentLODLevelIndex = LODLevel;
-
-					if (Instance->CurrentLODLevelIndex >= Instance->SpriteTemplate->LODLevels.Num())
-					{
-						Instance->CurrentLODLevelIndex = Instance->SpriteTemplate->LODLevels.Num() - 1;
-					}
-					Instance->CurrentLODLevel = Instance->SpriteTemplate->LODLevels[Instance->CurrentLODLevelIndex];
-				}
-			}
+			delete EmitterInstances[i];
+			EmitterInstances[i] = nullptr;
 		}
 	}
+
+	if (bEmptyInstances)
+	{
+		EmitterInstances.Empty();
+	}
+
+	TotalActiveParticles = 0;
+	bWasCompleted = true;
 }
 
 void UParticleSystemComponent::TickComponent(float DeltaTime)
 {
-	UFXSystemComponent::TickComponent(DeltaTime);
+	Super::TickComponent(DeltaTime);
+
+	if (bWasCompleted && bWasDeactivated)
+	{
+		return;
+	}
+
+	if (Template && EmitterInstances.Num() == 0 && !bWasDeactivated)
+	{
+		InitParticles();
+	}
 
 	TotalActiveParticles = 0;
 
-	int32 EmitterIndex;
-	for (EmitterIndex = 0; EmitterIndex < EmitterInstances.Num(); EmitterIndex++)
+	for (int32 EmitterIndex = 0; EmitterIndex < EmitterInstances.Num(); EmitterIndex++)
 	{
 		FParticleEmitterInstance* Instance = EmitterInstances[EmitterIndex];
 
@@ -95,22 +114,73 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
 			assert(Instance->SpriteTemplate->LODLevels.Num() > 0);
 
 			UParticleLODLevel* SpriteLODLevel = Instance->SpriteTemplate->GetCurrentLODLevel(Instance);
-			if (SpriteLODLevel && SPriteLODLevel->bEnabled)
+			if (SpriteLODLevel && SpriteLODLevel->bEnabled)
 			{
-				Instance->Tick(DeltaTime/**, bSuppressSpawning*/);
+				Instance->Tick(DeltaTime, bSuppressSpawning);
 
-				Instance->Tick_MaterialOverrides(EmitterIndex);
 				TotalActiveParticles += Instance->ActiveParticles;
+			}
+		}
+	}
+
+	if (bWasDeactivated && TotalActiveParticles == 0)
+	{
+		bWasCompleted = true;
+	}
+
+	UpdateDynamicData();
+}
+
+void UParticleSystemComponent::ClearDynamicData()
+{
+	for (auto* Data : EmitterRenderData)
+	{
+		delete Data;
+	}
+	EmitterRenderData.Empty();
+}
+
+void UParticleSystemComponent::UpdateDynamicData()
+{
+	ClearDynamicData();
+
+	for (FParticleEmitterInstance* Instance : EmitterInstances)
+	{
+		if (Instance)
+		{
+			FDynamicEmitterDataBase* NewData = Instance->GetDynamicData(false);
+			if (NewData)
+			{
+				EmitterRenderData.Add(NewData);
 			}
 		}
 	}
 }
 
-void UParticleSystemComponent::ClearDynamicData()
+void UParticleSystemComponent::Activate(bool bReset)
 {
+	if (Template == nullptr)
+	{
+		return;
+	}
+
+	if (bReset)
+	{
+		ResetParticles(bReset);
+	}
+
+	bWasDeactivated = false;
+	bSuppressSpawning = false;
+	bWasCompleted = false;
+
+	if (EmitterInstances.Num() == 0)
+	{
+		InitParticles();
+	}
 }
 
-void UParticleSystemComponent::UpdateDynamicData()
+void UParticleSystemComponent::Deactivate()
 {
-	// GPU에 데이터 전달
+	bSuppressSpawning = true;
+	bWasDeactivated = true;
 }

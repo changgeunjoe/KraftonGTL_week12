@@ -191,9 +191,19 @@ public:
 	 */
 	void SetupEmitterDuration();
 
-	void KillParticles();
+	virtual void KillParticles();
 
-	void Update(float DeltaTime);
+	virtual void KillParticle(int32 Index);
+
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected)
+	{
+		return nullptr;
+	}
+
+	virtual FDynamicEmitterReplayDataBase* GetReplayData()
+	{
+		return nullptr;
+	}
 
 	void UpdateTransforms();
 
@@ -209,6 +219,14 @@ public:
 	 * 현재 LOD 레벨을 가져오고 유효한지 검증한다.
 	 */
 	UParticleLODLevel* GetCurrentLODLevelChecked();
+
+protected:
+	/**
+	 * 파티클 데이터를 렌더링용 데이터 구조체(OutData)에 복사한다.
+	 * @param OutData   데이터가 복사될 대상 구조체
+	 * @return          성공 여부
+	 */
+	virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
 };
 
 /*-----------------------------------------------------------------------------
@@ -219,45 +237,30 @@ struct FParticleSpriteEmitterInstance : public FParticleEmitterInstance
 {
 	FParticleSpriteEmitterInstance(UParticleSystemComponent* InComponent);
 
-	virtual ~FParticleSpriteEmitterInstance();
+	virtual ~FParticleSpriteEmitterInstance() = default;
 
 	/**
-	 *	Retrieves the dynamic data for the emitter
+	 * 렌더링 스레드에서 사용할 동적 데이터를 생성하고 반환한다.
+	 * @param bSelected         에디터에서 선택되었는지 여부
+	 * @return                  생성된 렌더링 데이터 객체 (FDynamicEmitterDataBase*)
 	 */
-	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel) override;
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
 
 	/**
-	 *	Retrieves replay data for the emitter
-	 *
-	 *	@return	The replay data, or NULL on failure
+	 * 리플레이 데이터(파티클 스냅샷)를 생성하여 채운다.
+	 * 렌더링 데이터 생성 과정의 핵심 부분이다.
+	 * @return 성공 시, 리플레이 데이터 객체 반환
 	 */
 	virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
-
-	/**
-	 *	Retrieve the allocated size of this instance.
-	 *
-	 *	@param	OutNum			The size of this instance
-	 *	@param	OutMax			The maximum size of this instance
-	 */
-	virtual void GetAllocatedSize(int32& OutNum, int32& OutMax) override;
-
-	/**
-	 * Returns the size of the object/ resource for display to artists/ LDs in the Editor.
-	 *
-	 * @param	Mode	Specifies which resource size should be displayed. ( see EResourceSizeMode::Type )
-	 * @return  Size of resource as to be displayed to artists/ LDs in the Editor.
-	 */
-	virtual void GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize) override;
 
 protected:
 
 	/**
-	 * Captures dynamic replay data for this particle system.
-	 *
-	 * @param	OutData		[Out] Data will be copied here
-	 *
-	 * @return Returns true if successful
+	 * 파티클 데이터를 렌더링용 데이터 구조체(OutData)에 복사한다.
+	 * @param OutData   데이터가 복사될 대상 구조체
+	 * @return          성공 여부
 	 */
 	virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData ) override;
 
+	UMaterialInterface* GetCurrentMaterial();
 };

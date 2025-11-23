@@ -1,11 +1,15 @@
 ﻿#pragma once
 #include "ParticleModule.h"
-#include "ParticleSpriteEmitter.h"
+
+enum EParticleScreenAlignment : int;
 
 class UParticleEmitter;
 
+UCLASS()
 class UParticleModuleRequired : public UParticleModule
 {
+	DECLARE_CLASS(UParticleModuleRequired, UParticleModule)
+
 public:
 	/** 파티클에 적용할 머티리얼 인터페이스 */
 	UMaterialInterface* Material;

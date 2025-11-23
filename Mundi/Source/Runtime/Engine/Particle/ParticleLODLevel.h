@@ -7,7 +7,6 @@ class UParticleModuleSpawnBase;
 class UParticleModuleRequired;
 
 UCLASS()
-
 class UParticleLODLevel : public UObject
 {
 	DECLARE_CLASS(UParticleLODLevel, UObject)

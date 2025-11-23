@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "ParticleModule.h"
 
+UCLASS()
 class UParticleModuleLifetimeBase : public UParticleModule
 {
+	DECLARE_CLASS(UParticleModuleLifetimeBase, UParticleModule)
 public:
 	UParticleModuleLifetimeBase()
 	{
@@ -29,8 +31,11 @@ public:
 	}
 };
 
+UCLASS()
 class UParticleModuleLifetime : public UParticleModuleLifetimeBase
 {
+	DECLARE_CLASS(UParticleModuleLifetime, UParticleModuleLifetimeBase)
+
 public:
 	/** 파티클의 기본 수명 (초 단위) */
 	float Lifetime;

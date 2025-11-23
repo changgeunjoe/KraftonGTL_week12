@@ -76,7 +76,7 @@ public:
 	virtual void UpdateModuleLists();
 
 	/** 런타임 시뮬레이션 인스턴스를 생성한다. (Subclass에서 구현) */
-	virtual FParticleEmitterInstance* CreateInstance(UParticleSystemComponent* InComponent)
+	virtual FParticleEmitterInstance* CreateInstance(UParticleSystemComponent* InComponent);
 
 	/** 이미터 이름을 설정한다. */
 	void SetEmitterName(FName Name);

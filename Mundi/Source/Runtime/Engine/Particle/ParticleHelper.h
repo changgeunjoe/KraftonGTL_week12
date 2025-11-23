@@ -17,6 +17,8 @@ FBaseParticle&	Particle		= *(ParticleBase);
 	FBaseParticle
 -----------------------------------------------------------------------------*/
 
+class UParticleModuleRequired;
+
 struct FBaseParticle
 {
 	// 48 bytes
@@ -100,6 +102,7 @@ struct FDynamicEmitterReplayDataBase
 	int32 ActiveParticleCount;
 
 	int32 ParticleStride;
+
 	FParticleDataContainer DataContainer;
 
 	FVector Scale;
@@ -116,9 +119,25 @@ struct FDynamicEmitterReplayDataBase
 	virtual ~FDynamicEmitterReplayDataBase()
 	{
 	}
+};
 
-	/** 직렬화 */
-	// virtual void Serialize( FArchive& Ar );
+struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
+{
+	UMaterialInterface*				MaterialInterface;
+	UParticleModuleRequired*		RequiredModule;
+	bool							bUseLocalSpace;
+	uint8							ScreenAlignment;
+
+	FDynamicSpriteEmitterReplayDataBase();
+
+	virtual ~FDynamicSpriteEmitterReplayDataBase() = default;
+};
+
+struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
+{
+	FDynamicSpriteEmitterReplayData()
+	{
+	}
 };
 
 /** 모든 이미터 타입에 대한 베이스 클래스 */
@@ -126,97 +145,14 @@ struct FDynamicEmitterDataBase
 {
 	FDynamicEmitterDataBase(const class UParticleModuleRequired* RequiredModule);
 
-	virtual ~FDynamicEmitterDataBase()
-	{
-	}
+	virtual ~FDynamicEmitterDataBase() = default;
 
-	/** Custom new/delete with recycling */
-	void* operator new(size_t Size);
-	void operator delete(void *RawMemory, size_t Size);
-
-	/**
-	 *	Create the render thread resources for this emitter data
-	 *
-	 *	@param	InOwnerProxy	The proxy that owns this dynamic emitter data
-	 */
-	virtual void UpdateRenderThreadResourcesEmitter(const FParticleSystemSceneProxy* InOwnerProxy)
-	{
-	}
-
-	/**
-	 *	Release the render thread resources for this emitter data
-	 *
-	 *	@param	InOwnerProxy	The proxy that owns this dynamic emitter data
-	 */
-	virtual void ReleaseRenderThreadResources(const FParticleSystemSceneProxy* InOwnerProxy)
-	{
-	}
-
-	virtual void GetDynamicMeshElementsEmitter(const FParticleSystemSceneProxy* Proxy, const FSceneView* View, const FSceneViewFamily& ViewFamily, int32 ViewIndex, FMeshElementCollector& Collector) const {}
-
-	/**
-	 *	Retrieve the material render proxy to use for rendering this emitter. PURE VIRTUAL
-	 *
-	 *	@param	bSelected				Whether the object is selected
-	 *
-	 *	@return	FMaterialRenderProxy*	The material proxt to render with.
-	 */
-	virtual const FMaterialRenderProxy* GetMaterialRenderProxy() = 0;
-
-	/** Callback from the renderer to gather simple lights that this proxy wants renderered. */
-	virtual void GatherSimpleLights(const FParticleSystemSceneProxy* Proxy, const FSceneViewFamily& ViewFamily, FSimpleLightArray& OutParticleLights) const {}
-
-	/** Returns the source data for this particle system */
+	/** 이 파티클 시스템의 소스 데이터를 반환한다. */
 	virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
 
-	/** Returns the current macro uv override. Specialized by FGPUSpriteDynamicEmitterData  */
-	virtual const FMacroUVOverride& GetMacroUVOverride() const { return GetSource().MacroUVOverride; }
-
-	/** Stat id of this object, 0 if nobody asked for it yet */
-	mutable TStatId StatID;
-	/** true if this emitter is currently selected */
 	uint32	bSelected:1;
-	/** true if this emitter has valid rendering data */
-	uint32	bValid:1;
 
 	int32  EmitterIndex;
-};
-
-struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
-{
-	UMaterialInterface*				MaterialInterface;
-	struct FParticleRequiredModule	*RequiredModule;
-	FVector							NormalsSphereCenter;
-	FVector							NormalsCylinderDirection;
-	float							InvDeltaSeconds;
-	FVector							LWCTile;
-	int32							MaxDrawCount;
-	int32							OrbitModuleOffset;
-	int32							DynamicParameterDataOffset;
-	int32							LightDataOffset;
-	float							LightVolumetricScatteringIntensity;
-	int32							CameraPayloadOffset;
-	int32							SubUVDataOffset;
-	int32							SubImages_Horizontal;
-	int32							SubImages_Vertical;
-	bool							bUseLocalSpace;
-	bool							bLockAxis;
-	uint8							ScreenAlignment;
-	uint8							LockAxisFlag;
-	uint8							EmitterRenderMode;
-	uint8							EmitterNormalsMode;
-	FVector2D						PivotOffset;
-	bool							bUseVelocityForMotionBlur;
-	bool							bRemoveHMDRoll;
-	float							MinFacingCameraBlendDistance;
-	float							MaxFacingCameraBlendDistance;
-
-	/** 생성자 */
-	FDynamicSpriteEmitterReplayDataBase();
-	~FDynamicSpriteEmitterReplayDataBase();
-
-	/** 직렬화 */
-	// virtual void Serialize( FArchive& Ar );
 };
 
 /** 스프라이트 이미터와 다른 이미터 타입들을 위한 베이스 클래스 */
@@ -253,10 +189,31 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
-	virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type InFeatureLevel) const override
+	FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule) :
+		FDynamicSpriteEmitterDataBase(RequiredModule)
 	{
-		return sizeof(FParticleSpriteVertex);
 	}
 
-	...
+	virtual ~FDynamicSpriteEmitterData()
+	{
+	}
+
+	void Init(bool bInSelected);
+
+	virtual int32 GetDynamicParameterVertexStride() const
+	{
+		return 0;
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase* GetSourceData() const override
+	{
+		return &Source;
+	}
+
+	FDynamicSpriteEmitterReplayData Source;
 };
