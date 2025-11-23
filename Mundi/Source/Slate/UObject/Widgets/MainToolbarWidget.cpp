@@ -134,6 +134,17 @@ void UMainToolbarWidget::RenderToolbar()
             ImGui::SetTooltip("Open Slate Test Window");
         }
 
+        // Particle Editor 버튼
+        ImGui::SameLine(0, 12.0f);
+        if (ImGui::Button("Particle Editor", ImVec2(120, IconSize)))
+        {
+            USlateManager::GetInstance().OpenParticleEditorWindow();
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Open Particle Editor Window");
+        }
+
         // 로고를 오른쪽에 배치
         if (LogoTexture && LogoTexture->GetShaderResourceView())
         {

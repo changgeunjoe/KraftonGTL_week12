@@ -49,6 +49,30 @@ FString STextBlock::GetDisplayText() const
 	return Text;
 }
 
+float STextBlock::GetHeight() const
+{
+	// Rect가 설정되어 있으면 사용
+	if (Rect.GetHeight() > 0.0f)
+		return Rect.GetHeight();
+
+	// 텍스트 크기 계산
+	FString DisplayText = GetDisplayText();
+	if (DisplayText.empty())
+		return 0.0f;
+
+	ImVec2 TextSize = ImGui::CalcTextSize(DisplayText.c_str());
+
+	// 폰트 크기가 설정되어 있으면 보정 (추후 확장 가능)
+	if (FontSize > 0.0f)
+	{
+		// 기본 폰트 크기 대비 비율로 조정
+		float DefaultFontSize = ImGui::GetFontSize();
+		TextSize.y = TextSize.y * (FontSize / DefaultFontSize);
+	}
+
+	return TextSize.y;
+}
+
 void STextBlock::RenderContent()
 {
 	if (!bIsVisible)

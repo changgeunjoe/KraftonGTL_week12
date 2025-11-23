@@ -1,11 +1,11 @@
 #pragma once
-#include "Source/Slate/Core/Panels/SPanel.h"
+#include "SCompoundWidget.h"
 #include "Delegates.h"
 
 /**
  * SButton - 클릭 가능한 버튼 위젯
  */
-class SButton : public SPanel
+class SButton : public SCompoundWidget
 {
 public:
 	struct FButtonStyle

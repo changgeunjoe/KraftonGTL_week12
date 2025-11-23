@@ -14,14 +14,14 @@ SVerticalBox::~SVerticalBox()
 SVerticalBox::FSlot& SVerticalBox::AddSlot()
 {
 	FSlot NewSlot;
-	Slots.push_back(NewSlot);
+	Slots.Add(NewSlot);
 	Invalidate();
-	return Slots.back();
+	return Slots.Last();
 }
 
-void SVerticalBox::RemoveSlot(int32_t Index)
+void SVerticalBox::RemoveSlot(uint32 Index)
 {
-	if (Index >= 0 && Index < static_cast<int32_t>(Slots.size()))
+	if (Index < static_cast<uint32>(Slots.Num()))
 	{
 		// 자식 위젯도 제거
 		if (Slots[Index].Widget)
@@ -29,7 +29,7 @@ void SVerticalBox::RemoveSlot(int32_t Index)
 			RemoveChild(Slots[Index].Widget);
 		}
 
-		Slots.erase(Slots.begin() + Index);
+		Slots.RemoveAt(Index);
 		Invalidate();
 	}
 }
@@ -45,8 +45,8 @@ void SVerticalBox::ClearSlots()
 		}
 	}
 
-	Slots.clear();
-	ComputedHeights.clear();
+	Slots.Empty();
+	ComputedHeights.Empty();
 	Invalidate();
 }
 
@@ -66,8 +66,8 @@ float SVerticalBox::CalculateAutoHeight(const FSlot& Slot) const
 
 void SVerticalBox::CalculateSlotSizes()
 {
-	ComputedHeights.clear();
-	ComputedHeights.resize(Slots.size(), 0.0f);
+	ComputedHeights.Empty();
+	ComputedHeights.SetNum(Slots.Num(), 0.0f);
 
 	float TotalHeight = Rect.GetHeight();
 	float UsedHeight = 0.0f;
@@ -77,12 +77,12 @@ void SVerticalBox::CalculateSlotSizes()
 	static int debugCount = 0;
 	if (debugCount < 3)
 	{
-		UE_LOG("CalculateSlotSizes: TotalHeight=%.1f, Slots=%d", TotalHeight, (int)Slots.size());
+		UE_LOG("CalculateSlotSizes: TotalHeight=%.1f, Slots=%d", TotalHeight, (int)Slots.Num());
 		debugCount++;
 	}
 
 	// 1단계: Auto와 Fixed 크기 계산
-	for (size_t i = 0; i < Slots.size(); ++i)
+	for (uint32 i = 0; i < static_cast<uint32>(Slots.Num()); ++i)
 	{
 		const FSlot& Slot = Slots[i];
 
@@ -125,7 +125,7 @@ void SVerticalBox::CalculateSlotSizes()
 			RemainingHeight, TotalHeight, UsedHeight, TotalFillWeight);
 	}
 
-	for (size_t i = 0; i < Slots.size(); ++i)
+	for (uint32 i = 0; i < static_cast<uint32>(Slots.Num()); ++i)
 	{
 		const FSlot& Slot = Slots[i];
 
@@ -162,11 +162,11 @@ void SVerticalBox::ArrangeChildren()
 	if (callCount < 5) // 처음 5번만 로그
 	{
 		UE_LOG("SVerticalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Slots: %d",
-			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, (int)Slots.size());
+			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, (int)Slots.Num());
 		callCount++;
 	}
 
-	for (size_t i = 0; i < Slots.size(); ++i)
+	for (uint32 i = 0; i < static_cast<uint32>(Slots.Num()); ++i)
 	{
 		FSlot& Slot = Slots[i];
 		if (!Slot.Widget)

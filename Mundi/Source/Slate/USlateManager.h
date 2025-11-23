@@ -14,6 +14,7 @@ class UConsoleWindow; // 오버레이 콘솔 윈도우
 class UContentBrowserWindow;
 class SAnimStateMachineWindow;
 class USlateTestWindow;
+class UParticleEditorWindow;
 
 // 중앙 레이아웃/입력 라우팅/뷰포트 관리 매니저 (위젯 아님)
 class USlateManager : public UObject
@@ -97,6 +98,11 @@ public:
 	void CloseSlateTestWindow();
 	bool IsSlateTestWindowOpen() const { return SlateTestWindow != nullptr; }
 
+	// Particle Editor Window 관리
+	void OpenParticleEditorWindow();
+	void CloseParticleEditorWindow();
+	bool IsParticleEditorWindowOpen() const { return ParticleEditorWindow != nullptr; }
+
 private:
     FRect Rect; // 이전엔 SWindow로부터 상속받던 영역 정보
 
@@ -148,6 +154,9 @@ private:
 
     // Slate Test Window
     USlateTestWindow* SlateTestWindow = nullptr;
+
+    // Particle Editor Window
+    UParticleEditorWindow* ParticleEditorWindow = nullptr;
 
     // Content Browser (Bottom panel overlay with animation)
     UContentBrowserWindow* ContentBrowserWindow = nullptr;

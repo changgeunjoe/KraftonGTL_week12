@@ -1,12 +1,12 @@
 #pragma once
-#include "Source/Slate/Core/Panels/SPanel.h"
+#include "SCompoundWidget.h"
 #include <functional>
 
 /**
  * STextBlock - 텍스트 표시 위젯
  * 정적 텍스트 또는 델리게이트를 통한 동적 텍스트 표시 가능
  */
-class STextBlock : public SPanel
+class STextBlock : public SCompoundWidget
 {
 public:
 	enum ETextJustify
@@ -34,6 +34,9 @@ public:
 
 	void SetFontSize(float InSize) { FontSize = InSize; Invalidate(); }
 	float GetFontSize() const { return FontSize; }
+
+	// ===== 크기 =====
+	virtual float GetHeight() const override;
 
 	// ===== 렌더링 =====
 	virtual void RenderContent() override;

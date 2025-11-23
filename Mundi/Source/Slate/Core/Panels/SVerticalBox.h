@@ -30,7 +30,7 @@ public:
 	 */
 	struct FSlot
 	{
-		SPanel* Widget = nullptr;
+		SWindow* Widget = nullptr;  // SWindow*로 변경 (SPanel, SCompoundWidget 모두 수용)
 		ESizeRule SizeRule = SizeRule_Auto;
 		float SizeValue = 1.0f;
 		EVerticalAlignment VAlign = VAlign_Top;
@@ -81,13 +81,13 @@ public:
 			return *this;
 		}
 
-		FSlot& AttachWidget(SPanel* InWidget)
+		FSlot& AttachWidget(SWindow* InWidget)  // SWindow*로 변경
 		{
 			Widget = InWidget;
 			return *this;
 		}
 
-		FSlot& operator[](SPanel* InWidget)
+		FSlot& operator[](SWindow* InWidget)  // SWindow*로 변경
 		{
 			Widget = InWidget;
 			return *this;
@@ -99,9 +99,9 @@ public:
 
 	// ===== Slot 관리 =====
 	FSlot& AddSlot();
-	void RemoveSlot(int32_t Index);
+	void RemoveSlot(uint32 Index);
 	void ClearSlots();
-	int32_t GetSlotCount() const { return static_cast<int32_t>(Slots.size()); }
+	uint32 GetSlotCount() const { return static_cast<uint32>(Slots.Num()); }
 
 	// ===== 레이아웃 =====
 	virtual void ArrangeChildren() override;
@@ -110,7 +110,6 @@ public:
 private:
 	void CalculateSlotSizes();
 	float CalculateAutoHeight(const FSlot& Slot) const;
-
-	std::vector<FSlot> Slots;
-	std::vector<float> ComputedHeights;  // 각 슬롯의 계산된 높이
+	TArray<FSlot> Slots;
+	TArray<float> ComputedHeights;  // 각 슬롯의 계산된 높이
 };

@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "SPanel.h"
 #include "ImGui/imgui.h"
-#include <algorithm>
 
 SPanel::SPanel()
 	: bIsVisible(true)
@@ -17,41 +16,60 @@ SPanel::~SPanel()
 	ClearChildren();
 }
 
-void SPanel::AddChild(SPanel* Child)
+void SPanel::AddChild(SWindow* Child)
 {
 	if (Child == nullptr)
 		return;
 
-	Children.push_back(Child);
-	Child->SetParent(this);
+	Children.Add(Child);
+
+	// SPanel인 경우에만 SetParent 호출 (dynamic_cast 사용)
+	SPanel* ChildPanel = dynamic_cast<SPanel*>(Child);
+	if (ChildPanel)
+	{
+		ChildPanel->SetParent(this);
+	}
+
 	Invalidate();
 }
 
-void SPanel::RemoveChild(SPanel* Child)
+void SPanel::RemoveChild(SWindow* Child)
 {
 	if (Child == nullptr)
 		return;
 
-	auto it = std::find(Children.begin(), Children.end(), Child);
-	if (it != Children.end())
+	int32 Index = Children.Find(Child);
+	if (Index != -1)
 	{
-		(*it)->SetParent(nullptr);
-		Children.erase(it);
+		// SPanel인 경우에만 SetParent(nullptr) 호출
+		SPanel* ChildPanel = dynamic_cast<SPanel*>(Children[Index]);
+		if (ChildPanel)
+		{
+			ChildPanel->SetParent(nullptr);
+		}
+
+		Children.RemoveAt(Index);
 		Invalidate();
 	}
 }
 
 void SPanel::ClearChildren()
 {
-	for (SPanel* Child : Children)
+	for (SWindow* Child : Children)
 	{
 		if (Child)
 		{
-			Child->SetParent(nullptr);
+			// SPanel인 경우에만 SetParent(nullptr) 호출
+			SPanel* ChildPanel = dynamic_cast<SPanel*>(Child);
+			if (ChildPanel)
+			{
+				ChildPanel->SetParent(nullptr);
+			}
+
 			delete Child;
 		}
 	}
-	Children.clear();
+	Children.Empty();
 	Invalidate();
 }
 
@@ -80,23 +98,18 @@ void SPanel::OnRender()
 	if (!bIsVisible)
 		return;
 
-	// Invalidation: 변경 없으면 스킵
-	if (!bNeedsRepaint && !bAlwaysRepaint)
-		return;
-
-	// 자식 배치
+	// 레이아웃 재계산 (Invalidate 호출 시에만)
+	// ArrangeChildren()는 비용이 크므로 변경 시에만 실행
+	// if (bNeedsRepaint || bAlwaysRepaint)
+	// {
+	// 	ArrangeChildren();
+	// 	bNeedsRepaint = false;
+	// }
 	ArrangeChildren();
-
-	// 콘텐츠 렌더링
+	// ImGui는 즉시 모드 렌더링이므로 매 프레임 실행 필수
 	RenderContent();
-
-	// 자식들 렌더링
 	RenderChildren();
-
-	// 마우스 이벤트 처리
 	ProcessMouseEvents();
-
-	//bNeedsRepaint = false;
 }
 
 void SPanel::ProcessMouseEvents()
@@ -106,9 +119,9 @@ void SPanel::ProcessMouseEvents()
 
 	// 마우스 이동 이벤트
 	OnMouseMove(MousePos);
-	for (SPanel* Child : Children)
+	for (SWindow* Child : Children)
 	{
-		if (Child && Child->IsVisible())
+		if (Child)
 		{
 			Child->OnMouseMove(MousePos);
 		}
@@ -118,9 +131,9 @@ void SPanel::ProcessMouseEvents()
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 	{
 		OnMouseDown(MousePos, 0);
-		for (SPanel* Child : Children)
+		for (SWindow* Child : Children)
 		{
-			if (Child && Child->IsVisible())
+			if (Child)
 			{
 				Child->OnMouseDown(MousePos, 0);
 			}
@@ -131,9 +144,9 @@ void SPanel::ProcessMouseEvents()
 	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 	{
 		OnMouseUp(MousePos, 0);
-		for (SPanel* Child : Children)
+		for (SWindow* Child : Children)
 		{
-			if (Child && Child->IsVisible())
+			if (Child)
 			{
 				Child->OnMouseUp(MousePos, 0);
 			}
@@ -143,9 +156,9 @@ void SPanel::ProcessMouseEvents()
 
 void SPanel::RenderChildren()
 {
-	for (SPanel* Child : Children)
+	for (SWindow* Child : Children)
 	{
-		if (Child && Child->IsVisible())
+		if (Child)
 		{
 			Child->OnRender();
 		}

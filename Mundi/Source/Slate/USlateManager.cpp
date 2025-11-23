@@ -14,6 +14,7 @@
 #include "Source/Slate/UObject/Windows/ConsoleWindow.h"
 #include "Source/Slate/UObject/Windows/ContentBrowserWindow.h"
 #include "Source/Slate/UObject/Windows/SlateTestWindow.h"
+#include "Source/Slate/UObject/Windows/ParticleEditorWindow.h"
 #include "Source/Slate/UObject/Widgets/MainToolbarWidget.h"
 #include "Source/Slate/UObject/Widgets/ConsoleWidget.h"
 #include "FViewportClient.h"
@@ -292,6 +293,30 @@ void USlateManager::CloseSlateTestWindow()
     SlateTestWindow = nullptr;
 }
 
+void USlateManager::OpenParticleEditorWindow()
+{
+    if (ParticleEditorWindow)
+    {
+        // 이미 열려있으면 그냥 반환
+        return;
+    }
+
+    // 새 윈도우 생성
+    ParticleEditorWindow = NewObject<UParticleEditorWindow>();
+    ParticleEditorWindow->Initialize();
+}
+
+void USlateManager::CloseParticleEditorWindow()
+{
+    if (!ParticleEditorWindow)
+    {
+        return;
+    }
+
+    // UObject이므로 delete 하지 않고 null만 설정 (GC가 관리)
+    ParticleEditorWindow = nullptr;
+}
+
 void USlateManager::CreateAnimStateMachineWindowIfNeeded()
 {
 	if (AnimStateMachineWindow)
@@ -560,6 +585,12 @@ void USlateManager::Render()
     if (SlateTestWindow)
     {
         SlateTestWindow->RenderWindow();
+    }
+
+    // Particle Editor Window 렌더링
+    if (ParticleEditorWindow)
+    {
+        ParticleEditorWindow->RenderWindow();
     }
 }
 

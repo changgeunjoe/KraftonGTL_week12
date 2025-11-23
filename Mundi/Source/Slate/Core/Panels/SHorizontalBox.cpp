@@ -14,14 +14,14 @@ SHorizontalBox::~SHorizontalBox()
 SHorizontalBox::FSlot& SHorizontalBox::AddSlot()
 {
 	FSlot NewSlot;
-	Slots.push_back(NewSlot);
+	Slots.Add(NewSlot);
 	Invalidate();
 	return Slots.back();
 }
 
-void SHorizontalBox::RemoveSlot(int32_t Index)
+void SHorizontalBox::RemoveSlot(uint32 Index)
 {
-	if (Index >= 0 && Index < static_cast<int32_t>(Slots.size()))
+	if (Index < static_cast<uint32>(Slots.Num()))
 	{
 		// 자식 위젯도 제거
 		if (Slots[Index].Widget)
@@ -29,7 +29,7 @@ void SHorizontalBox::RemoveSlot(int32_t Index)
 			RemoveChild(Slots[Index].Widget);
 		}
 
-		Slots.erase(Slots.begin() + Index);
+		Slots.RemoveAt(Index);
 		Invalidate();
 	}
 }
@@ -45,8 +45,8 @@ void SHorizontalBox::ClearSlots()
 		}
 	}
 
-	Slots.clear();
-	ComputedWidths.clear();
+	Slots.Empty();
+	ComputedWidths.Empty();
 	Invalidate();
 }
 
@@ -66,15 +66,23 @@ float SHorizontalBox::CalculateAutoWidth(const FSlot& Slot) const
 
 void SHorizontalBox::CalculateSlotSizes()
 {
-	ComputedWidths.clear();
-	ComputedWidths.resize(Slots.size(), 0.0f);
+	ComputedWidths.Empty();
+	ComputedWidths.SetNum(Slots.Num(), 0.0f);
 
 	float TotalWidth = Rect.GetWidth();
 	float UsedWidth = 0.0f;
 	float TotalFillWeight = 0.0f;
 
+	// 디버그
+	static int debugCount = 0;
+	if (debugCount < 3)
+	{
+		UE_LOG("HBox CalculateSlotSizes: TotalWidth=%.1f, Slots=%d", TotalWidth, (int)Slots.Num());
+		debugCount++;
+	}
+
 	// 1단계: Auto와 Fixed 크기 계산
-	for (size_t i = 0; i < Slots.size(); ++i)
+	for (size_t i = 0; i < Slots.Num(); ++i)
 	{
 		const FSlot& Slot = Slots[i];
 
@@ -83,23 +91,35 @@ void SHorizontalBox::CalculateSlotSizes()
 			float Width = CalculateAutoWidth(Slot);
 			ComputedWidths[i] = Width;
 			UsedWidth += Width;
+			if (debugCount <= 3)
+			{
+				UE_LOG("  HBox Slot[%d] Auto: Width=%.1f", (int)i, Width);
+			}
 		}
 		else if (Slot.SizeRule == SizeRule_Fixed)
 		{
 			float Width = Slot.SizeValue + Slot.Padding.Left + Slot.Padding.Right;
 			ComputedWidths[i] = Width;
 			UsedWidth += Width;
+			if (debugCount <= 3)
+			{
+				UE_LOG("  HBox Slot[%d] Fixed: Width=%.1f (SizeValue=%.1f)", (int)i, Width, Slot.SizeValue);
+			}
 		}
 		else if (Slot.SizeRule == SizeRule_Fill)
 		{
 			TotalFillWeight += Slot.SizeValue;
+			if (debugCount <= 3)
+			{
+				UE_LOG("  HBox Slot[%d] Fill: Weight=%.1f", (int)i, Slot.SizeValue);
+			}
 		}
 	}
 
 	// 2단계: Fill 크기 계산
 	float RemainingWidth = std::max(0.0f, TotalWidth - UsedWidth);
 
-	for (size_t i = 0; i < Slots.size(); ++i)
+	for (size_t i = 0; i < Slots.Num(); ++i)
 	{
 		const FSlot& Slot = Slots[i];
 
@@ -127,15 +147,24 @@ void SHorizontalBox::ArrangeChildren()
 
 	float CurrentX = Rect.Left;
 
-	for (size_t i = 0; i < Slots.size(); ++i)
+	// 디버그 로그
+	static int callCount = 0;
+	if (callCount < 5)
+	{
+		UE_LOG("SHorizontalBox::ArrangeChildren() - Rect: (%.1f, %.1f) to (%.1f, %.1f), Slots: %d",
+			Rect.Left, Rect.Top, Rect.Right, Rect.Bottom, (int)Slots.Num());
+		callCount++;
+	}
+
+	for (size_t i = 0; i < Slots.Num(); ++i)
 	{
 		FSlot& Slot = Slots[i];
 		if (!Slot.Widget)
 			continue;
 
 		// 자식으로 등록 (아직 안 되어있으면)
-		auto it = std::find(Children.begin(), Children.end(), Slot.Widget);
-		if (it == Children.end())
+		if (Children.Find(Slot.Widget) == -1)
+		
 		{
 			AddChild(Slot.Widget);
 		}

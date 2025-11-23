@@ -38,11 +38,11 @@ public:
 	 */
 	struct FSlot
 	{
-		SPanel* Widget = nullptr;
+		SWindow* Widget = nullptr;  // SWindow*로 변경 (SPanel, SCompoundWidget 모두 수용)
 		ESizeRule SizeRule = SizeRule_Auto;
 		float SizeValue = 1.0f;
 		EHorizontalAlignment HAlign = HAlign_Left;
-		EVerticalAlignment VAlign = VAlign_Center;
+		EVerticalAlignment VAlign = VAlign_Fill;  // 기본값을 Fill로 변경 (컨테이너 패널이 공간을 모두 사용)
 		FMargin Padding = FMargin(0, 0, 0, 0);
 
 		// Fluent API - 메서드 체이닝을 위한 빌더 패턴
@@ -96,13 +96,13 @@ public:
 			return *this;
 		}
 
-		FSlot& AttachWidget(SPanel* InWidget)
+		FSlot& AttachWidget(SWindow* InWidget)  // SWindow*로 변경
 		{
 			Widget = InWidget;
 			return *this;
 		}
 
-		FSlot& operator[](SPanel* InWidget)
+		FSlot& operator[](SWindow* InWidget)  // SWindow*로 변경
 		{
 			Widget = InWidget;
 			return *this;
@@ -114,9 +114,9 @@ public:
 
 	// ===== Slot 관리 =====
 	FSlot& AddSlot();
-	void RemoveSlot(int32_t Index);
+	void RemoveSlot(uint32 Index);
 	void ClearSlots();
-	int32_t GetSlotCount() const { return static_cast<int32_t>(Slots.size()); }
+	uint32 GetSlotCount() const { return static_cast<uint32>(Slots.size()); }
 
 	// ===== 레이아웃 =====
 	virtual void ArrangeChildren() override;
@@ -126,6 +126,6 @@ private:
 	void CalculateSlotSizes();
 	float CalculateAutoWidth(const FSlot& Slot) const;
 
-	std::vector<FSlot> Slots;
-	std::vector<float> ComputedWidths;  // 각 슬롯의 계산된 너비
+	TArray<FSlot> Slots;
+	TArray<float> ComputedWidths;  // 각 슬롯의 계산된 너비
 };

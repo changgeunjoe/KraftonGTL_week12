@@ -1,6 +1,5 @@
 #pragma once
 #include "Source/Slate/Core/Windows/SWindow.h"
-#include <vector>
 
 struct FMargin
 {
@@ -27,11 +26,11 @@ public:
 	virtual ~SPanel();
 
 	// ===== 자식 관리 =====
-	void AddChild(SPanel* Child);
-	void RemoveChild(SPanel* Child);
+	void AddChild(SWindow* Child);
+	void RemoveChild(SWindow* Child);
 	void ClearChildren();
-	const std::vector<SPanel*>& GetChildren() const { return Children; }
-	int32_t GetChildCount() const { return static_cast<int32_t>(Children.size()); }
+	const TArray<SWindow*>& GetChildren() const { return Children; }
+	uint32 GetChildCount() const { return static_cast<uint32>(Children.Num()); }
 
 	// ===== 가시성 =====
 	void SetVisible(bool bInVisible);
@@ -60,7 +59,7 @@ public:
 	SPanel* GetParent() const { return ParentPanel; }
 
 protected:
-	std::vector<SPanel*> Children;
+	TArray<SWindow*> Children;
 	SPanel* ParentPanel = nullptr;
 
 	bool bIsVisible = true;
