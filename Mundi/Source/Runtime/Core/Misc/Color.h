@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Vector.h"
 
 struct FLinearColor
@@ -16,6 +16,11 @@ struct FLinearColor
 	static inline FLinearColor Zero()
 	{
 		return FLinearColor(); // 기본 생성자가 (0, 0, 0, 0)으로 초기화합니다.
+	}
+
+	static inline FLinearColor White()
+	{
+		return FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
     inline bool operator==(const FLinearColor& Other) const

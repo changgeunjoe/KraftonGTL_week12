@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "HeightFogComponent.h"
 
 #include "Color.h"
@@ -18,7 +18,7 @@
 UHeightFogComponent::UHeightFogComponent()
 {
 	// 사막 느낌
-	FogInscatteringColor = FLinearColor(0.93f, 0.79f, 0.69f, 1.0f);
+	FogInscatteringColor = FLinearColor(0.28f, 0.5f, 0.86f, 1.0f);
 	HeightFogShader = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/HeightFog_PS.hlsl");
 
 	

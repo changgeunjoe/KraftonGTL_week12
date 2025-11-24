@@ -913,6 +913,8 @@ void FSceneRenderer::RenderOpaquePass(EViewMode InRenderViewMode)
 {
 	GPU_EVENT_TIMER(RHIDevice->GetDeviceContext(), "OpaquePass", OwnerRenderer->GetGPUTimer());
 
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
+
 	// --- 1. 수집 (Collect) ---
 	MeshBatchElements.Empty();
 	SkinnedMeshBatchElements.Empty();
@@ -1260,6 +1262,7 @@ void FSceneRenderer::RenderEditorPrimitivesPass()
 	GPU_EVENT_TIMER(RHIDevice->GetDeviceContext(), "EditorPrimitives", OwnerRenderer->GetGPUTimer());
 
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
 	for (UPrimitiveComponent* GizmoComp : Proxies.EditorPrimitives)
 	{
 		GizmoComp->CollectMeshBatches(MeshBatchElements, View);
@@ -1336,6 +1339,8 @@ void FSceneRenderer::RenderOverayEditorPrimitivesPass()
 	// 오버레이 끼리는 깊이 테스트가 가능함
 	RHIDevice->ClearDepthBuffer(1.0f, 0);
 
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
+
 	for (UPrimitiveComponent* GizmoComp : Proxies.OverlayPrimitives)
 	{
 		GizmoComp->CollectMeshBatches(MeshBatchElements, View);
@@ -1373,9 +1378,6 @@ void FSceneRenderer::RenderFinalOverlayLines()
 void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, bool bClearListAfterDraw)
 {
 	if (InMeshBatches.IsEmpty()) return;
-
-	// RHI 상태 초기 설정 (Opaque Pass 기본값)
-	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual); // 깊이 쓰기 ON
 
 	// PS 리소스 초기화
 	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };

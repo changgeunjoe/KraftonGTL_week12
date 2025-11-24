@@ -160,7 +160,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 				GpuParticles[i].Location = P->Location;
 				GpuParticles[i].Size = FVector2D(2,2);
 				//GpuParticles[i].Size = FVector2D(P->Size.X, P->Size.Y);
-				GpuParticles[i].Color = FLinearColor(1, 1, 1, 1);
+				GpuParticles[i].Color = FLinearColor(1, 0, 0, 1);
 				//GpuParticles[i].Color = P->Color;
 			}
 
@@ -185,7 +185,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	BatchElement.Material = Src->MaterialInterface;
 	if (!BatchElement.Material)
 	{
-		BatchElement.InstanceShaderResourceView = UResourceManager::GetInstance().Load<UTexture>("Data/Textures/GreenLight.png")->GetShaderResourceView();
+		BatchElement.InstanceShaderResourceView = UResourceManager::GetInstance().Load<UTexture>("Data/Textures/FakeLight.png")->GetShaderResourceView();
 	}
 	
 	BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;

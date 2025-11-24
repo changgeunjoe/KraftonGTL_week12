@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Object.h"
 
@@ -18,11 +18,11 @@ public:
 
     // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
 
-    UPROPERTY(EditAnywhere, Category="Fog", Range="0.0, 10.0")
-    float FogDensity = 0.2f;
+    UPROPERTY(EditAnywhere, Category="Fog", Range="0.0, 0.0005")
+    float FogDensity = 0.0001f;
 
-    UPROPERTY(EditAnywhere, Category="Fog", Range="0.0, 10.0")
-    float FogHeightFalloff = 0.2f;
+    UPROPERTY(EditAnywhere, Category="Fog", Range="0.0, 1.0")
+    float FogHeightFalloff = 0.02f;
 
     UPROPERTY(EditAnywhere, Category="Fog", Range="0.0, 10000.0")
     float StartDistance = 0.0f;
