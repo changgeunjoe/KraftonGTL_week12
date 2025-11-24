@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ObjectFactory.h"
 #include "Object.h"
 #include "Shader.h"
@@ -17,6 +17,7 @@
 #include "Object.h"
 #include "SkeletalMesh.h"
 #include "Source/Runtime/Engine/Animation/AnimSequence.h"
+#include"Source/Runtime/Engine/Particle/ParticleSystem.h"
 // ... 기타 include ...
 
 // --- 전방 선언 ---
@@ -98,6 +99,7 @@ public:
 	void CreateTextBillboardMesh();
 	void CreateTextBillboardTexture();
 	void PreLoadAnimStateMachines();
+	void PreLoadParticleSystems();
 
 	// --- 캐시 관리 ---
 	FMeshBVH* GetMeshBVH(const FString& ObjPath);
@@ -338,6 +340,8 @@ EResourceType UResourceManager::GetResourceType()
 		return EResourceType::Animation;
 	if (T::StaticClass() == UAnimStateMachine::StaticClass())
 		return EResourceType::AnimationStateMachine;
+	if (T::StaticClass() == UParticleSystem::StaticClass())
+		return EResourceType::ParticleSystem;
 
     return EResourceType::None;
 }

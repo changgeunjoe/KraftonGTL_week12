@@ -23,6 +23,8 @@
 #include "Source/Runtime/Engine/Animation/BlendSpace2D.h"
 #include "Source/Runtime/Core/Misc/Enums.h"
 #include "AnimStateMachine.h"
+#include "Source/Runtime/Engine/Particle/ParticleSystem.h"
+#include "Source/Runtime/Engine/Components/ParticleSystemComponent.h"
 
 // Disable warnings for third-party library
 #pragma warning(push)
@@ -52,6 +54,8 @@ TArray<FString> UPropertyRenderer::CachedScriptPaths;
 TArray<const char*> UPropertyRenderer::CachedScriptItems;
 TArray<FString> UPropertyRenderer::CachedAnimStateMachinePaths;
 TArray<const char*> UPropertyRenderer::CachedAnimStateMachineItems;
+TArray<FString> UPropertyRenderer::CachedParticleSystemPaths;
+TArray<const char*> UPropertyRenderer::CachedParticleSystemItems;
 
 static bool ItemsGetter(void* Data, int Index, const char** CItem)
 {
@@ -200,6 +204,10 @@ bool UPropertyRenderer::RenderPropertyInternal(const FProperty& Property, void* 
 
 	case EPropertyType::AnimSequence:
 		bChanged = RenderAnimSequenceProperty(Property, Instance);
+		break;
+
+	case EPropertyType::ParticleSystem:
+		bChanged = RenderParticleSystemProperty(Property, Instance);
 		break;
 
 	default:
@@ -540,6 +548,17 @@ void UPropertyRenderer::CacheResources()
             CachedAnimStateMachineItems.push_back(CachedAnimStateMachinePaths[i].c_str());
         }
     }
+
+    // 8. ParticleSystem (.particle)
+    if (CachedParticleSystemPaths.IsEmpty() && CachedParticleSystemItems.IsEmpty())
+    {
+        CachedParticleSystemPaths = ResMgr.GetAllFilePaths<UParticleSystem>();
+        CachedParticleSystemItems.Add("None");
+        for (size_t i = 0; i < CachedParticleSystemPaths.size(); ++i)
+        {
+            CachedParticleSystemItems.push_back(CachedParticleSystemPaths[i].c_str());
+        }
+    }
 }
 
 void UPropertyRenderer::ClearResourcesCache()
@@ -562,6 +581,8 @@ void UPropertyRenderer::ClearResourcesCache()
 	CachedAnimSequenceItems.Empty();
 	CachedAnimStateMachinePaths.Empty();
 	CachedAnimStateMachineItems.Empty();
+	CachedParticleSystemPaths.Empty();
+	CachedParticleSystemItems.Empty();
 }
 
 // ===== 타입별 렌더링 구현 =====
@@ -2427,6 +2448,62 @@ bool UPropertyRenderer::RenderAnimSequenceSelectionCombo(const char* Label, UAni
 			FString SelectedPath = CachedAnimSequencePaths[CurrentIndex - 1];
 			OutNewAnim = ResMgr.Load<UAnimSequence>(SelectedPath);
 		}
+		bChanged = true;
+	}
+
+	return bChanged;
+}
+
+bool UPropertyRenderer::RenderParticleSystemProperty(const FProperty& Prop, void* Instance)
+{
+	UParticleSystem** ParticlePtr = Prop.GetValuePtr<UParticleSystem*>(Instance);
+	UParticleSystem* CurrentParticle = *ParticlePtr;
+
+	// 현재 선택된 인덱스 찾기
+	int CurrentIndex = 0;
+	if (CurrentParticle && !CurrentParticle->GetFilePath().empty())
+	{
+		const FString& CurrentPath = CurrentParticle->GetFilePath();
+		for (size_t i = 0; i < CachedParticleSystemPaths.size(); ++i)
+		{
+			if (CachedParticleSystemPaths[i] == CurrentPath)
+			{
+				CurrentIndex = static_cast<int>(i + 1); // +1 for "None" offset
+				break;
+			}
+		}
+	}
+
+	// 콤보박스 렌더링
+	bool bChanged = false;
+	if (ImGui::Combo(Prop.Name, &CurrentIndex, ItemsGetterConstChar,
+		&CachedParticleSystemItems, static_cast<int>(CachedParticleSystemItems.size())))
+	{
+		UResourceManager& ResMgr = UResourceManager::GetInstance();
+		UParticleSystem* NewParticle = nullptr;
+
+		if (CurrentIndex == 0)
+		{
+			// "None" 선택
+			NewParticle = nullptr;
+		}
+		else
+		{
+			// 파티클 시스템 선택 (인덱스 조정: -1 for "None" offset)
+			FString SelectedPath = CachedParticleSystemPaths[CurrentIndex - 1];
+			NewParticle = ResMgr.Load<UParticleSystem>(SelectedPath);
+		}
+
+		// 프로퍼티 포인터 업데이트
+		*ParticlePtr = NewParticle;
+
+		// ParticleSystemComponent일 경우 SetTemplate 호출
+		UObject* Obj = static_cast<UObject*>(Instance);
+		if (UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(Obj))
+		{
+			ParticleComp->SetTemplate(NewParticle);
+		}
+
 		bChanged = true;
 	}
 

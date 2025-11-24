@@ -46,9 +46,25 @@ public:
 
 	virtual void Deactivate();
 
+	/**
+	 * 파티클 시스템 템플릿을 설정한다.
+	 * 기존 파티클을 리셋하고 새로운 템플릿으로 재초기화한다.
+	 * @param NewTemplate 새로 설정할 파티클 시스템
+	 * @param bAutoActivate true일 경우 자동으로 활성화
+	 */
+	void SetTemplate(UParticleSystem* NewTemplate, bool bAutoActivate = true);
+
+	/**
+	 * 현재 설정된 파티클 시스템 템플릿을 반환한다.
+	 * @return 현재 템플릿
+	 */
+	UParticleSystem* GetTemplate() const { return Template; }
+
+	UPROPERTY(EditAnywhere, Category = "파티클")
+	UParticleSystem* Template;
+
 private:
 	/** 사용할 파티클 시스템 템플릿 */
-	UParticleSystem* Template;
 
 	/** 이미터별 머티리얼 오버라이드 배열 */
 	TArray<UMaterialInterface*> EmitterMaterials;
