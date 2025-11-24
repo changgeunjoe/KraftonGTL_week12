@@ -21,9 +21,13 @@ class UParticleModuleRequired;
 
 struct FBaseParticle
 {
-	// 48 bytes
+	// 16 bytes
 	FVector		OldLocation;		// 지난 프레임의 위치 (충돌을 위해 사용됨)
+	float		Placeholder0;
+
+	// 16 bytes
 	FVector		Location;			// 현재 위치
+	float		Placeholder1;
 
 	// 16 bytes
 	FVector			BaseVelocity;		// 각 프레임의 시작 시점에서 Velocity = BaseVelocity
@@ -47,10 +51,11 @@ struct FBaseParticle
 	// 16 bytes
 	FLinearColor	BaseColor;			// 파티클의 기본 색상
 
+	// 16 bytes
 	float			RelativeTime;
 	float			OneOverMaxLifetime; // lifetime의 역수
-	float			Placeholder0;
-	float			Placeholder1;
+	float			Placeholder2;
+	float			Placeholder3;
 };
 
 /*-----------------------------------------------------------------------------
