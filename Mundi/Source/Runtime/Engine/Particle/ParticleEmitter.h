@@ -50,9 +50,6 @@ public:
 	/** 모듈 포인터 -> 이미터 인스턴스 데이터 내 오프셋 매핑 (Per-Instance Data) */
 	TMap<UParticleModule*, uint32> ModuleInstanceOffsetMap;
 
-	/** MeshMaterial 모듈로부터 수집된 머티리얼들 */
-	TArray<UMaterialInterface*> MeshMaterials;
-
 	/** * 파티클 1개당 필요한 '추가' 데이터의 크기 (바이트 단위)
 	 * FBaseParticle 크기는 제외된 값이다.
 	 */

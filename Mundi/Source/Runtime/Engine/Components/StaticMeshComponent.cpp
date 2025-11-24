@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "StaticMeshComponent.h"
 #include "StaticMesh.h"
 #include "Shader.h"
@@ -13,7 +13,7 @@
 // IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 UStaticMeshComponent::UStaticMeshComponent()
 {
-	SetStaticMesh(GDataDir + "/cube-tex.obj");     // 임시 기본 static mesh 설정
+	SetStaticMesh(GDataDir + "/Model/cube-tex.obj");     // 임시 기본 static mesh 설정
 }
 
 UStaticMeshComponent::~UStaticMeshComponent() = default;

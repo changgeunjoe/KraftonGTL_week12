@@ -8,6 +8,20 @@ class UParticleModuleTypeDataBase;
 struct FBaseParticle;
 struct FParticleEmitterInstance;
 
+enum EModuleType : int
+{
+	EPMT_General,
+	EPMT_TypeData,
+	EPMT_Beam,
+	EPMT_Trail,
+	EPMT_Spawn,
+	EPMT_Required,
+	EPMT_Event,
+	EPMT_Light,
+	EPMT_SubUV,
+	EPMT_MAX
+};
+
 UCLASS()
 class UParticleModule : public UObject
 {
@@ -55,7 +69,7 @@ public:
 	};
 
 	/**
-	 * @brief 이미터에 의해 갓 스폰된 파티클에 대해 호출된다. (순수 가상 함수이므로 자식들에 의해 구현되어야 함)
+	 * 이미터에 의해 갓 스폰된 파티클에 대해 호출된다. (순수 가상 함수이므로 자식들에 의해 구현되어야 함)
 	 *
 	 * @params Owner		파티클을 스폰한 FParticleEmitterInstance
 	 * @params Offset		파티클의 데이터 페이로드에 들어가는 모듈의 오프셋
@@ -71,7 +85,7 @@ public:
 	virtual void Spawn(const FSpawnContext& Context);
 
 	/**
-	 * @brief 이미터에 의해 업데이트되는 파티클에 대해 호출된다. (순수 가상 함수이므로 자식들에 의해 구현되어야 함)
+	 * 이미터에 의해 업데이트되는 파티클에 대해 호출된다. (순수 가상 함수이므로 자식들에 의해 구현되어야 함)
 	 *
 	 * @params Owner		파티클을 스폰한 FParticleEmitterInstance
 	 * @params Offset		파티클의 데이터 페이로드에 들어가는 모듈의 오프셋
@@ -86,7 +100,7 @@ public:
 	virtual void Update(const FUpdateContext& Context);
 
 	/**
-	 * @brief 모든 업데이트 연산이 끝난 이미터에 대해 호출된다. (순수 가상 함수이므로 자식들에 의해 구현되어야 함)
+	 * 모든 업데이트 연산이 끝난 이미터에 대해 호출된다. (순수 가상 함수이므로 자식들에 의해 구현되어야 함)
 	 *
 	 * @params Owner		파티클을 스폰한 FParticleEmitterInstance
 	 * @params Offset		파티클의 데이터 페이로드에 들어가는 모듈의 오프셋
@@ -95,7 +109,13 @@ public:
 	virtual void FinalUpdate(const FUpdateContext& Context);
 
 	/**
-	 * @brief 모듈이 파티클 페이로드 블록에서 요구하는 바이트 수를 반환한다.
+	 * 모듈의 모듈 타입을 반환한다.
+	 * @return EModuleType	모듈의 타입
+	 */
+	virtual EModuleType GetModuleType() const { return EPMT_General; }
+
+	/**
+	 * 모듈이 파티클 페이로드 블록에서 요구하는 바이트 수를 반환한다.
 	 *
 	 * @param TypeData		이 모듈이 가지고있는 이미터에 대한 UParticleModuleTypeDataBase
 	 *
@@ -104,7 +124,7 @@ public:
 	virtual uint32 RequiredBytes(UParticleModuleTypeDataBase* TypeData);
 
 	/**
-	 * @brief 모듈이 요구하는 '인스턴스 당 데이터 블록'의 바이트 수를 반환한다.
+	 * 모듈이 요구하는 '인스턴스 당 데이터 블록'의 바이트 수를 반환한다.
 	 * @return uint32		이미터 인스턴스 당 모듈이 필요로 하는 바이트 수
 	 */
 	virtual uint32 RequiredBytesPerInstance();

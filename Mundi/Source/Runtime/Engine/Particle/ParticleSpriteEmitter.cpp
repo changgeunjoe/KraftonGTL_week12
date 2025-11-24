@@ -21,8 +21,7 @@ FParticleEmitterInstance* UParticleSpriteEmitter::CreateInstance(UParticleSystem
 
 	if (LODLevel->TypeDataModule)
 	{
-		// @todo
-		// Instance = LODLevel->TypeDataModule->CreateInstance(this, InComponent);
+		Instance = LODLevel->TypeDataModule->CreateInstance(this, InComponent);
 	}
 	else
 	{

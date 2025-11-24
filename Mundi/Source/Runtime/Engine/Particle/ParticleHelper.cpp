@@ -116,9 +116,10 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 		//const float SizeY = P->Size.Y;
 
 		// 색상, 노멀, 탄젠트 설정
-		FVector Normal = FVector(1,0,0);
+		FVector Normal = FVector(-1,0,0);
 		FVector4 Tangent = FVector4(0, 1, 0, 1); //FVector4(Right.X, Right.Y, Right.Z, 1.0f);
-		FVector4 Color = FVector4(P->Color.R, P->Color.G, P->Color.B, P->Color.A);
+		FVector4 Color = FVector4(1, 1, 1, 1);
+		//FVector4 Color = FVector4(P->Color.R, P->Color.G, P->Color.B, P->Color.A);
 
 		FVector LB = Pos; // (0) -> UV (0,1)
 		LB.Y -= (SizeX * 0.5f);
@@ -191,6 +192,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 		}
 	}
 
+	BatchElement.InstanceShaderResourceView = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_AddActor.png")->GetShaderResourceView();
 	BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	BatchElement.VertexBuffer = VertexBuffer;
 	BatchElement.IndexBuffer = IndexBuffer;
@@ -202,6 +204,16 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	BatchElement.ObjectID = 0;	// TODO: 여기 파티클 컴포넌트의 InternalIndex 넣기
 
 	Collector.Add(BatchElement);
+}
+
+void FDynamicMeshEmitterData::Init(bool bInSelected, const FParticleMeshEmitterInstance* InEmitterInstance, UStaticMesh* InStaticMesh, bool InUseStaticMeshLODs, float InLODSizeScale)
+{
+	bSelected = bInSelected;
+
+	StaticMesh = InStaticMesh;
+	assert(StaticMesh);
+
+	// @todo
 }
 
 void FParticleDataContainer::Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts)

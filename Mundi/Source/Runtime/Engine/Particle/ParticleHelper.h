@@ -2,6 +2,7 @@
 
 #include "UEContainer.h"
 #include "MeshBatchElement.h"
+#include "ParticleEmitterInstances.h"
 #include "SceneView.h"
 
 /*-----------------------------------------------------------------------------
@@ -26,6 +27,8 @@ FBaseParticle&	Particle		= *(ParticleBase);
 /*-----------------------------------------------------------------------------
 	FBaseParticle
 -----------------------------------------------------------------------------*/
+
+class UParticleModuleRequired;
 
 /**
  * GPU에 전달되는 파티클 당 데이터
@@ -81,7 +84,15 @@ struct FMeshParticleInstanceVertex
 	float RelativeTime;
 };
 
-class UParticleModuleRequired;
+struct FMeshRotationPayloadData
+{
+	FVector InitialOrientation;
+	FVector InitRotation;
+	FVector Rotation;
+	FVector CurContinuousRotation;
+	FVector RotationRate;
+	FVector RotationRateBase;
+};
 
 struct FBaseParticle
 {
@@ -210,7 +221,7 @@ struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataB
 	}
 };
 
-struct FDynamicMeshEmitterReplayData : public FDynamicEmitterReplayDataBase
+struct FDynamicMeshEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
 {
 	FDynamicMeshEmitterReplayData()
 	{
@@ -313,9 +324,25 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 
 	virtual ~FDynamicMeshEmitterData() = default;
 
+	void Init(	bool bInSelected,
+				const FParticleMeshEmitterInstance* InEmitterInstance,
+				UStaticMesh* InStaticMesh,
+				bool InUseStaticMeshLODs,
+				float InLODSizeScale);
+
 	virtual int32 GetDynamicParameterVertexStride() const override
 	{
 		return sizeof(FMeshParticleInstanceVertex);
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase* GetSourceData() const override
+	{
+		return &Source;
 	}
 
 	FDynamicMeshEmitterReplayData Source;

@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "ParticleSystemComponent.h"
+
+#include "ParticleModuleLifetime.h"
 #include "ParticleModuleVelocity.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitterInstances.h"
@@ -21,7 +23,13 @@ UParticleSystemComponent::UParticleSystemComponent()
 {
 	bCanEverTick = true;	// 에디터에서 tick 돌리기 위한
 
-	// Template은 외부에서 SetTemplate()으로 설정하거나 에디터에서 할당
+	// NOTE: UParticleSystem 에셋 하드코딩 (추후 에셋으로 할당 필요)
+	Template = NewObject<UParticleSystem>();
+	auto SpriteEmitter = Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
+	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleVelocity::StaticClass());
+	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleLifetime::StaticClass());
+
+	//InitParticles();	// tick에서 호출해줌
 }
 
 UParticleSystemComponent::~UParticleSystemComponent()

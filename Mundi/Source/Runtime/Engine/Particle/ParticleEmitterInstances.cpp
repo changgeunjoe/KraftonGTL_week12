@@ -118,8 +118,6 @@ void FParticleEmitterInstance::Init()
 		ParticleStride = CalculateParticleStride(ParticleSize);
 	}
 
-	SetMeshMaterials(SpriteTemplate->MeshMaterials);
-
 	// 초기값 설정
 	SpawnFraction			= 0;
 	SecondsSinceCreation	= 0;
@@ -587,7 +585,7 @@ void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float Interpol
 		// }
 	 // }
 	Particle->OldLocation = Particle->Location;
-	Particle->Location = FVector(Particle->Velocity) * SpawnTime;
+	Particle->Location += FVector(Particle->Velocity) * SpawnTime;
 }
 
 void FParticleEmitterInstance::SetupEmitterDuration()
@@ -820,4 +818,122 @@ bool FParticleSpriteEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBas
 UMaterialInterface* FParticleSpriteEmitterInstance::GetCurrentMaterial()
 {
 	return CurrentMaterial;
+}
+
+/*-----------------------------------------------------------------------------
+	FParticleMeshEmitterInstance 구현
+-----------------------------------------------------------------------------*/
+
+FParticleMeshEmitterInstance::FParticleMeshEmitterInstance(UParticleSystemComponent* InComponent)
+    : FParticleEmitterInstance(InComponent)
+    , Mesh(nullptr)
+    , MeshRotationOffset(0)
+{
+}
+
+void FParticleMeshEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
+{
+    FParticleEmitterInstance::InitParameters(InTemplate);
+}
+
+void FParticleMeshEmitterInstance::Init()
+{
+    FParticleEmitterInstance::Init();
+}
+
+uint32 FParticleMeshEmitterInstance::RequiredBytes()
+{
+    uint32 Bytes = FParticleEmitterInstance::RequiredBytes();
+
+    MeshRotationOffset = PayloadOffset + Bytes;
+    Bytes += sizeof(FMeshRotationPayloadData);
+
+    return Bytes;
+}
+
+void FParticleMeshEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
+{
+    FParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
+
+    FMeshRotationPayloadData* PayloadData = (FMeshRotationPayloadData*)((uint8*)Particle + MeshRotationOffset);
+    PayloadData->InitialOrientation = FVector::Zero();
+    PayloadData->Rotation = FVector::Zero();
+    PayloadData->RotationRate = FVector::Zero();
+    PayloadData->CurContinuousRotation = FVector::Zero();
+}
+
+void FParticleMeshEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
+{
+    FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
+
+    if (bEnabled && ActiveParticles > 0)
+    {
+        for (int32 i = 0; i < ActiveParticles; i++)
+        {
+            DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+            FMeshRotationPayloadData* PayloadData = (FMeshRotationPayloadData*)((uint8*)&Particle + MeshRotationOffset);
+
+            PayloadData->CurContinuousRotation += PayloadData->RotationRate * DeltaTime;
+
+            PayloadData->Rotation = PayloadData->InitialOrientation + PayloadData->CurContinuousRotation;
+        }
+    }
+}
+
+FDynamicEmitterDataBase* FParticleMeshEmitterInstance::GetDynamicData(bool bSelected)
+{
+    // 메시가 없거나 파티클이 없으면 렌더링 안 함
+    if (Mesh == nullptr || ActiveParticles <= 0)
+    {
+        return nullptr;
+    }
+
+    UParticleLODLevel* LODLevel = SpriteTemplate->GetLODLevel(0);
+
+    FDynamicMeshEmitterData* NewEmitterData = new FDynamicMeshEmitterData(LODLevel->RequiredModule);
+
+    if (!FillReplayData(NewEmitterData->Source))
+    {
+        delete NewEmitterData;
+        return nullptr;
+    }
+
+    NewEmitterData->Init(
+        bSelected,
+        this,   // 복사된 데이터를 사용하므로 this 접근 주의
+        Mesh,   // 렌더링할 메시 전달
+        false,  // UseStaticMeshLODs (단순화: 미사용)
+        1.0f    // LODSizeScale
+    );
+
+    return NewEmitterData;
+}
+
+bool FParticleMeshEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+    if (!FParticleEmitterInstance::FillReplayData(OutData))
+    {
+        return false;
+    }
+
+    OutData.eEmitterType = DET_Mesh;
+
+    // 2. 메시 정보 복사
+    FDynamicMeshEmitterReplayData* MeshReplayData = static_cast<FDynamicMeshEmitterReplayData*>(&OutData);
+    // MeshReplayData->MeshRotationOffset = MeshRotationOffset;
+
+    return true;
+}
+
+FDynamicEmitterReplayDataBase* FParticleMeshEmitterInstance::GetReplayData()
+{
+    if (ActiveParticles <= 0 || !bEnabled) return nullptr;
+
+    FDynamicMeshEmitterReplayData* ReplayData = new FDynamicMeshEmitterReplayData();
+    if (!FillReplayData(*ReplayData))
+    {
+        delete ReplayData;
+        return nullptr;
+    }
+    return ReplayData;
 }
