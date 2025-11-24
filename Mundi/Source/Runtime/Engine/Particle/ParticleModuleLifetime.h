@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include <random>
 #include "ParticleModuleLifetimeBase.h"
 #include "UParticleModuleLifetime.generated.h"
+#include "Source/Runtime/Engine/Distribution/Distributions.h"
 
 UCLASS()
 class UParticleModuleLifetime : public UParticleModuleLifetimeBase
@@ -10,16 +10,7 @@ class UParticleModuleLifetime : public UParticleModuleLifetimeBase
 
 public:
 	/** 파티클의 기본 수명 (초 단위) */
-	UPROPERTY(EditAnywhere, Category="Lifetime")
-	float Lifetime;
-
-	/** 랜덤 범위 사용 시 최소 수명 */
-	UPROPERTY(EditAnywhere, Category="Lifetime")
-	float LifetimeMin;
-
-	/** 랜덤 범위 사용 여부 */
-	UPROPERTY(EditAnywhere, Category="Lifetime")
-	bool bUseLifetimeRange;
+	FRawDistributionFloat Lifetime;
 
 public:
 	UParticleModuleLifetime();
@@ -28,6 +19,8 @@ public:
 	//~ Begin UParticleModule Interface
 	virtual void Spawn(const FSpawnContext& Context) override;
 	//~ End UParticleModule Interface
+
+	void InitializeDefaults();
 
 	//~ Begin UParticleModuleLifetimeBase Interface
 	/** 최대 수명 반환 (메모리 추정용) */
@@ -39,8 +32,4 @@ public:
 
 protected:
 	void SpawnEx(const FSpawnContext& Context);
-
-private:
-	/** 메르센 트위스터 난수 생성기 */
-	std::mt19937 RandomStream;
 };

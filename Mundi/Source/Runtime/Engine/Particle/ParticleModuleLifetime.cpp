@@ -6,15 +6,11 @@
 
 
 UParticleModuleLifetime::UParticleModuleLifetime()
-	: Lifetime(1.0f)
-	, LifetimeMin(1.0f)
-	, bUseLifetimeRange(false)
 {
 	bSpawnModule = true;
 	bUpdateModule = false;
 
-	std::random_device RandomDevice;
-	RandomStream.seed(RandomDevice());
+	InitializeDefaults();
 }
 
 void UParticleModuleLifetime::Spawn(const FSpawnContext& Context)
@@ -22,25 +18,31 @@ void UParticleModuleLifetime::Spawn(const FSpawnContext& Context)
 	SpawnEx(Context);
 }
 
+void UParticleModuleLifetime::InitializeDefaults()
+{
+	if (!Lifetime.IsCreated())
+	{
+		UDistributionFloatUniform* Dist = NewObject<UDistributionFloatUniform>();
+		Dist->Min = 1.0f;
+		Dist->Max = 1.0f;
+		Lifetime.Distribution = Dist;
+	}
+}
+
 float UParticleModuleLifetime::GetMaxLifetime()
 {
-	if (bUseLifetimeRange)
+	if (Lifetime.IsCreated())
 	{
-		return FMath::Max(Lifetime, LifetimeMin);
+		float Min, Max;
+		Lifetime.GetOutRange(Min, Max);
+		return Max;
 	}
-	return Lifetime;
+	return 0.0f;
 }
 
 float UParticleModuleLifetime::GetLifetimeValue(const FSpawnContext& Context, float InTime, void* Data)
 {
-	if (bUseLifetimeRange)
-	{
-		float Min = FMath::Min(LifetimeMin, Lifetime);
-		float Max = FMath::Max(LifetimeMin, Lifetime);
-		std::uniform_real_distribution<float> Dist(Min, Max);
-		return Dist(RandomStream);
-	}
-	return Lifetime;
+	return Lifetime.GetValue(InTime, Context.Owner.Component);
 }
 
 void UParticleModuleLifetime::SpawnEx(const FSpawnContext& Context)

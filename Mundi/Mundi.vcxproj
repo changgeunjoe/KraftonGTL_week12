@@ -434,6 +434,7 @@
     <ClCompile Include="Source\Runtime\Engine\Components\StaticMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\TextRenderComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\ParticleSystemComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Distribution\Distributions.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.cpp" />
@@ -455,6 +456,7 @@
     <ClCompile Include="Source\Runtime\Engine\GameFramework\HeightFogActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Info.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Level.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Pawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerController.cpp" />
@@ -472,6 +474,7 @@
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleVelocity.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleLODLevel.cpp" />
@@ -656,6 +659,8 @@
     <ClCompile Include="Generated\ASkeletalMeshActor.generated.cpp" />
     <ClCompile Include="Generated\ASpotLightActor.generated.cpp" />
     <ClCompile Include="Generated\AStaticMeshActor.generated.cpp" />
+    <ClCompile Include="Generated\UParticleSystemComponent.generated.cpp" />
+    <ClCompile Include="Generated\AParticleSystemActor.generated.cpp" />
     <ClCompile Include="Generated\UParticleModule.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleLifetimeBase.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleRequired.generated.cpp" />
@@ -666,6 +671,7 @@
     <ClCompile Include="Generated\UParticleLODLevel.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataBase.generated.cpp" />
     <ClCompile Include="Generated\UParticleSystem.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleVelocity.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -775,6 +781,7 @@
     <ClInclude Include="Source\Runtime\Engine\Components\TestAutoBindComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\TextRenderComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\ParticleSystemComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Distribution\Distributions.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.h" />
@@ -796,6 +803,7 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\HeightFogActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Info.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Level.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Pawn.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerController.h" />
@@ -813,6 +821,7 @@
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleVelocity.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\GameObject.h" />
@@ -993,6 +1002,8 @@
     <ClInclude Include="Generated\ASkeletalMeshActor.generated.h" />
     <ClInclude Include="Generated\ASpotLightActor.generated.h" />
     <ClInclude Include="Generated\AStaticMeshActor.generated.h" />
+    <ClInclude Include="Generated\UParticleSystemComponent.generated.h" />
+    <ClInclude Include="Generated\AParticleSystemActor.generated.h" />
     <ClInclude Include="Generated\UParticleModule.generated.h" />
     <ClInclude Include="Generated\UParticleModuleLifetimeBase.generated.h" />
     <ClInclude Include="Generated\UParticleModuleRequired.generated.h" />
@@ -1003,6 +1014,7 @@
     <ClInclude Include="Generated\UParticleLODLevel.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataBase.generated.h" />
     <ClInclude Include="Generated\UParticleSystem.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleVelocity.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

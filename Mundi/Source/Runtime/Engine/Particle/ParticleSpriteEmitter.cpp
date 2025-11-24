@@ -1,9 +1,11 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ParticleSpriteEmitter.h"
 
 #include "ParticleEmitterInstances.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleTypeDataBase.h"
+
+IMPLEMENT_CLASS(UParticleSpriteEmitter, UParticleEmitter)
 
 FParticleEmitterInstance* UParticleSpriteEmitter::CreateInstance(UParticleSystemComponent* InComponent)
 {

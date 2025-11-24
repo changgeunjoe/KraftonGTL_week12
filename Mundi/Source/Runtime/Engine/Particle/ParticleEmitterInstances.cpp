@@ -31,6 +31,7 @@ FParticleEmitterInstance::FParticleEmitterInstance(UParticleSystemComponent* InC
 	, MaxActiveParticles(0)
 	, SpawnFraction(0.0f)
 	, SecondsSinceCreation(0.0f)
+	, EmitterTime(0.0f)
 {
 }
 
@@ -209,10 +210,59 @@ void FParticleEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
 		{
 			// @todo
 			// UpdateOrbitData(DeltaTime);
-			// UpdateBoundingBox(DeltaTime);
+			UpdateBoundingBox(DeltaTime);
 		}
 
 		Tick_ModuleFinalUpdate(DeltaTime, LODLevel);
+	}
+}
+
+void FParticleEmitterInstance::UpdateBoundingBox(float DeltaTime)
+{
+	if (ActiveParticles <= 0)
+	{
+		return;
+	}
+
+	UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+
+	if (!Component || !SpriteTemplate)
+	{
+		return;
+	}
+
+	const bool bUseLocalSpace = LODLevel->RequiredModule->bUseLocalSpace;
+	const FMatrix ComponentToWorld = bUseLocalSpace
+		? Component->GetWorldTransform().ToMatrix()
+		: FMatrix::Identity();
+
+	FVector NewLocation;
+	float NewRotation;
+
+	FVector MinVal(FLT_MAX);
+	FVector MaxVal(-FLT_MAX);
+
+	FVector Scale = Component->GetRelativeScale();
+
+	for (int32 i = 0; i < ActiveParticles; i++)
+	{
+		DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+
+		Particle.OldLocation = Particle.Location;
+
+		NewLocation = Particle.Location + (Particle.Velocity * DeltaTime);
+		NewRotation = Particle.Rotation + (Particle.RotationRate * DeltaTime);
+
+		Particle.Location = NewLocation;
+		Particle.Rotation = NewRotation;
+
+		FVector WorldPosition = NewLocation;
+		if (bUseLocalSpace)
+		{
+			WorldPosition = ComponentToWorld.TransformPosition(WorldPosition);
+		}
+
+		// @todo 바운딩 박스 업데이트
 	}
 }
 
@@ -441,7 +491,7 @@ float FParticleEmitterInstance::Spawn(float DeltaTime)
 
 		if (bProcessSpawn == true)
 		{
-			const FVector InitialLocation = EmitterToSimulation.TransformPosition(FVector::One());
+			const FVector InitialLocation = EmitterToSimulation.TransformPosition(FVector::Zero());
 
 			SpawnParticles( Number, StartTime, Increment, InitialLocation, FVector::Zero() );
 
@@ -481,7 +531,7 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
 		uint16 NextFreeIndex = ParticleIndices[ActiveParticles];
 		assert(NextFreeIndex < MaxActiveParticles);
 
-		FBaseParticle* Particle = (FBaseParticle*)(ParticleData + ParticleStride * NextFreeIndex);
+		DECLARE_PARTICLE_PTR(Particle, ParticleData + ParticleStride * NextFreeIndex);
 		const uint32 CurrentParticleIndex = ActiveParticles++;
 
 		PreSpawn(Particle, InitialLocation, InitialVelocity);
@@ -704,7 +754,6 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
 FParticleSpriteEmitterInstance::FParticleSpriteEmitterInstance(UParticleSystemComponent* InComponent)
 	: FParticleEmitterInstance(InComponent)
 {
-	// @todo
 }
 
 FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected)

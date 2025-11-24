@@ -22,7 +22,7 @@ UParticleSystem::~UParticleSystem()
 
 UParticleEmitter* UParticleSystem::AddEmitter(UClass* EmitterClass)
 {
-	if (EmitterClass && EmitterClass->IsChildOf(UParticleEmitter::StaticClass()))
+	if (!EmitterClass || !EmitterClass->IsChildOf(UParticleEmitter::StaticClass()))
 	{
 		assert(false);
 		return nullptr;
