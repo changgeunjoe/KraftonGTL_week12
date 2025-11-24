@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "ParticleModule.h"
 #include "Source/Runtime/Engine/Distribution/Distributions.h"
+#include "UParticleModuleVelocity.generated.h"
 
 /**
  * @note UParticleModuleVelocityBase를 편의를 위해 생략한다.
@@ -8,7 +9,7 @@
 UCLASS()
 class UParticleModuleVelocity : public UParticleModule
 {
-	DECLARE_CLASS(UParticleModuleVelocity, UParticleModule)
+	GENERATED_REFLECTION_BODY()
 public:
 	//~ Begin UParticleModuleVelocityBase
 

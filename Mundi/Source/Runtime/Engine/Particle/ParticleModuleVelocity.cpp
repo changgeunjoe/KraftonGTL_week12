@@ -1,13 +1,10 @@
 ﻿#include "pch.h"
 #include "ParticleModuleVelocity.h"
-
 #include "ParticleEmitterInstances.h"
 #include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleRequired.h"
 #include "ParticleSystemComponent.h"
-
-IMPLEMENT_CLASS(UParticleModuleVelocity, UParticleModule)
 
 UParticleModuleVelocity::UParticleModuleVelocity()
 	: bInWorldSpace(false)

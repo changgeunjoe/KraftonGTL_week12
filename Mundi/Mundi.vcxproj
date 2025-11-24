@@ -748,6 +748,7 @@
     <ClCompile Include="Generated\UParticleLODLevel.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataBase.generated.cpp" />
     <ClCompile Include="Generated\UParticleSystem.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleVelocity.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1090,6 +1091,7 @@
     <ClInclude Include="Generated\UParticleLODLevel.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataBase.generated.h" />
     <ClInclude Include="Generated\UParticleSystem.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleVelocity.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

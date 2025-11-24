@@ -779,9 +779,6 @@ void SParticleEditorWindow::CreateTestParticleSystem()
 
 	// Lifetime 모듈 생성 및 추가
 	UParticleModuleLifetime* LifetimeModule = NewObject<UParticleModuleLifetime>();
-	LifetimeModule->Lifetime = 3.0f;
-	LifetimeModule->LifetimeMin = 2.0f;
-	LifetimeModule->bUseLifetimeRange = true;
 	LODLevel->Modules.Add(LifetimeModule);
 
 	// LOD 레벨을 이미터에 추가

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "ParticleModuleLifetimeBase.h"
 #include "UParticleModuleLifetime.generated.h"
+#include "Source/Runtime/Engine/Distribution/Distributions.h"
 
 UCLASS()
 class UParticleModuleLifetime : public UParticleModuleLifetimeBase

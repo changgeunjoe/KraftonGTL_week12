@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ParticleSystemComponent.h"
-
+#include "ParticleModuleVelocity.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitterInstances.h"
 #include "Source/Runtime/Engine/Particle/ParticleHelper.h"
@@ -8,6 +8,8 @@
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
 #include "Source/Runtime/Engine/Particle/ParticleSpriteEmitter.h"
 #include "SceneView.h"
+
+class UParticleModuleVelocity;
 
 UParticleSystemComponent::UParticleSystemComponent()
 	: Template(nullptr)
@@ -21,7 +23,8 @@ UParticleSystemComponent::UParticleSystemComponent()
 
 	// NOTE: UParticleSystem 에셋 하드코딩 (추후 에셋으로 할당 필요)
 	Template = NewObject<UParticleSystem>();
-	Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
+	auto SpriteEmitter = Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
+	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleVelocity::StaticClass());
 
 	//InitParticles();	// tick에서 호출해줌
 }

@@ -99,7 +99,7 @@ UParticleModule* UParticleLODLevel::AddModule(UClass* ModuleClass)
 		return nullptr;
 	}
 
-	UParticleModule* NewModule = NewObject<UParticleModule>();
+	UParticleModule* NewModule = Cast<UParticleModule>(NewObject(ModuleClass));
 	if (NewModule)
 	{
 		NewModule->OwnerEmitter = OwnerEmitter;
