@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ParticleModule.h"
+#include "Source/Runtime/Engine/Distribution/Distributions.h"
 
 /**
  * @note UParticleModuleVelocityBase를 편의를 위해 생략한다.
@@ -21,18 +22,19 @@ public:
 
 	/**
 	 * 파티클이 스폰될 때 적용할 기본 속도
-	 * @note 언리얼엔진에서는 DistributionVector를 사용
 	 */
-	FVector StartVelocity;
+	FRawDistributionVector StartVelocity;
 
 	/**
 	 * 이미터 원점으로부터 파티클 위치 방향으로 적용할 방사형 속도
 	 */
-	float StartVelocityRadial;
+	FRawDistributionFloat StartVelocityRadial;
 
 public:
 	UParticleModuleVelocity();
 	virtual ~UParticleModuleVelocity() = default;
+
+	void InitializeDefaults();
 
 	//~ Begin UParticleModule Interface
 	virtual void Spawn(const FSpawnContext& Context) override;

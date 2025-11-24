@@ -15,6 +15,8 @@ UParticleModuleRequired::UParticleModuleRequired()
 {
 	bSpawnModule = true;
 	bUpdateModule = true;
+
+	InitializeDefaults();
 }
 
 void UParticleModuleRequired::InitializeDefaults()
