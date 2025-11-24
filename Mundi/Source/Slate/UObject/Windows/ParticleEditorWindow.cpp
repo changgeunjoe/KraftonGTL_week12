@@ -3,6 +3,7 @@
 #include "Source/Runtime/Engine/ParticleViewer/ParticleViewerBootstrap.h"
 #include "Source/Runtime/Engine/SkeletalViewer/ViewerState.h"
 #include "Source/Runtime/Renderer/FViewport.h"
+#include "Source/Runtime/Renderer/FViewportClient.h"
 #include "Source/Runtime/Core/Object/Property.h"
 #include "Source/Runtime/Engine/Particle/ParticleModule.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
@@ -23,24 +24,23 @@ SParticleEditorWindow::SParticleEditorWindow()
 
 SParticleEditorWindow::~SParticleEditorWindow()
 {
-	// Destroy ViewerState
+	// Destroy Detail Widget (UObject이므로 DeleteObject 사용)
+	if (DetailWidget)
+	{
+		DeleteObject(DetailWidget);
+		DetailWidget = nullptr;
+	}
+
+	// Destroy ViewerState (World와 Viewport 포함)
 	if (PreviewState)
 	{
 		ParticleViewerBootstrap::DestroyViewerState(PreviewState);
 		PreviewState = nullptr;
 	}
 
-	// Destroy Detail Widget
-	if (DetailWidget)
-	{
-		delete DetailWidget;
-		DetailWidget = nullptr;
-	}
-	if (EditingParticleSystem) {
-
-		DeleteObject(EditingParticleSystem);
-		EditingParticleSystem = nullptr;
-	}
+	// EditingParticleSystem은 소유권 문제로 인해 여기서 삭제하지 않음
+	// (외부에서 전달된 것일 수 있으므로 ResourceManager가 관리)
+	EditingParticleSystem = nullptr;
 }
 
 bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, float Height, UWorld* InWorld, ID3D11Device* InDevice)
@@ -55,6 +55,12 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	{
 		UE_LOG("Failed to create ViewerState for Particle Editor");
 		return false;
+	}
+
+	// ImGui::Image 방식 렌더링을 위한 렌더 타겟 모드 활성화
+	if (PreviewState->Viewport)
+	{
+		PreviewState->Viewport->SetUseRenderTarget(true);
 	}
 
 	// Detail Widget 생성 및 초기화
@@ -308,25 +314,39 @@ void SParticleEditorWindow::RenderViewportPanel()
 	ImGui::Spacing();
 
 	// Get available region for viewport
-	ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
 	ImVec2 ViewportPos = ImGui::GetCursorScreenPos();
+	ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
 
-	// Update viewport rect
+	// Update viewport rect for input handling
 	PreviewViewportRect.Left = ViewportPos.x;
 	PreviewViewportRect.Top = ViewportPos.y;
 	PreviewViewportRect.Right = ViewportPos.x + ViewportSize.x;
 	PreviewViewportRect.Bottom = ViewportPos.y + ViewportSize.y;
+	PreviewViewportRect.UpdateMinMax();
 
-	// Draw viewport placeholder (dark background)
-	ImDrawList* DrawList = ImGui::GetWindowDrawList();
-	DrawList->AddRectFilled(
-		ViewportPos,
-		ImVec2(ViewportPos.x + ViewportSize.x, ViewportPos.y + ViewportSize.y),
-		IM_COL32(20, 20, 25, 255)
-	);
+	// Render viewport to texture
+	OnRenderViewport();
 
-	// Advance cursor
-	ImGui::Dummy(ViewportSize);
+	// Display the rendered texture using ImGui::Image
+	if (PreviewState && PreviewState->Viewport)
+	{
+		ID3D11ShaderResourceView* SRV = PreviewState->Viewport->GetSRV();
+		if (SRV)
+		{
+			ImGui::Image((void*)SRV, ViewportSize);
+			// Update viewport hover state for Z-order aware input handling
+			PreviewState->Viewport->SetViewportHovered(ImGui::IsItemHovered());
+		}
+		else
+		{
+			ImGui::Dummy(ViewportSize);
+			PreviewState->Viewport->SetViewportHovered(false);
+		}
+	}
+	else
+	{
+		ImGui::Dummy(ViewportSize);
+	}
 }
 
 void SParticleEditorWindow::RenderDetailsPanel()
@@ -743,18 +763,34 @@ void SParticleEditorWindow::OnMouseUp(FVector2D MousePos, uint32 Button)
 	}
 }
 
+void SParticleEditorWindow::OnUpdate(float DeltaSeconds)
+{
+	if (!PreviewState || !PreviewState->World)
+	{
+		return;
+	}
+
+	// ViewportClient Tick (카메라 입력 처리)
+	if (PreviewState->Client)
+	{
+		PreviewState->Client->Tick(DeltaSeconds);
+	}
+
+	// PreviewWorld 업데이트
+	PreviewState->World->Tick(DeltaSeconds);
+}
+
 void SParticleEditorWindow::OnRenderViewport()
 {
-	// Render the 3D preview viewport
+	// ImGui::Image 방식으로 뷰포트 렌더링 (렌더 타겟에 렌더링하므로 항상 0,0 기준)
 	if (PreviewState && PreviewState->Viewport &&
 		PreviewViewportRect.GetWidth() > 0 && PreviewViewportRect.GetHeight() > 0)
 	{
-		const uint32 NewStartX = static_cast<uint32>(PreviewViewportRect.Left);
-		const uint32 NewStartY = static_cast<uint32>(PreviewViewportRect.Top);
 		const uint32 NewWidth = static_cast<uint32>(PreviewViewportRect.Right - PreviewViewportRect.Left);
 		const uint32 NewHeight = static_cast<uint32>(PreviewViewportRect.Bottom - PreviewViewportRect.Top);
 
-		PreviewState->Viewport->Resize(NewStartX, NewStartY, NewWidth, NewHeight);
+		// 렌더 타겟에 렌더링하므로 StartX, StartY는 항상 0
+		PreviewState->Viewport->Resize(0, 0, NewWidth, NewHeight);
 		PreviewState->Viewport->Render();
 	}
 }

@@ -649,6 +649,11 @@ void USlateManager::Update(float DeltaSeconds)
         BlendSpace2DEditorWindow->OnUpdate(DeltaSeconds);
     }
 
+    if (ParticleEditorWindow)
+    {
+        ParticleEditorWindow->OnUpdate(DeltaSeconds);
+    }
+
     // 콘솔 애니메이션 업데이트
     if (bIsConsoleAnimating)
     {

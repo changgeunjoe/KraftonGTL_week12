@@ -94,6 +94,12 @@ bool SBlendSpace2DEditorWindow::Initialize(float StartX, float StartY, float Wid
 		return false;
 	}
 
+	// ImGui::Image 방식 렌더링을 위한 렌더 타겟 모드 활성화
+	if (PreviewState->Viewport)
+	{
+		PreviewState->Viewport->SetUseRenderTarget(true);
+	}
+
 	// 타임라인 아이콘 로드
 	IconGoToFront = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Go_To_Front_24x.png");
 	IconGoToFrontOff = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Go_To_Front_24x_OFF.png");
@@ -1313,17 +1319,44 @@ void SBlendSpace2DEditorWindow::RenderPreviewViewport()
 	// 뷰포트 렌더링 영역
 	ImGui::BeginChild("ViewportRenderArea", ImVec2(0, ViewportHeight), false, ImGuiWindowFlags_NoScrollbar);
 	{
-		ImVec2 childPos = ImGui::GetWindowPos();
-		ImVec2 childSize = ImGui::GetWindowSize();
-		ImVec2 rectMin = childPos;
-		ImVec2 rectMax(childPos.x + childSize.x, childPos.y + childSize.y);
+		// Get position where viewport will be rendered
+		ImVec2 Pos = ImGui::GetCursorScreenPos();
 
-		// 뷰포트 영역 저장
-		PreviewViewportRect.Left = rectMin.x;
-		PreviewViewportRect.Top = rectMin.y;
-		PreviewViewportRect.Right = rectMax.x;
-		PreviewViewportRect.Bottom = rectMax.y;
+		// Get actual available space inside the child window
+		ImVec2 availRegion = ImGui::GetContentRegionAvail();
+		float actualWidth = availRegion.x;
+		float actualHeight = availRegion.y;
+
+		// Update viewport rect for input handling
+		PreviewViewportRect.Left = Pos.x;
+		PreviewViewportRect.Top = Pos.y;
+		PreviewViewportRect.Right = Pos.x + actualWidth;
+		PreviewViewportRect.Bottom = Pos.y + actualHeight;
 		PreviewViewportRect.UpdateMinMax();
+
+		// Render viewport to texture
+		OnRenderViewport();
+
+		// Display the rendered texture using ImGui::Image
+		if (PreviewState && PreviewState->Viewport)
+		{
+			ID3D11ShaderResourceView* SRV = PreviewState->Viewport->GetSRV();
+			if (SRV)
+			{
+				ImGui::Image((void*)SRV, ImVec2(actualWidth, actualHeight));
+				// Update viewport hover state for Z-order aware input handling
+				PreviewState->Viewport->SetViewportHovered(ImGui::IsItemHovered());
+			}
+			else
+			{
+				ImGui::Dummy(ImVec2(actualWidth, actualHeight));
+				PreviewState->Viewport->SetViewportHovered(false);
+			}
+		}
+		else
+		{
+			ImGui::Dummy(ImVec2(actualWidth, actualHeight));
+		}
 	}
 	ImGui::EndChild();
 
@@ -1918,15 +1951,14 @@ void SBlendSpace2DEditorWindow::OnRenderViewport()
 		return;
 	}
 
-	// SkeletalMeshViewer와 동일한 방식으로 뷰포트 렌더링
+	// ImGui::Image 방식으로 뷰포트 렌더링 (렌더 타겟에 렌더링하므로 항상 0,0 기준)
 	if (PreviewState && PreviewState->Viewport && PreviewViewportRect.GetWidth() > 0 && PreviewViewportRect.GetHeight() > 0)
 	{
-		const uint32 NewStartX = static_cast<uint32>(PreviewViewportRect.Left);
-		const uint32 NewStartY = static_cast<uint32>(PreviewViewportRect.Top);
 		const uint32 NewWidth = static_cast<uint32>(PreviewViewportRect.Right - PreviewViewportRect.Left);
 		const uint32 NewHeight = static_cast<uint32>(PreviewViewportRect.Bottom - PreviewViewportRect.Top);
 
-		PreviewState->Viewport->Resize(NewStartX, NewStartY, NewWidth, NewHeight);
+		// 렌더 타겟에 렌더링하므로 StartX, StartY는 항상 0
+		PreviewState->Viewport->Resize(0, 0, NewWidth, NewHeight);
 
 		// 뷰포트 렌더링
 		PreviewState->Viewport->Render();
