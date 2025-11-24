@@ -16,6 +16,7 @@ public:
 	bool Initialize(float StartX, float StartY, float Width, float Height, class UWorld* InWorld, ID3D11Device* InDevice);
 
 	virtual void OnRender() override;
+	virtual void OnUpdate(float DeltaSeconds) override;
 	virtual void OnMouseDown(FVector2D MousePos, uint32 Button) override;
 	virtual void OnMouseUp(FVector2D MousePos, uint32 Button) override;
 	virtual void OnMouseMove(FVector2D MousePos) override;

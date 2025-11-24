@@ -18,6 +18,7 @@ ViewerState* ParticleViewerBootstrap::CreateViewerState(const char* Name, UWorld
     State->World->SetWorldType(EWorldType::PreviewMinimal);  // Set as preview world for memory optimization
     State->World->Initialize();
     State->World->GetRenderSettings().DisableShowFlag(EEngineShowFlags::SF_EditorIcon);
+   // State->World->GetRenderSettings().DisableShowFlag(EEngineShowFlags::SF_Gizmo);  // Hide gizmo in particle editor
 
     State->World->GetGizmoActor()->SetSpace(EGizmoSpace::Local);
 
