@@ -31,6 +31,7 @@ FParticleEmitterInstance::FParticleEmitterInstance(UParticleSystemComponent* InC
 	, MaxActiveParticles(0)
 	, SpawnFraction(0.0f)
 	, SecondsSinceCreation(0.0f)
+	, EmitterTime(0.0f)
 {
 }
 

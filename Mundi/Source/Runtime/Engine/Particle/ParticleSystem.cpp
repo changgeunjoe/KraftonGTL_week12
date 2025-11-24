@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include "ParticleSystem.h"
 #include "ParticleEmitter.h"
@@ -21,7 +21,7 @@ UParticleSystem::~UParticleSystem()
 
 UParticleEmitter* UParticleSystem::AddEmitter(UClass* EmitterClass)
 {
-	if (EmitterClass && EmitterClass->IsChildOf(UParticleEmitter::StaticClass()))
+	if (!EmitterClass || !EmitterClass->IsChildOf(UParticleEmitter::StaticClass()))
 	{
 		assert(false);
 		return nullptr;

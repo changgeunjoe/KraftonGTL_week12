@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -653,8 +653,6 @@
       <Filter>Generated</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Misc\MiniDump.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SkeletalMeshViewerWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SkeletalMeshViewerWindow_Timeline.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimNode_StateMachine.cpp">
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClCompile>
@@ -666,6 +664,39 @@
     </ClCompile>
     <ClCompile Include="Generated\UAnimInstance.generated.cpp">
       <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UParticleSystemComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\AParticleSystemActor.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Animation\MixamoChainMapper.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\SingleAnimationPlayData.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\ParticleSystemComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitter.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleHelper.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModule.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleLODLevel.cpp" />
+    <ClCompile Include="Source\Slate\Windows\BlendSpace2DEditorWindow.cpp" />
+    <ClCompile Include="Source\Slate\Windows\AnimStateMachineWindow.cpp" />
+    <ClCompile Include="Source\Slate\Windows\PreviewWindow.cpp" />
+    <ClCompile Include="Source\Slate\Windows\PreviewWindow_Timeline.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\crude_json.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_canvas.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_node_editor.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_node_editor_api.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\utilities\drawing.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\utilities\widgets.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1396,7 +1427,6 @@
       <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Core\Misc\MiniDump.h" />
-    <ClInclude Include="Source\Slate\Windows\SkeletalMeshViewerWindow.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimNode_StateMachine.h">
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClInclude>
@@ -1408,6 +1438,32 @@
     </ClInclude>
     <ClInclude Include="Generated\UAnimInstance.generated.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleSystemComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\AParticleSystemActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Animation\MixamoChainMapper.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\SingleAnimationPlayData.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\ParticleSystemComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitter.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleHelper.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModule.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleLODLevel.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSystem.h" />
+    <ClInclude Include="Source\Slate\Windows\BlendSpace2DEditorWindow.h" />
+    <ClInclude Include="Source\Slate\Windows\AnimStateMachineWindow.h" />
+    <ClInclude Include="Source\Slate\Windows\PreviewWindow.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

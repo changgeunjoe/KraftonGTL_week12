@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Frustum.h"
 
 // TODO : Post Processing 떼어내기, 전방선언으로라든지...
@@ -29,6 +29,7 @@ class UGizmoArrowComponent;
 class FSceneView;
 class FTileLightCuller;
 class ULineComponent;
+class UParticleSystemComponent;
 class FGPUTimer;
 
 struct FCandidateDrawable;
@@ -42,6 +43,7 @@ struct FVisibleRenderProxySet
 	TArray<UBillboardComponent*> Billboards; // 인게임 빌보드 (파티클, 잔디 등)
 	TArray<UDecalComponent*> Decals;
 	TArray<UTextRenderComponent*> Texts;
+	TArray<UParticleSystemComponent*> Particles;
 
 	// --- Type 2: In-Scene Editor (PP X, Depth-Test O) ---
 	TArray<ULineComponent*> EditorLines;	// 그리드
@@ -110,6 +112,8 @@ private:
 
 	/** @brief 데칼(Decal)을 렌더링하는 패스입니다. */
 	void RenderDecalPass();
+
+	void RenderParticlePass();
 
 	void RenderPostProcessingPasses();
 	void RenderSceneDepthPostProcess();
