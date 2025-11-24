@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "ParticleSystemComponent.h"
+
+#include "ParticleModuleLifetime.h"
 #include "ParticleModuleVelocity.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitterInstances.h"
@@ -25,6 +27,7 @@ UParticleSystemComponent::UParticleSystemComponent()
 	Template = NewObject<UParticleSystem>();
 	auto SpriteEmitter = Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleVelocity::StaticClass());
+	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleLifetime::StaticClass());
 
 	//InitParticles();	// tick에서 호출해줌
 }

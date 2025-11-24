@@ -23,7 +23,7 @@ void UParticleModuleLifetime::InitializeDefaults()
 	if (!Lifetime.IsCreated())
 	{
 		UDistributionFloatUniform* Dist = NewObject<UDistributionFloatUniform>();
-		Dist->Min = 1.0f;
+		Dist->Min = 0.1f;
 		Dist->Max = 1.0f;
 		Lifetime.Distribution = Dist;
 	}
