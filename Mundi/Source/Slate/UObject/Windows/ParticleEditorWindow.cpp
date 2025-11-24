@@ -12,6 +12,7 @@
 #include "Source/Runtime/Engine/Particle/ParticleModuleSpawn.h"
 #include "Source/Runtime/Engine/Particle/ParticleModuleLifetime.h"
 #include "Source/Slate/UObject/Widgets/ParticleModuleDetailWidget.h"
+#include "Source/Slate/UObject/Widgets/PropertyRenderer.h"
 #include "ImGui/imgui.h"
 
 SParticleEditorWindow::SParticleEditorWindow()
@@ -586,122 +587,53 @@ void SParticleEditorWindow::RenderCurveEditorPanel()
 		ImGui::EndTabBar();
 	}
 
-	ImGui::Spacing();
-
-	// Toolbar with icons
-	ImGui::BeginGroup();
+	// 선택된 모듈이 없으면 안내 메시지 표시
+	if (!SelectedModule)
 	{
-		// Tool buttons
-		if (ImGui::Button("H")) {} ImGui::SameLine();  // Horizontal
-		if (ImGui::Button("V")) {} ImGui::SameLine();  // Vertical
-		if (ImGui::Button("F")) {} ImGui::SameLine();  // Fit
-		if (ImGui::Button("P")) {} ImGui::SameLine();  // Pan
-		if (ImGui::Button("Z")) {} ImGui::SameLine();  // Zoom
-		if (ImGui::Button("A")) {} ImGui::SameLine();  // Auto
-		if (ImGui::Button("AC")) {} ImGui::SameLine(); // Auto Clamped
-		if (ImGui::Button("U")) {} ImGui::SameLine();  // User
-		if (ImGui::Button("B")) {} ImGui::SameLine();  // Break
-		if (ImGui::Button("L")) {} ImGui::SameLine();  // Linear
-		if (ImGui::Button("C")) {} ImGui::SameLine();  // Constant
-		if (ImGui::Button("FL")) {} ImGui::SameLine(); // Flatten
-		if (ImGui::Button("ST")) {} ImGui::SameLine(); // Straighten
-		if (ImGui::Button("SA")) {} ImGui::SameLine(); // Show All
-		if (ImGui::Button("CR")) {} ImGui::SameLine(); // Create
-		if (ImGui::Button("DEL")) {}                    // Delete
+		ImGui::Spacing();
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No module selected");
+		ImGui::Spacing();
+		ImGui::TextWrapped("Select a module from the Emitters panel to edit its curve properties");
+		return;
 	}
-	ImGui::EndGroup();
 
-	ImGui::Spacing();
-
-	// Current Tab dropdown
-	const char* tabs[] = { "Default" };
-	static int currentTab = 0;
-	ImGui::SetNextItemWidth(200);
-	ImGui::Text("Current Tab:");
-	ImGui::SameLine();
-	ImGui::Combo("##CurrentTab", &currentTab, tabs, IM_ARRAYSIZE(tabs));
-
-	ImGui::Spacing();
+	// 선택된 모듈의 이름 표시
+	ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "Module: %s", SelectedModule->GetClass()->DisplayName);
 	ImGui::Separator();
 	ImGui::Spacing();
 
-	// Curve editor grid area
-	ImVec2 CurveEditorSize = ImGui::GetContentRegionAvail();
-	ImDrawList* DrawList = ImGui::GetWindowDrawList();
-	ImVec2 CurveEditorPos = ImGui::GetCursorScreenPos();
-
-	// Background
-	DrawList->AddRectFilled(
-		CurveEditorPos,
-		ImVec2(CurveEditorPos.x + CurveEditorSize.x, CurveEditorPos.y + CurveEditorSize.y),
-		IM_COL32(45, 45, 50, 255)
-	);
-
-	// Grid lines (vertical)
-	float gridSpacing = 50.0f;
-	for (float x = 0; x < CurveEditorSize.x; x += gridSpacing)
+	// 선택된 모듈에서 커브 타입의 프로퍼티들을 찾아서 렌더링
+	UClass* ModuleClass = SelectedModule->GetClass();
+	if (ModuleClass && ModuleClass->Properties.size() > 0)
 	{
-		DrawList->AddLine(
-			ImVec2(CurveEditorPos.x + x, CurveEditorPos.y),
-			ImVec2(CurveEditorPos.x + x, CurveEditorPos.y + CurveEditorSize.y),
-			IM_COL32(70, 70, 75, 255)
-		);
-	}
+		bool hasCurveProperties = false;
 
-	// Grid lines (horizontal)
-	for (float y = 0; y < CurveEditorSize.y; y += gridSpacing)
+		for (const FProperty& Prop : ModuleClass->Properties)
+		{
+			// Curve 타입 프로퍼티만 표시
+			if (Prop.Type == EPropertyType::Curve)
+			{
+				hasCurveProperties = true;
+
+				// UPropertyRenderer를 사용하여 커브 프로퍼티 렌더링
+				UPropertyRenderer::RenderCurveProperty(Prop, SelectedModule);
+
+				ImGui::Spacing();
+				ImGui::Separator();
+				ImGui::Spacing();
+			}
+		}
+
+		// 커브 프로퍼티가 없으면 안내 메시지
+		if (!hasCurveProperties)
+		{
+			ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "This module has no curve properties");
+		}
+	}
+	else
 	{
-		DrawList->AddLine(
-			ImVec2(CurveEditorPos.x, CurveEditorPos.y + y),
-			ImVec2(CurveEditorPos.x + CurveEditorSize.x, CurveEditorPos.y + y),
-			IM_COL32(70, 70, 75, 255)
-		);
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No properties available");
 	}
-
-	// Center axes (darker)
-	float centerX = CurveEditorPos.x + CurveEditorSize.x * 0.5f;
-	float centerY = CurveEditorPos.y + CurveEditorSize.y * 0.5f;
-	DrawList->AddLine(
-		ImVec2(centerX, CurveEditorPos.y),
-		ImVec2(centerX, CurveEditorPos.y + CurveEditorSize.y),
-		IM_COL32(100, 100, 105, 255)
-	);
-	DrawList->AddLine(
-		ImVec2(CurveEditorPos.x, centerY),
-		ImVec2(CurveEditorPos.x + CurveEditorSize.x, centerY),
-		IM_COL32(100, 100, 105, 255)
-	);
-
-	// Axis labels
-	DrawList->AddText(
-		ImVec2(CurveEditorPos.x + 5, CurveEditorPos.y + 5),
-		IM_COL32(200, 200, 200, 255),
-		"0.50"
-	);
-	DrawList->AddText(
-		ImVec2(CurveEditorPos.x + 5, CurveEditorPos.y + CurveEditorSize.y - 20),
-		IM_COL32(200, 200, 200, 255),
-		"-0.50"
-	);
-	DrawList->AddText(
-		ImVec2(CurveEditorPos.x + 5, centerY - 10),
-		IM_COL32(200, 200, 200, 255),
-		"0.00"
-	);
-
-	// Bottom axis labels
-	DrawList->AddText(
-		ImVec2(CurveEditorPos.x + 5, CurveEditorPos.y + CurveEditorSize.y - 35),
-		IM_COL32(200, 200, 200, 255),
-		"0.05"
-	);
-	DrawList->AddText(
-		ImVec2(CurveEditorPos.x + CurveEditorSize.x - 40, CurveEditorPos.y + CurveEditorSize.y - 35),
-		IM_COL32(200, 200, 200, 255),
-		"0.95"
-	);
-
-	ImGui::Dummy(CurveEditorSize);
 }
 
 // Event Handlers
@@ -898,15 +830,12 @@ void SParticleEditorWindow::ShowAddModuleContextMenu(int32 EmitterIndex)
 			// 메뉴 아이템 생성
 			if (ImGui::MenuItem(displayName))
 			{
-				// 해당 클래스의 인스턴스 생성
-				UParticleModule* newModule = (UParticleModule*)NewObject(classType);
+				// AddModule은 UClass*를 받아서 내부에서 객체를 생성함
+				UParticleModule* newModule = LODLevel->AddModule(classType);
 				if (newModule)
 				{
 					// 기본값 설정
 					newModule->SetToSensibleDefaults(emitter);
-
-					// 모듈 추가
-					LODLevel->Modules.Add(newModule);
 					UE_LOG("Added %s module to emitter %d", displayName, EmitterIndex);
 				}
 			}
@@ -919,47 +848,16 @@ void SParticleEditorWindow::AddNewEmitter()
 	if (!EditingParticleSystem)
 		return;
 
-	// 새 이미터 생성
-	UParticleEmitter* NewEmitter = NewObject<UParticleEmitter>();
+	// AddEmitter는 UClass*를 받아서 내부에서 객체를 생성함
+	UParticleEmitter* NewEmitter = EditingParticleSystem->AddEmitter(UParticleEmitter::StaticClass());
 
-	// 이미터 이름 설정
-	char emitterName[64];
-	sprintf_s(emitterName, "Emitter_%d", EditingParticleSystem->Emitters.size());
-	NewEmitter->SetEmitterName(FName(emitterName));
+	if (NewEmitter)
+	{
+		// 이미터 이름 설정
+		char emitterName[64];
+		sprintf_s(emitterName, "Emitter_%zu", EditingParticleSystem->Emitters.size() - 1);
+		NewEmitter->SetEmitterName(FName(emitterName));
 
-	// LOD 레벨 생성
-	UParticleLODLevel* LODLevel = NewObject<UParticleLODLevel>();
-	LODLevel->Level = 0;
-	LODLevel->bEnabled = true;
-
-	// Required 모듈 생성 (필수)
-	UParticleModuleRequired* RequiredModule = NewObject<UParticleModuleRequired>();
-	RequiredModule->Material = nullptr;
-	RequiredModule->bUseLocalSpace = false;
-	RequiredModule->EmitterDuration = 1.0f;
-	RequiredModule->EmitterDurationLow = 1.0f;
-	RequiredModule->EmitterLoops = 0;
-	RequiredModule->EmitterDelay = 0.0f;
-	LODLevel->Modules.Add(RequiredModule);
-
-	// Spawn 모듈 생성 (필수)
-	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
-	SpawnModule->Rate = 10.0f;
-	SpawnModule->RateScale = 1.0f;
-	LODLevel->Modules.Add(SpawnModule);
-
-	// Lifetime 모듈 생성 (필수)
-	UParticleModuleLifetime* LifetimeModule = NewObject<UParticleModuleLifetime>();
-	LifetimeModule->Lifetime = 3.0f;
-	LifetimeModule->LifetimeMin = 2.0f;
-	LifetimeModule->bUseLifetimeRange = false;
-	LODLevel->Modules.Add(LifetimeModule);
-
-	// LOD 레벨을 이미터에 추가
-	NewEmitter->LODLevels.Add(LODLevel);
-
-	// 이미터를 파티클 시스템에 추가
-	EditingParticleSystem->Emitters.Add(NewEmitter);
-
-	UE_LOG("New emitter added: %s (Total emitters: %d)", emitterName, EditingParticleSystem->Emitters.Num());
+		UE_LOG("New emitter added: %s (Total emitters: %zu)", emitterName, EditingParticleSystem->Emitters.size());
+	}
 }

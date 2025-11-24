@@ -20,7 +20,7 @@ public:
 	// 객체의 모든 프로퍼티를 카테고리별로 렌더링 (부모 클래스 프로퍼티 포함)
 	static void RenderAllPropertiesWithInheritance(UObject* Object);
 
-private:
+public:
 	// 내부: UObject 체크 없이 프로퍼티만 렌더링 (struct 재귀 호출용)
 	static bool RenderPropertyInternal(const FProperty& Property, void* Instance, bool bSkipUObjectCheck);
 
