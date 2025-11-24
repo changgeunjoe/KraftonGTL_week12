@@ -1,51 +1,24 @@
 ﻿#pragma once
 #include <random>
-
-#include "ParticleModule.h"
-
-UCLASS()
-class UParticleModuleLifetimeBase : public UParticleModule
-{
-	DECLARE_CLASS(UParticleModuleLifetimeBase, UParticleModule)
-public:
-	UParticleModuleLifetimeBase()
-	{
-	}
-
-	virtual ~UParticleModuleLifetimeBase() {}
-
-	/**
-	 * 이 모듈이 반환할 수 있는 최대 수명 반환
-	 * (메모리 프리사이징 계산 시 사용됨)
-	 */
-	virtual float GetMaxLifetime()
-	{
-		return 0.0f;
-	}
-
-	/**
-	 * 주어진 시간에서의 수명 값 반환
-	 * (파티클 스폰 시 호출됨)
-	 */
-	virtual float GetLifetimeValue(const FSpawnContext& Context, float InTime, void* Data = nullptr)
-	{
-		return 0.0f;
-	}
-};
+#include "ParticleModuleLifetimeBase.h"
+#include "UParticleModuleLifetime.generated.h"
 
 UCLASS()
 class UParticleModuleLifetime : public UParticleModuleLifetimeBase
 {
-	DECLARE_CLASS(UParticleModuleLifetime, UParticleModuleLifetimeBase)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	/** 파티클의 기본 수명 (초 단위) */
+	UPROPERTY(EditAnywhere, Category="Lifetime")
 	float Lifetime;
 
 	/** 랜덤 범위 사용 시 최소 수명 */
+	UPROPERTY(EditAnywhere, Category="Lifetime")
 	float LifetimeMin;
 
 	/** 랜덤 범위 사용 여부 */
+	UPROPERTY(EditAnywhere, Category="Lifetime")
 	bool bUseLifetimeRange;
 
 public:

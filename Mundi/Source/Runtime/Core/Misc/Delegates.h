@@ -60,6 +60,11 @@ public:
 		Handlers.clear();
 	}
 
+	bool IsBound() const
+	{
+		return !Handlers.empty();
+	}
+
 private:
 	struct Entry
 	{

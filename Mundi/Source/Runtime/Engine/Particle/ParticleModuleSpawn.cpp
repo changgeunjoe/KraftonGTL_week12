@@ -1,9 +1,6 @@
 ﻿#include "pch.h"
 #include "ParticleModuleSpawn.h"
 
-IMPLEMENT_CLASS(UParticleModuleSpawnBase, UParticleModule)
-
-IMPLEMENT_CLASS(UParticleModuleSpawn, UParticleModuleSpawnBase)
 
 UParticleModuleSpawn::UParticleModuleSpawn()
 	: Rate(10.0f)

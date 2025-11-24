@@ -1,13 +1,13 @@
 ﻿#include "pch.h"
 #include "Actor.h"
-#include "Windows/UIWindow.h"
+#include "Source/Slate/UObject/Windows/UIWindow.h"
 #include "ImGui/ImGuiHelper.h"
-#include "Widgets/Widget.h"
+#include "Source/Slate/UObject/Widgets/Widget.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "imGui/imgui_impl_win32.h"
-#include "Widgets/TargetActorTransformWidget.h"
+#include "Source/Slate/UObject/Widgets/TargetActorTransformWidget.h"
 
 IMPLEMENT_CLASS(UUIManager)
 
@@ -60,7 +60,7 @@ void UUIManager::Initialize(HWND hWindow, ID3D11Device* InDevice, ID3D11DeviceCo
 {
 	// 기본 초기화
 	Initialize();
-	
+
 	// ImGui 초기화 (device와 context 포함)
 	if (ImGuiHelper)
 	{
@@ -168,7 +168,7 @@ void UUIManager::Render()
 		}
 	}
 }
-void UUIManager::EndFrame() 
+void UUIManager::EndFrame()
 {
 	// ImGui 프레임 종료
 	ImGuiHelper->EndFrame();

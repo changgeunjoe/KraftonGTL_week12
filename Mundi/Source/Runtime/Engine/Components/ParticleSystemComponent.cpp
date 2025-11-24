@@ -146,7 +146,7 @@ void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& Out
 {
 	for (FDynamicEmitterDataBase* EmitterData : EmitterRenderData)
 	{
-		if (EmitterData)
+		if (!EmitterData)
 		{
 			continue;
 		}

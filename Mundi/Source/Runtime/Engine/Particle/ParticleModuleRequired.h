@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ParticleModule.h"
+#include "UParticleModuleRequired.generated.h"
 
 enum EParticleScreenAlignment : int;
 
@@ -8,7 +9,7 @@ class UParticleEmitter;
 UCLASS()
 class UParticleModuleRequired : public UParticleModule
 {
-	DECLARE_CLASS(UParticleModuleRequired, UParticleModule)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	/** 파티클에 적용할 머티리얼 인터페이스 */
