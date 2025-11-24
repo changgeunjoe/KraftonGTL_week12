@@ -362,6 +362,7 @@ void FParticleEmitterInstance::ResetParticleParameters(float DeltaTime)
 		Particle.Velocity = Particle.BaseVelocity;
 		Particle.Size = Particle.BaseSize;
 		Particle.RotationRate = Particle.BaseRotationRate;
+		Particle.RelativeTime += Particle.OneOverMaxLifetime * DeltaTime;
 	}
 }
 
@@ -402,10 +403,11 @@ float FParticleEmitterInstance::Spawn(float DeltaTime)
 
 	if (bProcessSpawnRate)
 	{
-		// @todo SpawnRate 스케일
-		// float RateScale = LODLevel->SpawnModule->RateScale.GetValue(EmitterTime, Component.GetDistributionRate()) * LODLevel->SpawnModule->GetGlobalRateScale();
-		// SpawnRate += LODLevel->SpawnModule->Rate.GetValue(EmitterTime, Component.GetDistributionData()) * RateScale;
-		// SpawnRate = FMath::Max<float>(0.0f, SpawnRate);
+		float RateScale = LODLevel->SpawnModule->RateScale;
+
+		SpawnRate += LODLevel->SpawnModule->GetEstimatedSpawnRate() * RateScale;
+
+		SpawnRate = FMath::Max<float>(0.0f, SpawnRate);
 	}
 	else
 	{
@@ -461,16 +463,23 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
 
 	UParticleLODLevel* HighestLODLevel = SpriteTemplate->LODLevels[0];
 	float SpawnTime = StartTime;
-	// @todo 보간 변수들 사용처 확인 (bLegacySpawnBehavior 플래그 확인)
+
+	/** Interp: 위치 보간 비율
+	 *         1.0 = OldLocation (프레임 시작 시점의 위치)
+	 *         0.0 = Location (현재 프레임 시점의 위치)
+	 *         파티클들은 과거(1.0)에서 현재(0.0) 사이의 경로상에 배치되어야 한다.
+	 */
 	float Interp = 1.0f;
+
+	/** InterpIncrement: 파티클 하나당 줄어들 보간 비율 (1.0 / 파티클 개수) */
 	const float InterpIncrement = (Count > 0 && Increment > 0.0f) ? (1.0f / (float)Count) : 0.0f;
+
 	for (int32 i = 0; i < Count; i++)
 	{
 		assert(ParticleData && ParticleIndices);
 
 		uint16 NextFreeIndex = ParticleIndices[ActiveParticles];
 		assert(NextFreeIndex < MaxActiveParticles);
-
 
 		FBaseParticle* Particle = (FBaseParticle*)(ParticleData + ParticleStride * NextFreeIndex);
 		const uint32 CurrentParticleIndex = ActiveParticles++;
@@ -487,14 +496,20 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
 		}
 		PostSpawn(Particle, Interp, SpawnTime);
 
-		// Spawn modules may set a relative time greater than 1.0f to indicate that a particle should not be spawned. We kill these particles.
-		// if (Particle->RelativeTime > 1.0f)
-		// {
-		// 	KillParticle(CurrentParticleIndex);
-		//
-		// 	// Process next particle
-		// 	continue;
-		// }
+		/**
+		 * 루프가 진행될수록 다음 파티클은 '더 늦게(최근에)' 태어난 파티클이다.
+		 * 따라서 나이(SpawnTime)는 줄어들어야 하고,
+		 * 생성 위치는 과거(OldLocation)에서 현재(Location) 쪽으로 이동해야 한다.
+		 */
+		SpawnTime -= Increment;
+		Interp -= InterpIncrement;
+
+		if (Particle->RelativeTime > 1.0f)
+		{
+			KillParticle(CurrentParticleIndex);
+
+			continue;
+		}
 	}
 }
 
@@ -605,6 +620,28 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
 
 void FParticleEmitterInstance::UpdateTransforms()
 {
+	assert(SpriteTemplate != nullptr);
+
+	UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+	FMatrix ComponentToWorld = Component->GetWorldTransform().ToMatrix();
+	// @todo 현재는 RequiredModule에 EmitterOrigin, EmitterRotation과 같은 오프셋 정보가 없음
+	FMatrix EmitterToComponent = FMatrix::Identity();
+
+	if (LODLevel->RequiredModule->bUseLocalSpace)
+	{
+		EmitterToSimulation = EmitterToComponent;
+		SimulationToWorld = ComponentToWorld;
+	}
+	else
+	{
+		/**
+		 * 시뮬레이션 자체가 월드 좌표계에서 돌아간다.
+		 * 파티클 위치값 (100, 200, 300)은 월드 좌표 (100, 200, 300)이다.
+		 * 따라서 이미터의 로컬 좌표를 월드로 미리 다 변환해버린다.
+		 */
+		EmitterToSimulation = EmitterToComponent * ComponentToWorld;
+		SimulationToWorld = FMatrix::Identity();
+	}
 }
 
 UParticleLODLevel* FParticleEmitterInstance::GetCurrentLODLevelChecked()

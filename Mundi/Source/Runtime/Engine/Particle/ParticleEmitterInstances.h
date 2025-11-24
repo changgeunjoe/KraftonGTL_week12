@@ -40,8 +40,10 @@ public:
 	int32 PayloadOffset;
 	/** 이미터 인스턴스의 위치				                                */
 	FVector Location;
-	/** 이미터 로컬 공간에서 시뮬레이션 공간으로의 변환							*/
+	/** 이미터 로컬 공간에서 시뮬레이션(컴포넌트) 공간으로의 변환				*/
 	FMatrix EmitterToSimulation;
+	/**	시뮬레이션 공간에서 월드 공간으로의 변환								*/
+	FMatrix SimulationToWorld;
 	/** 컴포넌트는 이 이미터의 렌더링과 틱을 비활성화 할 수 있음					*/
 	uint8 bEnabled : 1;
 	/** 파티클 데이터의 총 크기 (바이트)				                        */

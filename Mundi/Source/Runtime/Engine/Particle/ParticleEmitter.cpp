@@ -3,6 +3,7 @@
 #include "ParticleEmitter.h"
 
 #include "ParticleEmitterInstances.h"
+#include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleTypeDataBase.h"
 
@@ -134,7 +135,7 @@ void UParticleEmitter::CacheEmitterModuleInfo()
 	ModuleOffsetMap.Empty();
 	ModuleInstanceOffsetMap.Empty();
 	ModulesNeedingInstanceData.Empty();
-	ParticleSize = 0;
+	ParticleSize = sizeof(FBaseParticle);
 	ReqInstanceBytes = 0;
 
 	UParticleLODLevel* HighLODLevel = GetLODLevel(0);
