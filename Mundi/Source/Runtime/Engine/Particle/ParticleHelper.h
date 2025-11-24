@@ -6,6 +6,12 @@
 #define DECLARE_PARTICLE(Name,Address)	\
 FBaseParticle& Name = *((FBaseParticle*) (Address));
 
+#define DECLARE_PARTICLE_CONST(Name,Address)		\
+const FBaseParticle& Name = *((const FBaseParticle*) (Address));
+
+#define DECLARE_PARTICLE_PTR(Name,Address)		\
+FBaseParticle* Name = (FBaseParticle*) (Address);
+
 #define SPAWN_INIT																									\
 const int32		ActiveParticles	= Context.Owner.ActiveParticles;													\
 const uint32	ParticleStride	= Context.Owner.ParticleStride;														\

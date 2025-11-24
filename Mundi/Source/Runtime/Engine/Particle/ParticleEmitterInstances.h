@@ -97,6 +97,8 @@ public:
 
 	virtual void Tick(float DeltaTime, bool bSuppressSpawning);
 
+	virtual void UpdateBoundingBox(float DeltaTime);
+
 	/**
 	 * EmitterTime 설정, 루핑(looping) 등을 처리하는 틱(Tick) 하위 함수이다.
 	 *
