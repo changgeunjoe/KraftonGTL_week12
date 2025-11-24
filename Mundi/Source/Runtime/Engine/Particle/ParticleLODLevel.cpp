@@ -6,6 +6,7 @@
 #include "ParticleModuleRequired.h"
 #include "ParticleModuleSpawn.h"
 #include "ParticleModuleTypeDataBase.h"
+#include "Source/Runtime/Core/Misc/JsonSerializer.h"
 
 IMPLEMENT_CLASS(UParticleLODLevel, UObject)
 
@@ -48,6 +49,11 @@ UParticleLODLevel::~UParticleLODLevel()
 		DeleteObject(RequiredModule);
 		RequiredModule = nullptr;
 	}
+
+	// 다른 배열들 정리 (포인터만 제거, 객체는 이미 위에서 삭제됨)
+	SpawningModules.Empty();
+	SpawnModules.Empty();
+	UpdateModules.Empty();
 }
 
 UParticleModuleSpawn* UParticleLODLevel::AddSpawnModule()
@@ -287,4 +293,147 @@ int32 UParticleLODLevel::CalculateMaxActiveParticleCount()
 	PeakActiveParticles = MaxAPC;
 
 	return MaxAPC;
+}
+
+void UParticleLODLevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	if (bInIsLoading)
+	{
+		// 기존 모듈 제거
+		for (UParticleModule* Module : Modules)
+		{
+			if (Module)
+				DeleteObject(Module);
+		}
+		Modules.Empty();
+
+		if (RequiredModule)
+		{
+			DeleteObject(RequiredModule);
+			RequiredModule = nullptr;
+		}
+
+		if (SpawnModule)
+		{
+			DeleteObject(SpawnModule);
+			SpawnModule = nullptr;
+		}
+
+		if (TypeDataModule)
+		{
+			DeleteObject(TypeDataModule);
+			TypeDataModule = nullptr;
+		}
+
+		// 다른 배열들 정리 (포인터만 제거)
+		SpawningModules.Empty();
+		SpawnModules.Empty();
+		UpdateModules.Empty();
+
+		// LOD 레벨 속성 로드
+		FJsonSerializer::ReadInt32(InOutHandle, "Level", Level);
+
+		// bitfield는 참조를 취할 수 없으므로 임시 변수 사용
+		bool bEnabledTemp = false;
+		FJsonSerializer::ReadBool(InOutHandle, "bEnabled", bEnabledTemp);
+		bEnabled = bEnabledTemp ? 1 : 0;
+
+		// 모듈 배열 로드
+		JSON ModulesJson;
+		if (FJsonSerializer::ReadArray(InOutHandle, "Modules", ModulesJson))
+		{
+			for (uint32 i = 0; i < ModulesJson.size(); ++i)
+			{
+				JSON ModuleJson = ModulesJson.at(i);
+
+				// 모듈 타입 읽기
+				FString TypeString;
+				FJsonSerializer::ReadString(ModuleJson, "Type", TypeString);
+
+				// 클래스 찾기
+				UClass* ModuleClass = UClass::FindClass(TypeString);
+				if (!ModuleClass)
+					continue;
+
+				// 모듈 생성
+				UParticleModule* NewModule = (UParticleModule*)ObjectFactory::NewObject(ModuleClass);
+				if (!NewModule)
+					continue;
+
+				// 모듈 데이터 역직렬화
+				NewModule->Serialize(bInIsLoading, ModuleJson);
+
+				// 특수 모듈 처리
+				if (UParticleModuleRequired* RequiredMod = Cast<UParticleModuleRequired>(NewModule))
+				{
+					RequiredModule = RequiredMod;
+					// Required 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
+					Modules.Add(NewModule);
+				}
+				else if (UParticleModuleSpawn* SpawnMod = Cast<UParticleModuleSpawn>(NewModule))
+				{
+					SpawnModule = SpawnMod;
+					// Spawn 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
+					Modules.Add(NewModule);
+				}
+				else if (UParticleModuleTypeDataBase* TypeDataMod = Cast<UParticleModuleTypeDataBase>(NewModule))
+				{
+					TypeDataModule = TypeDataMod;
+					// TypeData 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
+					Modules.Add(NewModule);
+				}
+				else
+				{
+					// 일반 모듈은 Modules 배열에 추가
+					Modules.Add(NewModule);
+				}
+			}
+		}
+	}
+	else
+	{
+		// LOD 레벨 속성 저장
+		InOutHandle["Level"] = Level;
+		InOutHandle["bEnabled"] = (bEnabled != 0);
+
+		// 모듈 배열 저장
+		JSON ModulesJson = JSON::Make(JSON::Class::Array);
+
+		// Required 모듈 먼저 저장
+		if (RequiredModule)
+		{
+			JSON ModuleJson;
+			RequiredModule->Serialize(bInIsLoading, ModuleJson);
+			ModulesJson.append(ModuleJson);
+		}
+
+		// Spawn 모듈 저장
+		if (SpawnModule)
+		{
+			JSON ModuleJson;
+			SpawnModule->Serialize(bInIsLoading, ModuleJson);
+			ModulesJson.append(ModuleJson);
+		}
+
+		// TypeData 모듈 저장
+		if (TypeDataModule)
+		{
+			JSON ModuleJson;
+			TypeDataModule->Serialize(bInIsLoading, ModuleJson);
+			ModulesJson.append(ModuleJson);
+		}
+
+		// 일반 모듈들 저장
+		for (UParticleModule* Module : Modules)
+		{
+			if (!Module)
+				continue;
+
+			JSON ModuleJson;
+			Module->Serialize(bInIsLoading, ModuleJson);
+			ModulesJson.append(ModuleJson);
+		}
+
+		InOutHandle["Modules"] = ModulesJson;
+	}
 }

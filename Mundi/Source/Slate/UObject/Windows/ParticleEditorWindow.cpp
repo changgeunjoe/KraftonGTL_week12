@@ -14,6 +14,8 @@
 #include "Source/Slate/UObject/Widgets/ParticleModuleDetailWidget.h"
 #include "Source/Slate/UObject/Widgets/PropertyRenderer.h"
 #include "ImGui/imgui.h"
+#include "PlatformProcess.h"
+#include <filesystem>
 
 SParticleEditorWindow::SParticleEditorWindow()
 {
@@ -33,6 +35,11 @@ SParticleEditorWindow::~SParticleEditorWindow()
 	{
 		delete DetailWidget;
 		DetailWidget = nullptr;
+	}
+	if (EditingParticleSystem) {
+
+		DeleteObject(EditingParticleSystem);
+		EditingParticleSystem = nullptr;
 	}
 }
 
@@ -144,6 +151,36 @@ void SParticleEditorWindow::RenderTopToolbar()
 {
 	if (ImGui::BeginMenuBar())
 	{
+		// File Menu
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Load", "Ctrl+O"))
+			{
+				LoadParticleSystemFromFile();
+			}
+
+			if (ImGui::MenuItem("Save", "Ctrl+S"))
+			{
+				SaveParticleSystemToFile();
+			}
+
+			if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+			{
+				SaveParticleSystemToFileAs();
+			}
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Close"))
+			{
+				Close();
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::Separator();
+
 		// Restart Sim Button
 		if (ImGui::Button("Restart Sim"))
 		{
@@ -859,5 +896,131 @@ void SParticleEditorWindow::AddNewEmitter()
 		NewEmitter->SetEmitterName(FName(emitterName));
 
 		UE_LOG("New emitter added: %s (Total emitters: %zu)", emitterName, EditingParticleSystem->Emitters.size());
+	}
+}
+
+void SParticleEditorWindow::LoadParticleSystemFromFile()
+{
+	const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/Particle";
+	const FWideString Extension = L".particle";
+	const FWideString Description = L"Particle Files";
+
+	// 플랫폼 공용 다이얼로그 호출 (SelectedPath는 ABSOLUTE PATH)
+	std::filesystem::path SelectedPath = FPlatformProcess::OpenLoadFileDialog(BaseDir, Extension, Description);
+
+	if (!SelectedPath.empty())
+	{
+		FWideString AbsolutePath = SelectedPath.wstring();
+		FString FinalPathStr = ResolveAssetRelativePath(WideToUTF8(AbsolutePath), "");
+
+		// 선택 초기화 (댕글링 포인터 방지를 위해 먼저 초기화)
+		SelectedModule = nullptr;
+		SelectedModuleIndex = -1;
+		SelectedEmitterIndex = 0;
+
+		// Detail Widget 초기화
+		if (DetailWidget)
+		{
+			DetailWidget->SetSelectedModule(nullptr);
+			DetailWidget->SetSelectedEmitter(nullptr);
+			DetailWidget->SetParticleSystem(nullptr);
+		}
+
+		// 기존 파티클 시스템 삭제
+		if (EditingParticleSystem)
+		{
+			DeleteObject(EditingParticleSystem);
+			EditingParticleSystem = nullptr;
+		}
+
+		// 새 파티클 시스템 생성
+		EditingParticleSystem = NewObject<UParticleSystem>();
+
+		// 파일 로드
+		bool bLoadSuccess = EditingParticleSystem->LoadFromFile(UTF8ToWide(FinalPathStr));
+
+		// 로드 성공/실패와 관계없이 파티클 시스템은 유효한 상태여야 함
+		// Detail Widget에 파티클 시스템 설정
+		if (DetailWidget)
+		{
+			DetailWidget->SetParticleSystem(EditingParticleSystem);
+		}
+
+		if (bLoadSuccess)
+		{
+			CurrentFilePath = UTF8ToWide(FinalPathStr);
+			StatusMessage = "Loaded: " + FinalPathStr;
+			UE_LOG("[ParticleEditor] Loaded from: %s", FinalPathStr.c_str());
+		}
+		else
+		{
+			StatusMessage = "Failed to load particle system";
+			CurrentFilePath.clear();
+			UE_LOG("[Error] Failed to load ParticleSystem: %S", AbsolutePath.c_str());
+		}
+	}
+}
+
+void SParticleEditorWindow::SaveParticleSystemToFile()
+{
+	if (!EditingParticleSystem)
+	{
+		StatusMessage = "No particle system to save";
+		return;
+	}
+
+	// 현재 파일 경로가 없으면 Save As로 처리
+	if (CurrentFilePath.empty())
+	{
+		SaveParticleSystemToFileAs();
+		return;
+	}
+
+	// 파일 저장
+	if (EditingParticleSystem->SaveToFile(CurrentFilePath))
+	{
+		StatusMessage = "Saved: " + WideToUTF8(CurrentFilePath);
+		UE_LOG("[ParticleEditor] Saved to: %s", WideToUTF8(CurrentFilePath).c_str());
+	}
+	else
+	{
+		StatusMessage = "Failed to save particle system";
+		UE_LOG("[Error] Failed to save ParticleSystem: %S", CurrentFilePath.c_str());
+	}
+}
+
+void SParticleEditorWindow::SaveParticleSystemToFileAs()
+{
+	if (!EditingParticleSystem)
+	{
+		StatusMessage = "No particle system to save";
+		return;
+	}
+
+	const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/Particle";
+	const FWideString Extension = L".particle";
+	const FWideString Description = L"Particle Files";
+
+	// 플랫폼 공용 다이얼로그 호출 (SelectedPath는 ABSOLUTE PATH)
+	std::filesystem::path SelectedPath = FPlatformProcess::OpenSaveFileDialog(BaseDir, Extension, Description);
+
+	if (!SelectedPath.empty())
+	{
+		// 절대 경로를 상대 경로로 변환
+		FWideString AbsolutePath = SelectedPath.wstring();
+		FString FinalPathStr = ResolveAssetRelativePath(WideToUTF8(AbsolutePath), "");
+
+		// 저장
+		if (EditingParticleSystem->SaveToFile(UTF8ToWide(FinalPathStr)))
+		{
+			CurrentFilePath = UTF8ToWide(FinalPathStr);
+			StatusMessage = "Saved: " + FinalPathStr;
+			UE_LOG("[ParticleEditor] Saved to: %s", FinalPathStr.c_str());
+		}
+		else
+		{
+			StatusMessage = "Failed to save particle system";
+			UE_LOG("[Error] Failed to save ParticleSystem: %S", AbsolutePath.c_str());
+		}
 	}
 }

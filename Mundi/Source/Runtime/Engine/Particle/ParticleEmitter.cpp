@@ -6,6 +6,7 @@
 #include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleTypeDataBase.h"
+#include "Source/Runtime/Core/Misc/JsonSerializer.h"
 
 UParticleEmitter::UParticleEmitter()
 	: PeakActiveParticles(0)
@@ -195,5 +196,70 @@ void UParticleEmitter::Build()
 			// @todo TypeDataModule
 		}
 		CacheEmitterModuleInfo();
+	}
+}
+
+void UParticleEmitter::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	if (bInIsLoading)
+	{
+		// 기존 LOD 레벨 제거
+		for (UParticleLODLevel* LODLevel : LODLevels)
+		{
+			if (LODLevel)
+				DeleteObject(LODLevel);
+		}
+		LODLevels.Empty();
+
+		// 이미터 속성 로드
+		FString EmitterNameStr;
+		FJsonSerializer::ReadString(InOutHandle, "EmitterName", EmitterNameStr);
+		EmitterName = FName(EmitterNameStr);
+
+		FJsonSerializer::ReadInt32(InOutHandle, "PeakActiveParticles", PeakActiveParticles);
+		FJsonSerializer::ReadInt32(InOutHandle, "InitialAllocationCount", InitialAllocationCount);
+
+		// LOD 레벨 배열 로드
+		JSON LODLevelsJson;
+		if (FJsonSerializer::ReadArray(InOutHandle, "LODLevels", LODLevelsJson))
+		{
+			for (uint32 i = 0; i < LODLevelsJson.size(); ++i)
+			{
+				JSON LODLevelJson = LODLevelsJson.at(i);
+
+				// LOD 레벨 생성
+				UParticleLODLevel* NewLODLevel = NewObject<UParticleLODLevel>();
+				if (NewLODLevel)
+				{
+					NewLODLevel->OwnerEmitter = this;
+					NewLODLevel->Serialize(bInIsLoading, LODLevelJson);
+					LODLevels.Add(NewLODLevel);
+				}
+			}
+		}
+
+		// 이미터 빌드 (모듈 리스트 업데이트 등)
+		UpdateModuleLists();
+	}
+	else
+	{
+		// 이미터 속성 저장
+		InOutHandle["Type"] = "UParticleEmitter";
+		InOutHandle["EmitterName"] = EmitterName.ToString();
+		InOutHandle["PeakActiveParticles"] = PeakActiveParticles;
+		InOutHandle["InitialAllocationCount"] = InitialAllocationCount;
+
+		// LOD 레벨 배열 저장
+		JSON LODLevelsJson = JSON::Make(JSON::Class::Array);
+		for (UParticleLODLevel* LODLevel : LODLevels)
+		{
+			if (!LODLevel)
+				continue;
+
+			JSON LODLevelJson;
+			LODLevel->Serialize(bInIsLoading, LODLevelJson);
+			LODLevelsJson.append(LODLevelJson);
+		}
+		InOutHandle["LODLevels"] = LODLevelsJson;
 	}
 }

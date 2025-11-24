@@ -47,7 +47,7 @@ void UParticleModuleDetailWidget::RenderWidget()
 	if (SelectedModule)
 	{
 		// 모듈 이름 표시
-		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "%s", SelectedModule->GetClass()->DisplayName);
+		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "%s", SelectedModule->GetClass()->Name);
 		ImGui::Separator();
 		ImGui::Spacing();
 

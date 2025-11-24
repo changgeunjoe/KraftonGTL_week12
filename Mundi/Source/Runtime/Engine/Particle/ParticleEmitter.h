@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ParticleModule.h"
+#include "Source/Runtime/Core/Misc/JsonSerializer.h"
 #include "UParticleEmitter.generated.h"
 
 class UParticleSystemComponent;
@@ -73,7 +74,12 @@ public:
 
 	//~Begin UObject Interface.
 
-	// Serialize...
+	/**
+	 * JSON 직렬화/역직렬화
+	 * @param bInIsLoading true면 로드, false면 저장
+	 * @param InOutHandle JSON 데이터
+	 */
+	virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle);
 
 	//~End UObject Interface.
 

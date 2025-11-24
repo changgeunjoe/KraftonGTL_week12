@@ -27,6 +27,11 @@ public:
 
 	void SetParticleSystem(UParticleSystem* InParticleSystem);
 
+	// File operations
+	void LoadParticleSystemFromFile();
+	void SaveParticleSystemToFile();
+	void SaveParticleSystemToFileAs();
+
 private:
 	// UI 렌더링
 	void RenderTopToolbar();
@@ -60,6 +65,9 @@ private:
 
 	// Particle System
 	UParticleSystem* EditingParticleSystem = nullptr;
+
+	// Current file path
+	FWideString CurrentFilePath;
 
 	// Selected Emitter
 	int32 SelectedEmitterIndex = 0;

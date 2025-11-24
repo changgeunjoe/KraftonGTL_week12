@@ -1,0 +1,31 @@
+{
+  "Emitters" : [{
+      "EmitterName" : "TestEmitter",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "Type" : "UParticleModuleRequired"
+            }, {
+              "Rate" : 10.000000,
+              "RateScale" : 1.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "Lifetime" : 3.000000,
+              "LifetimeMin" : 2.000000,
+              "Type" : "UParticleModuleLifetime",
+              "bUseLifetimeRange" : true
+            }, {
+              "Type" : "UParticleModule"
+            }, {
+              "Type" : "UParticleModule"
+            }, {
+              "Type" : "UParticleModule"
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 0,
+      "Type" : "UParticleEmitter"
+    }],
+  "Type" : "UParticleSystem"
+}
