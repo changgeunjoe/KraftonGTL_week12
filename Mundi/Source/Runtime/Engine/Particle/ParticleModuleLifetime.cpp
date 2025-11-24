@@ -1,11 +1,8 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ParticleModuleLifetime.h"
 
 #include "ParticleEmitterInstances.h"
 #include "ParticleHelper.h"
-
-
-
 
 
 UParticleModuleLifetime::UParticleModuleLifetime()
@@ -15,6 +12,9 @@ UParticleModuleLifetime::UParticleModuleLifetime()
 {
 	bSpawnModule = true;
 	bUpdateModule = false;
+
+	std::random_device RandomDevice;
+	RandomStream.seed(RandomDevice());
 }
 
 void UParticleModuleLifetime::Spawn(const FSpawnContext& Context)
@@ -35,7 +35,10 @@ float UParticleModuleLifetime::GetLifetimeValue(const FSpawnContext& Context, fl
 {
 	if (bUseLifetimeRange)
 	{
-		// @todo 메르센 트위스터 난수 생성기 멤버변수로 사용
+		float Min = FMath::Min(LifetimeMin, Lifetime);
+		float Max = FMath::Max(LifetimeMin, Lifetime);
+		std::uniform_real_distribution<float> Dist(Min, Max);
+		return Dist(RandomStream);
 	}
 	return Lifetime;
 }
@@ -44,10 +47,7 @@ void UParticleModuleLifetime::SpawnEx(const FSpawnContext& Context)
 {
 	SPAWN_INIT;
 	{
-		FParticleEmitterInstance* Owner = &Context.Owner;
-
-		// float MaxLifetime = Lifetime.GetValue(Owner->EmitterTime, Context.GetDistributionData(), InRandomStream);
-		float MaxLifetime = GetMaxLifetime();
+		float MaxLifetime = GetLifetimeValue(Context, Context.SpawnTime);
 		if (Particle.OneOverMaxLifetime > 0.f)
 		{
 			Particle.OneOverMaxLifetime = 1.f / (MaxLifetime + 1.f / Particle.OneOverMaxLifetime);

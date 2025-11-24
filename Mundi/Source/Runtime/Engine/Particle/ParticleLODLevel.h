@@ -1,5 +1,7 @@
 ﻿#pragma once
+#include "UParticleLODLevel.generated.h"
 
+class UParticleEmitter;
 class UParticleModuleTypeDataBase;
 class UParticleModule;
 class UParticleModuleSpawn;
@@ -9,7 +11,7 @@ class UParticleModuleRequired;
 UCLASS()
 class UParticleLODLevel : public UObject
 {
-	DECLARE_CLASS(UParticleLODLevel, UObject)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	/** LOD 레벨의 인덱스 */
@@ -42,9 +44,12 @@ public:
 	/** 이 LOD 레벨에서 예상되는 최대 활성 파티클 수 */
 	int32 PeakActiveParticles;
 
+	/** @note Outer 변수가 없어서 임의로 Owner 변수 추가 */
+	UParticleEmitter* OwnerEmitter;
+
 public:
 	UParticleLODLevel();
-	virtual ~UParticleLODLevel() = default;
+	virtual ~UParticleLODLevel();
 
 	//~Begin UObject Interface.
 
@@ -52,9 +57,48 @@ public:
 
 	//~End UObject Interface.
 
+	/**
+	 * @brief 파티클 생성 규칙(Rate, Burst)을 담당하는 SpawnModule을 추가/교체한다.
+	 * 기존에 존재하던 모듈은 제거된다.
+	 *
+	 * @return 생성된 모듈의 포인터. 실패 시 nullptr.
+	 */
+	UParticleModuleSpawn* AddSpawnModule();
+
+	/**
+	 * LOD 레벨의 필수 모듈(UParticleModuleRequired)을 생성하거나 교체한다.
+	 * 기존에 존재하던 모듈은 제거된다.
+	 * @return 생성된 모듈의 포인터. 실패 시 nullptr
+	 */
+	UParticleModuleRequired* AddRequiredModule();
+
+	/**
+	 * 일반 속성 제어 모듈을 추가한다.
+	 * SpawnModule이나 TypeDataModule은 이 함수로 추가할 수 없으며, 별도 함수를 사용해야 한다.
+	 *
+	 * @tparam TModule 생성할 모듈의 타입 정보
+	 * @return 생성된 모듈의 포인터. 실패 시 nullptr.
+	 */
+	template <typename TModule>
+	TModule* AddModule()
+	{
+		static_assert(std::is_base_of_v<UParticleModule, TModule>);
+		return Cast<TModule>(AddModule(TModule::StaticClass()));
+	}
+
+	/**
+	 * 일반 속성 제어 모듈을 추가한다.
+	 * SpawnModule이나 TypeDataModule은 이 함수로 추가할 수 없으며, 별도 함수를 사용해야 한다.
+	 *
+	 * @param ModuleClass 생성할 모듈의 클래스 정보
+	 * @return 생성된 모듈의 포인터. 실패 시 nullptr.
+	 */
+	UParticleModule* AddModule(UClass* ModuleClass);
+
 	/** 모듈 리스트를 갱신하고 런타임 캐시 배열을 채운다. */
 	virtual void UpdateModuleLists();
 
 	/** 이 LOD 레벨의 최대 활성 파티클 수를 계산한다. */
 	virtual int32 CalculateMaxActiveParticleCount();
+
 };

@@ -770,8 +770,6 @@ void SParticleEditorWindow::CreateTestParticleSystem()
 {
 	// 테스트용 파티클 시스템 생성
 	EditingParticleSystem = NewObject<UParticleSystem>();
-	EditingParticleSystem->UpdateTime_FPS = 60.0f;
-	EditingParticleSystem->UpdateTime_Delta = 1.0f / 60.0f;
 
 	// 테스트용 이미터 생성
 	UParticleEmitter* TestEmitter = NewObject<UParticleEmitter>();

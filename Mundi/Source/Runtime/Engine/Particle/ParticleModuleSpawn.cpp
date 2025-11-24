@@ -2,8 +2,6 @@
 #include "ParticleModuleSpawn.h"
 
 
-
-
 UParticleModuleSpawn::UParticleModuleSpawn()
 	: Rate(10.0f)
 	, RateScale(1.0f)

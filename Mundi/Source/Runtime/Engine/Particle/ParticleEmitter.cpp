@@ -16,6 +16,49 @@ UParticleEmitter::UParticleEmitter()
 {
 }
 
+UParticleEmitter::~UParticleEmitter()
+{
+	for (UParticleLODLevel* Level : LODLevels)
+	{
+		if (Level)
+		{
+			DeleteObject(Level);
+		}
+	}
+	LODLevels.Empty();
+}
+
+UParticleLODLevel* UParticleEmitter::AddLODLevel(UParticleLODLevel* LODLevel)
+{
+	UParticleLODLevel* NewLODLevel = LODLevel;
+	if (!NewLODLevel)
+	{
+		NewLODLevel = NewObject<UParticleLODLevel>();
+	}
+
+	if (NewLODLevel)
+	{
+		NewLODLevel->OwnerEmitter = this;
+		NewLODLevel->Level = LODLevels.Num();
+
+		if (NewLODLevel->RequiredModule == nullptr)
+		{
+			NewLODLevel->AddRequiredModule();
+		}
+
+		if (NewLODLevel->SpawnModule == nullptr)
+		{
+			NewLODLevel->AddSpawnModule();
+		}
+
+		LODLevels.Add(NewLODLevel);
+
+		UpdateModuleLists();
+	}
+
+	return NewLODLevel;
+}
+
 void UParticleEmitter::UpdateModuleLists()
 {
 	for (int32 LODIndex = 0; LODIndex < LODLevels.Num(); LODIndex++)
@@ -66,27 +109,17 @@ bool UParticleEmitter::CalculateMaxActiveParticleCount()
 {
 	int32 CurrMaxAPC = 0;
 
-	int32 MaxCount = 0;
-
 	for (int32 LODIndex = 0; LODIndex < LODLevels.Num(); LODIndex++)
 	{
 		UParticleLODLevel* LODLevel = LODLevels[LODIndex];
 		if (LODLevel && LODLevel->bEnabled)
 		{
-			bool bForceMaxCount = false;
-
 			if ((LODLevel->Level == 0) && (LODLevel->TypeDataModule != nullptr))
 			{
 				// @todo Check for beams or trails
 			}
 
 			int32 LODMaxAPC = LODLevel->CalculateMaxActiveParticleCount();
-			if (bForceMaxCount == true)
-			{
-				LODLevel->PeakActiveParticles = MaxCount;
-				LODMaxAPC = MaxCount;
-			}
-
 			if (LODMaxAPC > CurrMaxAPC)
 			{
 				CurrMaxAPC = LODMaxAPC;
@@ -94,6 +127,7 @@ bool UParticleEmitter::CalculateMaxActiveParticleCount()
 		}
 	}
 
+	PeakActiveParticles = CurrMaxAPC;
 	return true;
 }
 

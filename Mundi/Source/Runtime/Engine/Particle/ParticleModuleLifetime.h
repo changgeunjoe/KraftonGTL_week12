@@ -1,4 +1,5 @@
-#pragma once
+﻿#pragma once
+#include <random>
 #include "ParticleModuleLifetimeBase.h"
 #include "UParticleModuleLifetime.generated.h"
 
@@ -38,4 +39,8 @@ public:
 
 protected:
 	void SpawnEx(const FSpawnContext& Context);
+
+private:
+	/** 메르센 트위스터 난수 생성기 */
+	std::mt19937 RandomStream;
 };

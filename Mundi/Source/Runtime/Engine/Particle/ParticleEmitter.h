@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ParticleModule.h"
+#include "UParticleEmitter.generated.h"
 
 class UParticleSystemComponent;
 class UParticleLODLevel;
@@ -7,7 +8,7 @@ class UParticleLODLevel;
 UCLASS()
 class UParticleEmitter : public UObject
 {
-	DECLARE_CLASS(UParticleEmitter, UObject)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	//~=============================================================================
@@ -62,13 +63,21 @@ public:
 public:
 	UParticleEmitter();
 
-	virtual ~UParticleEmitter() = default;
+	virtual ~UParticleEmitter();
 
 	//~Begin UObject Interface.
 
 	// Serialize...
 
 	//~End UObject Interface.
+
+	/**
+	 * 새로운 LOD 레벨을 생성하고 이미터에 추가한다.
+	 * 기본적으로 RequiredModule과 SpawnModule을 자동으로 생성하여 부착한다.
+	 * @param LODLevel 추가할 LOD 레벨, nullptr일 경우 새로 생성
+	 * @return 생성되거나 추가된 LOD 레벨의 포인터
+	 */
+	UParticleLODLevel* AddLODLevel(UParticleLODLevel* LODLevel = nullptr);
 
 	virtual void SetToSensibleDefaults() {}
 

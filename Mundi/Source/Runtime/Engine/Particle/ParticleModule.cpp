@@ -3,13 +3,12 @@
 #include "ParticleModule.h"
 
 
-
 UParticleModule::UParticleModule()
+	: bSpawnModule(false)
+	, bUpdateModule(false)
+	, bFinalUpdateModule(false)
+	, bEnabled(true)
 {
-	bSpawnModule = false;
-	bUpdateModule = false;
-	bFinalUpdateModule = false;
-	bEnabled = true;
 }
 
 void UParticleModule::Spawn(const FSpawnContext& Context)
@@ -36,7 +35,7 @@ uint32 UParticleModule::RequiredBytesPerInstance()
 
 uint32 UParticleModule::PrepPerInstanceBlock(FParticleEmitterInstance* Owner, void* InstData)
 {
-	return 0xffffffff;
+	return 0;
 }
 
 void UParticleModule::SetToSensibleDefaults(UParticleEmitter* Owner)

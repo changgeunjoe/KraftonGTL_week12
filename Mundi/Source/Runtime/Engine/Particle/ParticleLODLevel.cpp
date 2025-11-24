@@ -19,6 +19,111 @@ UParticleLODLevel::UParticleLODLevel()
 {
 }
 
+UParticleLODLevel::~UParticleLODLevel()
+{
+	for (UParticleModule* Module : Modules)
+	{
+		if (Module)
+		{
+			DeleteObject(Module);
+			Module = nullptr;
+		}
+	}
+	Modules.Empty();
+
+	if (SpawnModule)
+	{
+		DeleteObject(SpawnModule);
+		SpawnModule = nullptr;
+	}
+
+	if (TypeDataModule)
+	{
+		DeleteObject(TypeDataModule);
+		TypeDataModule = nullptr;
+	}
+
+	if (RequiredModule)
+	{
+		DeleteObject(RequiredModule);
+		RequiredModule = nullptr;
+	}
+}
+
+UParticleModuleSpawn* UParticleLODLevel::AddSpawnModule()
+{
+	if (SpawnModule)
+	{
+		DeleteObject(SpawnModule);
+		SpawnModule = nullptr;
+	}
+
+	UParticleModuleSpawn* NewSpawnModule = NewObject<UParticleModuleSpawn>();
+	if (NewSpawnModule)
+	{
+		NewSpawnModule->OwnerEmitter = OwnerEmitter;
+		NewSpawnModule->SetToSensibleDefaults(OwnerEmitter);
+		SpawnModule = NewSpawnModule;
+
+		UpdateModuleLists();
+	}
+
+	return SpawnModule;
+}
+
+UParticleModuleRequired* UParticleLODLevel::AddRequiredModule()
+{
+	if (RequiredModule)
+	{
+		DeleteObject(RequiredModule);
+		RequiredModule = nullptr;
+	}
+
+	UParticleModuleRequired* NewModule = NewObject<UParticleModuleRequired>();
+	if (NewModule)
+	{
+		NewModule->OwnerEmitter = OwnerEmitter;
+		NewModule->SetToSensibleDefaults(OwnerEmitter);
+		RequiredModule = NewModule;
+
+		UpdateModuleLists();
+	}
+
+	return NewModule;
+}
+
+UParticleModule* UParticleLODLevel::AddModule(UClass* ModuleClass)
+{
+	if (!ModuleClass || !ModuleClass->IsChildOf(UParticleModule::StaticClass()))
+	{
+		return nullptr;
+	}
+
+	UParticleModule* NewModule = NewObject<UParticleModule>();
+	if (NewModule)
+	{
+		NewModule->OwnerEmitter = OwnerEmitter;
+		NewModule->SetToSensibleDefaults(OwnerEmitter);
+
+		if (NewModule->IsA(UParticleModuleTypeDataBase::StaticClass()))
+		{
+			if (TypeDataModule)
+			{
+				DeleteObject(TypeDataModule);
+			}
+			TypeDataModule = Cast<UParticleModuleTypeDataBase>(NewModule);
+		}
+		else
+		{
+			Modules.Add(NewModule);
+		}
+
+		UpdateModuleLists();
+	}
+
+	return NewModule;
+}
+
 void UParticleLODLevel::UpdateModuleLists()
 {
 	SpawningModules.Empty();

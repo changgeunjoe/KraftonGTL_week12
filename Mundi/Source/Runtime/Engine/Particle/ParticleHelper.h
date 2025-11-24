@@ -107,7 +107,6 @@ struct FDynamicEmitterReplayDataBase
 
 	FVector Scale;
 
-	/** Constructor */
 	FDynamicEmitterReplayDataBase()
 		: eEmitterType( DET_Unknown ),
 		  ActiveParticleCount( 0 ),

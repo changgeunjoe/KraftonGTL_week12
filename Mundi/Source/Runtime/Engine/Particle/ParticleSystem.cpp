@@ -1,11 +1,46 @@
 ﻿#include "pch.h"
 
 #include "ParticleSystem.h"
-
 #include "ParticleEmitter.h"
 #include "ParticleLODLevel.h"
+#include "ParticleModuleTypeDataBase.h"
 
 IMPLEMENT_CLASS(UParticleSystem, UObject)
+
+UParticleSystem::~UParticleSystem()
+{
+	for (UParticleEmitter* Emitter : Emitters)
+	{
+		if (Emitter)
+		{
+			DeleteObject(Emitter);
+		}
+	}
+	Emitters.Empty();
+}
+
+UParticleEmitter* UParticleSystem::AddEmitter(UClass* EmitterClass)
+{
+	if (EmitterClass && EmitterClass->IsChildOf(UParticleEmitter::StaticClass()))
+	{
+		assert(false);
+		return nullptr;
+	}
+
+	UParticleEmitter* NewEmitter = Cast<UParticleEmitter>(NewObject(EmitterClass));
+	if (NewEmitter)
+	{
+		NewEmitter->SetEmitterName("Particle Emitter");
+
+		NewEmitter->AddLODLevel();
+
+		Emitters.Add(NewEmitter);
+
+		UpdateAllModuleLists();
+	}
+
+	return NewEmitter;
+}
 
 bool UParticleSystem::CalculateMaxActiveParticleCounts()
 {
@@ -33,22 +68,14 @@ void UParticleSystem::UpdateAllModuleLists()
 		UParticleEmitter* Emitter = Emitters[EmitterIdx];
 		if (Emitter != nullptr)
 		{
-			for (int32 LODIdx = 0; LODIdx < Emitter->LODLevels.Num(); LODIdx++)
-			{
-				UParticleLODLevel* LODLevel = Emitter->LODLevels[LODIdx];
-				if (LODLevel != nullptr)
-				{
-					LODLevel->UpdateModuleLists();
-				}
-			}
+			Emitter->UpdateModuleLists();
 
 			if (Emitter->LODLevels.Num() > 0)
 			{
 				UParticleLODLevel* HighLODLevel = Emitter->LODLevels[0];
 				if (HighLODLevel != nullptr && HighLODLevel->TypeDataModule != nullptr)
 				{
-					// @todo
-					// HighLODLevel->TypeDataModule->CacheModuleInfo(Emitter);
+					HighLODLevel->TypeDataModule->CacheModuleInfo(Emitter);
 				}
 			}
 			Emitter->CacheEmitterModuleInfo();

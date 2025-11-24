@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "UParticleModule.generated.h"
-
 class UParticleEmitter;
 class UParticleModuleTypeDataBase;
 struct FBaseParticle;
@@ -22,6 +21,9 @@ public:
 
 	/** true일 경우, 모듈은 활성화된다.										*/
 	uint8 bEnabled:1;
+
+	/** @note Outer 변수가 없어서 임의로 Owner 변수 추가 */
+	UParticleEmitter* OwnerEmitter;
 
 public:
 	UParticleModule();
