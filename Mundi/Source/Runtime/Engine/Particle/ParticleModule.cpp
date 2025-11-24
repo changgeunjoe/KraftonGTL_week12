@@ -2,7 +2,7 @@
 
 #include "ParticleModule.h"
 
-IMPLEMENT_CLASS(UParticleModule, UObject)
+
 
 UParticleModule::UParticleModule()
 {

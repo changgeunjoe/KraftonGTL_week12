@@ -1,12 +1,12 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ParticleModuleLifetime.h"
 
 #include "ParticleEmitterInstances.h"
 #include "ParticleHelper.h"
 
-IMPLEMENT_CLASS(UParticleModuleLifetimeBase, UParticleModule)
 
-IMPLEMENT_CLASS(UParticleModuleLifetime, UParticleModuleLifetimeBase)
+
+
 
 UParticleModuleLifetime::UParticleModuleLifetime()
 	: Lifetime(1.0f)

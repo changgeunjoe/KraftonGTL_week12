@@ -1,18 +1,11 @@
 #pragma once
 #include "Source/Slate/Core/Windows/SWindow.h"
 
-class SVerticalBox;
-class SHorizontalBox;
-class SScrollBox;
-class SButton;
-class STextBlock;
-class STreeView;
-class SListView;
-class SPanel;
-class SViewportPanel;
 class ViewerState;
-
-class STreeNode;
+class UParticleModule;
+class UParticleSystem;
+class UParticleEmitter;
+class UParticleModuleDetailWidget;
 
 class SParticleEditorWindow : public SWindow
 {
@@ -32,39 +25,19 @@ public:
 	bool IsOpen() const { return bIsOpen; }
 	void Close() { bIsOpen = false; }
 
+	void SetParticleSystem(UParticleSystem* InParticleSystem);
+
 private:
-	// Layout hierarchy
-	SVerticalBox* RootLayout = nullptr;
-	SHorizontalBox* TopToolbar = nullptr;
-	SHorizontalBox* MainContentArea = nullptr;
+	// UI 렌더링
+	void RenderTopToolbar();
+	void RenderViewportPanel();
+	void RenderDetailsPanel();
+	void RenderEmittersPanel();
+	void RenderCurveEditorPanel();
 
-	// Left Column (Viewport + Details)
-	SVerticalBox* LeftColumn = nullptr;
-	SVerticalBox* ViewportPanel = nullptr;
-	SViewportPanel* ViewportPlaceholder = nullptr;
-	SVerticalBox* DetailsPanel = nullptr;
-	STextBlock* DetailsTitle = nullptr;
-	SScrollBox* DetailsScrollBox = nullptr;
-
-	// Right Column (Emitters + Curve Editor)
-	SVerticalBox* RightColumn = nullptr;
-	SVerticalBox* EmittersPanel = nullptr;
-	STextBlock* EmittersTitle = nullptr;
-	SScrollBox* EmittersScrollBox = nullptr;
-	SHorizontalBox* EmittersListRow = nullptr;
-
-	SVerticalBox* CurveEditorPanel = nullptr;
-	STextBlock* CurveEditorTitle = nullptr;
-	SPanel* CurveEditorPlaceholder = nullptr;
-
-	// Top Toolbar Widgets
-	STextBlock* TitleText = nullptr;
-	SButton* PlayButton = nullptr;
-	SButton* PauseButton = nullptr;
-	SButton* ResetButton = nullptr;
-	SButton* RestartSimButton = nullptr;
-	SButton* RestartLevelButton = nullptr;
-	STextBlock* StatusText = nullptr;
+	// 헬퍼 함수
+	UParticleModule* GetModuleFromCurrentEmitter(int32 ModuleIndex);
+	void CreateTestParticleSystem();
 
 	// Preview Viewport
 	ViewerState* PreviewState = nullptr;
@@ -74,15 +47,20 @@ private:
 	// State
 	bool bIsOpen = true;
 	bool bIsPlaying = false;
+	FString StatusMessage = "Ready";
 
-	void CreateLayout();
-	void CreateTopToolbar();
-	void CreateLeftColumn();
-	void CreateViewportPanel();
-	void CreateDetailsPanel();
-	void CreateRightColumn();
-	void CreateEmittersPanel();
-	void CreateCurveEditorPanel();
+	// Details Panel Widget
+	UParticleModuleDetailWidget* DetailWidget = nullptr;
+
+	// Selected Module
+	UParticleModule* SelectedModule = nullptr;
+	int32 SelectedModuleIndex = -1;
+
+	// Particle System
+	UParticleSystem* EditingParticleSystem = nullptr;
+
+	// Selected Emitter
+	int32 SelectedEmitterIndex = 0;
 
 	// Event handlers
 	void OnPlayClicked();

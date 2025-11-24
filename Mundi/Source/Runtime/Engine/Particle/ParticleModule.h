@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "UParticleModule.generated.h"
 
 class UParticleEmitter;
 class UParticleModuleTypeDataBase;
@@ -8,7 +9,7 @@ struct FParticleEmitterInstance;
 UCLASS()
 class UParticleModule : public UObject
 {
-	DECLARE_CLASS(UParticleModule, UObject)
+	GENERATED_REFLECTION_BODY()
 public:
 	/** true일 경우, 모듈은 스폰 동안 파티클에 대하여 연산을 한다.				*/
 	uint8 bSpawnModule:1;

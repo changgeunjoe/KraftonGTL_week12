@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "ParticleModuleRequired.h"
 
-IMPLEMENT_CLASS(UParticleModuleRequired, UParticleModule)
-
 UParticleModuleRequired::UParticleModuleRequired()
 {
 	// @todo
