@@ -38,6 +38,8 @@ private:
 	// 헬퍼 함수
 	UParticleModule* GetModuleFromCurrentEmitter(int32 ModuleIndex);
 	void CreateTestParticleSystem();
+	void ShowAddModuleContextMenu(int32 EmitterIndex);
+	void AddNewEmitter();
 
 	// Preview Viewport
 	ViewerState* PreviewState = nullptr;

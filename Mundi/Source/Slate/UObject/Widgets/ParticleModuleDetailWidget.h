@@ -3,6 +3,7 @@
 
 class UParticleModule;
 class UParticleSystem;
+class UParticleEmitter;
 
 /**
  * @brief 파티클 모듈의 프로퍼티를 표시하는 Detail Widget
@@ -29,9 +30,17 @@ public:
 	 */
 	void SetParticleSystem(UParticleSystem* InParticleSystem);
 
+	/**
+	 * @brief 선택된 이미터 설정
+	 */
+	void SetSelectedEmitter(UParticleEmitter* InEmitter);
+
 private:
 	// 선택된 모듈
 	UParticleModule* SelectedModule = nullptr;
+
+	// 선택된 이미터
+	UParticleEmitter* SelectedEmitter = nullptr;
 
 	// 파티클 시스템
 	UParticleSystem* ParticleSystem = nullptr;

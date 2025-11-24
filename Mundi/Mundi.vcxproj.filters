@@ -451,6 +451,7 @@
     <ClCompile Include="Source\Editor\FBXLoader.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\VertexData.cpp" />
     <ClCompile Include="Source\Runtime\Engine\SkeletalViewer\SkeletalViewerBootstrap.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\ParticleViewer\ParticleViewerBootstrap.cpp" />
     <ClCompile Include="Source\Runtime\Engine\SkeletalViewer\ViewerState.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\FSkeletalViewerViewportClient.cpp" />
     <ClCompile Include="Generated\AActor.generated.cpp">
@@ -1195,6 +1196,7 @@
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaComponentProxy.h" />
     <ClInclude Include="Source\Editor\FBXLoader.h" />
     <ClInclude Include="Source\Runtime\Engine\SkeletalViewer\SkeletalViewerBootstrap.h" />
+    <ClInclude Include="Source\Runtime\Engine\ParticleViewer\ParticleViewerBootstrap.h" />
     <ClInclude Include="Source\Runtime\Engine\SkeletalViewer\ViewerState.h" />
     <ClInclude Include="Source\Runtime\Renderer\FSkeletalViewerViewportClient.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\ResourceData.h" />

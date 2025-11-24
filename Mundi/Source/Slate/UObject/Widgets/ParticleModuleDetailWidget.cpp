@@ -2,6 +2,7 @@
 #include "ParticleModuleDetailWidget.h"
 #include "Source/Runtime/Engine/Particle/ParticleModule.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
+#include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
 #include "PropertyRenderer.h"
 #include "ImGui/imgui.h"
 
@@ -53,6 +54,18 @@ void UParticleModuleDetailWidget::RenderWidget()
 		// UPropertyRenderer를 사용하여 자동으로 프로퍼티 렌더링
 		UPropertyRenderer::RenderAllPropertiesWithInheritance(SelectedModule);
 	}
+	// 선택된 이미터가 있으면 해당 이미터의 프로퍼티 표시
+	else if (SelectedEmitter)
+	{
+		// 이미터 이름 표시
+		FString emitterName = SelectedEmitter->GetEmitterName().ToString();
+		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "Emitter: %s", emitterName.c_str());
+		ImGui::Separator();
+		ImGui::Spacing();
+
+		// UPropertyRenderer를 사용하여 자동으로 프로퍼티 렌더링
+		UPropertyRenderer::RenderAllPropertiesWithInheritance(SelectedEmitter);
+	}
 	// Particle System이 선택되어 있으면 Particle System 프로퍼티 표시
 	else if (ParticleSystem)
 	{
@@ -79,4 +92,9 @@ void UParticleModuleDetailWidget::SetSelectedModule(UParticleModule* InModule)
 void UParticleModuleDetailWidget::SetParticleSystem(UParticleSystem* InParticleSystem)
 {
 	ParticleSystem = InParticleSystem;
+}
+
+void UParticleModuleDetailWidget::SetSelectedEmitter(UParticleEmitter* InEmitter)
+{
+	SelectedEmitter = InEmitter;
 }

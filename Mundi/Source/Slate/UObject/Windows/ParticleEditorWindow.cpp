@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ParticleEditorWindow.h"
-#include "Source/Runtime/Engine/SkeletalViewer/SkeletalViewerBootstrap.h"
+#include "Source/Runtime/Engine/ParticleViewer/ParticleViewerBootstrap.h"
 #include "Source/Runtime/Engine/SkeletalViewer/ViewerState.h"
 #include "Source/Runtime/Renderer/FViewport.h"
 #include "Source/Runtime/Core/Object/Property.h"
@@ -23,7 +23,7 @@ SParticleEditorWindow::~SParticleEditorWindow()
 	// Destroy ViewerState
 	if (PreviewState)
 	{
-		SkeletalViewerBootstrap::DestroyViewerState(PreviewState);
+		ParticleViewerBootstrap::DestroyViewerState(PreviewState);
 		PreviewState = nullptr;
 	}
 
@@ -42,7 +42,7 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	bIsOpen = true;
 
 	// Create ViewerState for preview viewport
-	PreviewState = SkeletalViewerBootstrap::CreateViewerState("Particle Preview", InWorld, InDevice);
+	PreviewState = ParticleViewerBootstrap::CreateViewerState("Particle Preview", InWorld, InDevice);
 	if (!PreviewState)
 	{
 		UE_LOG("Failed to create ViewerState for Particle Editor");
@@ -319,122 +319,129 @@ void SParticleEditorWindow::RenderEmittersPanel()
 
 	ImGui::Spacing();
 
-	// Module list with checkboxes
-	struct ModuleInfo
+	if (!EditingParticleSystem || EditingParticleSystem->Emitters.size() == 0)
 	{
-		const char* name;
-		bool enabled;
-		ImVec4 color;
-	};
-
-	// 각 이미터별 모듈 정보
-	struct EmitterData
-	{
-		const char* name;
-		int particleCount;
-		ImVec4 headerColor;
-		std::vector<ModuleInfo> modules;
-	};
-
-	EmitterData emitters[] = {
-		{
-			"smoke", 7, ImVec4(1.0f, 0.5f, 0.0f, 1.0f),
-			{
-				{"Required", true, ImVec4(1.0f, 1.0f, 0.5f, 1.0f)},
-				{"Spawn", true, ImVec4(1.0f, 0.5f, 0.5f, 1.0f)},
-				{"Lifetime", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Size", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Color Over Life", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Rotation", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Rotation Rate", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Size By Life", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Drag", true, ImVec4(1.0f, 0.5f, 0.0f, 1.0f)},
-				{"Velocity Cone", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Drag", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)}
-			}
-		},
-		{
-			"blood1", 28, ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-			{
-				{"Required", true, ImVec4(1.0f, 1.0f, 0.5f, 1.0f)},
-				{"Spawn", true, ImVec4(1.0f, 0.5f, 0.5f, 1.0f)},
-				{"Lifetime", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Size", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Color Over Life", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"SubImage Index", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Pivot Offset", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Rotation", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Size By Life", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Velocity Cone", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Drag", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)}
-			}
-		},
-		{
-			"dirt", 11, ImVec4(0.3f, 0.3f, 0.3f, 1.0f),
-			{
-				{"Required", true, ImVec4(1.0f, 1.0f, 0.5f, 1.0f)},
-				{"Spawn", true, ImVec4(1.0f, 0.5f, 0.5f, 1.0f)},
-				{"Lifetime", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Size", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Size By Life", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Velocity Cone", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Pivot Offset", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Collision", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)}
-			}
-		},
-		{
-			"drops", 101, ImVec4(0.4f, 0.4f, 1.0f, 1.0f),
-			{
-				{"Required", true, ImVec4(1.0f, 1.0f, 0.5f, 1.0f)},
-				{"Spawn", true, ImVec4(1.0f, 0.5f, 0.5f, 1.0f)},
-				{"Lifetime", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Initial Size", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Color Over Life", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Const Acceleration", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Drag", true, ImVec4(1.0f, 0.5f, 0.0f, 1.0f)},
-				{"Size By Speed", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Velocity Cone", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)},
-				{"Collision", true, ImVec4(0.5f, 0.5f, 0.5f, 1.0f)}
-			}
-		}
-	};
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No Particle System loaded");
+		return;
+	}
 
 	// 각 이미터를 수평으로 카드 형태로 표시
 	ImGui::BeginChild("EmittersScroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 	{
-		for (int emitterIdx = 0; emitterIdx < 4; emitterIdx++)
+		// 이미터별 컬러 (순환)
+		ImVec4 emitterColors[] = {
+			ImVec4(1.0f, 0.5f, 0.0f, 1.0f),  // 오렌지
+			ImVec4(0.5f, 0.5f, 0.5f, 1.0f),  // 회색
+			ImVec4(0.3f, 0.3f, 0.3f, 1.0f),  // 어두운 회색
+			ImVec4(0.4f, 0.4f, 1.0f, 1.0f),  // 파란색
+		};
+
+		for (int emitterIdx = 0; emitterIdx <= EditingParticleSystem->Emitters.size(); emitterIdx++)
 		{
-			const EmitterData& emitter = emitters[emitterIdx];
+			// 마지막은 "+ Add Emitter" 버튼
+			if (emitterIdx == EditingParticleSystem->Emitters.size())
+			{
+				ImGui::BeginGroup();
+				{
+					ImVec2 addButtonSize = ImVec2(220, 60);
+					ImVec2 addButtonPos = ImGui::GetCursorScreenPos();
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+					// 점선 테두리
+					drawList->AddRect(
+						addButtonPos,
+						ImVec2(addButtonPos.x + addButtonSize.x, addButtonPos.y + addButtonSize.y),
+						IM_COL32(100, 100, 100, 255),
+						0.0f, 0, 2.0f
+					);
+
+					ImGui::SetCursorScreenPos(ImVec2(addButtonPos.x + addButtonSize.x / 2 - 50, addButtonPos.y + addButtonSize.y / 2 - 10));
+
+					if (ImGui::Button("+ Add Emitter", ImVec2(100, 30)))
+					{
+						AddNewEmitter();
+					}
+
+					// 우클릭으로도 추가 가능
+					if (ImGui::BeginPopupContextItem("AddEmitterCtx"))
+					{
+						if (ImGui::MenuItem("Add New Emitter"))
+						{
+							AddNewEmitter();
+						}
+						ImGui::EndPopup();
+					}
+
+					ImGui::SetCursorScreenPos(ImVec2(addButtonPos.x, addButtonPos.y + addButtonSize.y));
+					ImGui::Dummy(addButtonSize);
+				}
+				ImGui::EndGroup();
+				break;
+			}
+
+			UParticleEmitter* emitter = EditingParticleSystem->Emitters[emitterIdx];
+			if (!emitter || emitter->LODLevels.size() == 0) continue;
+
+			UParticleLODLevel* LODLevel = emitter->LODLevels[0];
+			if (!LODLevel) continue;
+
+			ImVec4 headerColor = emitterColors[emitterIdx % 4];
 
 			ImGui::BeginGroup();
 			{
-				// 이미터 헤더 (이름과 스프라이트)
-				ImGui::PushStyleColor(ImGuiCol_Header, emitter.headerColor);
-				ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(emitter.headerColor.x * 1.2f, emitter.headerColor.y * 1.2f, emitter.headerColor.z * 1.2f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_HeaderActive, emitter.headerColor);
-
 				// 헤더 영역
-				ImVec2 headerSize = ImVec2(180, 60);
+				ImVec2 headerSize = ImVec2(220, 60);
 				ImVec2 headerPos = ImGui::GetCursorScreenPos();
 				ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-				// 헤더 배경
-				drawList->AddRectFilled(
-					headerPos,
-					ImVec2(headerPos.x + headerSize.x, headerPos.y + headerSize.y),
-					ImGui::ColorConvertFloat4ToU32(emitter.headerColor)
-				);
+				// 선택 여부에 따라 테두리 표시
+				bool isEmitterSelected = (SelectedEmitterIndex == emitterIdx && SelectedModuleIndex == -1);
+				if (isEmitterSelected)
+				{
+					drawList->AddRect(
+						ImVec2(headerPos.x - 2, headerPos.y - 2),
+						ImVec2(headerPos.x + headerSize.x + 2, headerPos.y + headerSize.y + 2),
+						IM_COL32(255, 255, 0, 255),
+						0.0f, 0, 3.0f
+					);
+				}
+
+				// 헤더 배경 (클릭 가능한 버튼으로)
+				ImGui::PushStyleColor(ImGuiCol_Button, headerColor);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(headerColor.x * 1.2f, headerColor.y * 1.2f, headerColor.z * 1.2f, 1.0f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(headerColor.x * 0.8f, headerColor.y * 0.8f, headerColor.z * 0.8f, 1.0f));
+
+				if (ImGui::Button(("##EmitterHeader_" + std::to_string(emitterIdx)).c_str(), headerSize))
+				{
+					// 이미터 선택
+					SelectedEmitterIndex = emitterIdx;
+					SelectedModuleIndex = -1;
+					SelectedModule = nullptr;
+
+					// 디테일 위젯에 이미터 설정
+					if (DetailWidget)
+					{
+						DetailWidget->SetSelectedModule(nullptr);
+						DetailWidget->SetSelectedEmitter(emitter);
+					}
+				}
+
+				ImGui::PopStyleColor(3);
+
+				// 텍스트와 이미지는 버튼 위에 오버레이
+				ImVec2 currentPos = ImGui::GetCursorScreenPos();
 
 				// 파티클 카운트 (오른쪽 상단)
 				char countText[16];
-				sprintf_s(countText, "%d", emitter.particleCount);
+				sprintf_s(countText, "%d", emitter->PeakActiveParticles);
 				ImVec2 textSize = ImGui::CalcTextSize(countText);
 				ImGui::SetCursorScreenPos(ImVec2(headerPos.x + headerSize.x - textSize.x - 5, headerPos.y + 5));
 				ImGui::Text("%s", countText);
 
 				// 이미터 이름 (왼쪽 하단)
 				ImGui::SetCursorScreenPos(ImVec2(headerPos.x + 5, headerPos.y + headerSize.y - 20));
-				ImGui::Text("%s", emitter.name);
+				FString emitterNameStr = emitter->GetEmitterName().ToString();
+				ImGui::Text("%s", emitterNameStr.c_str());
 
 				// 스프라이트 썸네일 (중앙 우측)
 				ImVec2 spritePos = ImVec2(headerPos.x + headerSize.x - 55, headerPos.y + 15);
@@ -449,10 +456,7 @@ void SParticleEditorWindow::RenderEmittersPanel()
 					IM_COL32(120, 120, 120, 255)
 				);
 
-				ImGui::SetCursorScreenPos(ImVec2(headerPos.x, headerPos.y + headerSize.y));
-				ImGui::Dummy(headerSize);
-
-				ImGui::PopStyleColor(3);
+				ImGui::SetCursorScreenPos(currentPos);
 
 				// "GPU Sprites" 라벨
 				ImGui::Text("GPU Sprites");
@@ -460,36 +464,52 @@ void SParticleEditorWindow::RenderEmittersPanel()
 				ImGui::Spacing();
 
 				// 모듈 리스트
-				ImGui::BeginChild(("Modules_" + std::to_string(emitterIdx)).c_str(), ImVec2(180, 300), true);
+				ImGui::BeginChild(("Modules_" + std::to_string(emitterIdx)).c_str(), ImVec2(220, 300), true);
 				{
-					for (size_t moduleIdx = 0; moduleIdx < emitter.modules.size(); moduleIdx++)
+					// 모듈 컬러 매핑
+					auto GetModuleColor = [](const char* className) -> ImVec4 {
+						if (strstr(className, "Required")) return ImVec4(1.0f, 1.0f, 0.5f, 1.0f);
+						if (strstr(className, "Spawn")) return ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
+						if (strstr(className, "Lifetime")) return ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+						if (strstr(className, "Drag")) return ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+						return ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+					};
+
+					for (int moduleIdx = 0; moduleIdx < LODLevel->Modules.size(); moduleIdx++)
 					{
-						const ModuleInfo& module = emitter.modules[moduleIdx];
+						UParticleModule* module = LODLevel->Modules[moduleIdx];
+						if (!module) continue;
+
+						const char* moduleName = module->GetClass()->Name;
+						ImVec4 moduleColor = GetModuleColor(moduleName);
 
 						// 컬러 바
 						ImVec2 pos = ImGui::GetCursorScreenPos();
 						drawList->AddRectFilled(
 							ImVec2(pos.x, pos.y),
 							ImVec2(pos.x + 4, pos.y + ImGui::GetTextLineHeight()),
-							ImGui::ColorConvertFloat4ToU32(module.color)
+							ImGui::ColorConvertFloat4ToU32(moduleColor)
 						);
 
 						ImGui::Dummy(ImVec2(8, 0));
 						ImGui::SameLine();
 
 						// 체크박스
-						bool enabled = module.enabled;
-						ImGui::Checkbox(("##Mod_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str(), &enabled);
+						bool enabled = module->bEnabled;
+						if (ImGui::Checkbox(("##Mod_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str(), &enabled))
+						{
+							module->bEnabled = enabled;
+						}
 						ImGui::SameLine();
 
 						// 모듈 이름
-						bool isSelected = (SelectedEmitterIndex == emitterIdx && SelectedModuleIndex == (int)moduleIdx);
-						if (ImGui::Selectable((module.name + std::string("##Sel_") + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str(),
+						bool isSelected = (SelectedEmitterIndex == emitterIdx && SelectedModuleIndex == moduleIdx);
+						if (ImGui::Selectable((std::string(moduleName) + "##Sel_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str(),
 							isSelected, ImGuiSelectableFlags_AllowItemOverlap))
 						{
 							SelectedEmitterIndex = emitterIdx;
-							SelectedModuleIndex = (int)moduleIdx;
-							SelectedModule = GetModuleFromCurrentEmitter((int)moduleIdx);
+							SelectedModuleIndex = moduleIdx;
+							SelectedModule = module;
 
 							if (DetailWidget)
 							{
@@ -497,16 +517,37 @@ void SParticleEditorWindow::RenderEmittersPanel()
 							}
 						}
 
-						// 아이콘들 (오른쪽)
-						if (isSelected)
+						// 우클릭 컨텍스트 메뉴
+						if (ImGui::BeginPopupContextItem(("ModuleCtx_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str()))
 						{
-							ImGui::SameLine(ImGui::GetWindowWidth() - 40);
-							ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-							if (ImGui::SmallButton(("3D##" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str())) {}
-							ImGui::SameLine();
-							if (ImGui::SmallButton(("C##" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str())) {}
-							ImGui::PopStyleColor();
+							if (ImGui::MenuItem("Delete Module"))
+							{
+								// TODO: 모듈 삭제
+							}
+							ImGui::EndPopup();
 						}
+					}
+
+					// 빈 공간 우클릭으로 모듈 추가
+					ImGui::Spacing();
+					ImGui::Separator();
+					if (ImGui::Selectable("+ Add Module", false, 0, ImVec2(ImGui::GetContentRegionAvail().x, 0)))
+					{
+						ImGui::OpenPopup(("AddModulePopup_" + std::to_string(emitterIdx)).c_str());
+					}
+
+					// 우클릭으로도 팝업 열기
+					if (ImGui::BeginPopupContextItem(("AddModuleCtxItem_" + std::to_string(emitterIdx)).c_str()))
+					{
+						ShowAddModuleContextMenu(emitterIdx);
+						ImGui::EndPopup();
+					}
+
+					// + Add Module 클릭시 팝업
+					if (ImGui::BeginPopup(("AddModulePopup_" + std::to_string(emitterIdx)).c_str()))
+					{
+						ShowAddModuleContextMenu(emitterIdx);
+						ImGui::EndPopup();
 					}
 				}
 				ImGui::EndChild();
@@ -514,10 +555,20 @@ void SParticleEditorWindow::RenderEmittersPanel()
 			ImGui::EndGroup();
 
 			// 수평으로 배치
-			if (emitterIdx < 3)
+			if (emitterIdx < EditingParticleSystem->Emitters.size())
 			{
 				ImGui::SameLine();
 			}
+		}
+
+		// 빈 공간 우클릭으로 이미터 추가
+		if (ImGui::BeginPopupContextWindow("EmittersAreaCtx", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+		{
+			if (ImGui::MenuItem("Add New Emitter"))
+			{
+				AddNewEmitter();
+			}
+			ImGui::EndPopup();
 		}
 	}
 	ImGui::EndChild();
@@ -810,4 +861,105 @@ void SParticleEditorWindow::CreateTestParticleSystem()
 	UE_LOG("Test ParticleSystem created with %d emitters and %d modules",
 		EditingParticleSystem->Emitters.Num(),
 		LODLevel->Modules.Num());
+}
+
+void SParticleEditorWindow::ShowAddModuleContextMenu(int32 EmitterIndex)
+{
+	if (!EditingParticleSystem || EmitterIndex >= EditingParticleSystem->Emitters.size())
+		return;
+
+	UParticleEmitter* emitter = EditingParticleSystem->Emitters[EmitterIndex];
+	if (!emitter || emitter->LODLevels.size() == 0)
+		return;
+
+	UParticleLODLevel* LODLevel = emitter->LODLevels[0];
+
+	ImGui::Text("Add Module");
+	ImGui::Separator();
+
+	// 리플렉션 시스템을 사용하여 모든 UParticleModule 서브클래스 찾기
+	UClass* ParticleModuleClass = UParticleModule::StaticClass();
+
+	// 등록된 모든 클래스를 순회
+	const TArray<UClass*>& AllClasses = UClass::GetAllClasses();
+	for (UClass* classType : AllClasses)
+	{
+		// UParticleModule의 서브클래스인지 확인
+		if (classType && classType != ParticleModuleClass && classType->IsChildOf(ParticleModuleClass))
+		{
+			// Base 클래스나 추상 클래스는 제외
+			const char* className = classType->Name;
+			if (strstr(className, "Base") != nullptr)
+				continue;
+
+			// DisplayName이 있으면 사용, 없으면 클래스 이름 사용
+			const char* displayName = classType->DisplayName ? classType->DisplayName : className;
+
+			// 메뉴 아이템 생성
+			if (ImGui::MenuItem(displayName))
+			{
+				// 해당 클래스의 인스턴스 생성
+				UParticleModule* newModule = (UParticleModule*)NewObject(classType);
+				if (newModule)
+				{
+					// 기본값 설정
+					newModule->SetToSensibleDefaults(emitter);
+
+					// 모듈 추가
+					LODLevel->Modules.Add(newModule);
+					UE_LOG("Added %s module to emitter %d", displayName, EmitterIndex);
+				}
+			}
+		}
+	}
+}
+
+void SParticleEditorWindow::AddNewEmitter()
+{
+	if (!EditingParticleSystem)
+		return;
+
+	// 새 이미터 생성
+	UParticleEmitter* NewEmitter = NewObject<UParticleEmitter>();
+
+	// 이미터 이름 설정
+	char emitterName[64];
+	sprintf_s(emitterName, "Emitter_%d", EditingParticleSystem->Emitters.size());
+	NewEmitter->SetEmitterName(FName(emitterName));
+
+	// LOD 레벨 생성
+	UParticleLODLevel* LODLevel = NewObject<UParticleLODLevel>();
+	LODLevel->Level = 0;
+	LODLevel->bEnabled = true;
+
+	// Required 모듈 생성 (필수)
+	UParticleModuleRequired* RequiredModule = NewObject<UParticleModuleRequired>();
+	RequiredModule->Material = nullptr;
+	RequiredModule->bUseLocalSpace = false;
+	RequiredModule->EmitterDuration = 1.0f;
+	RequiredModule->EmitterDurationLow = 1.0f;
+	RequiredModule->EmitterLoops = 0;
+	RequiredModule->EmitterDelay = 0.0f;
+	LODLevel->Modules.Add(RequiredModule);
+
+	// Spawn 모듈 생성 (필수)
+	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
+	SpawnModule->Rate = 10.0f;
+	SpawnModule->RateScale = 1.0f;
+	LODLevel->Modules.Add(SpawnModule);
+
+	// Lifetime 모듈 생성 (필수)
+	UParticleModuleLifetime* LifetimeModule = NewObject<UParticleModuleLifetime>();
+	LifetimeModule->Lifetime = 3.0f;
+	LifetimeModule->LifetimeMin = 2.0f;
+	LifetimeModule->bUseLifetimeRange = false;
+	LODLevel->Modules.Add(LifetimeModule);
+
+	// LOD 레벨을 이미터에 추가
+	NewEmitter->LODLevels.Add(LODLevel);
+
+	// 이미터를 파티클 시스템에 추가
+	EditingParticleSystem->Emitters.Add(NewEmitter);
+
+	UE_LOG("New emitter added: %s (Total emitters: %d)", emitterName, EditingParticleSystem->Emitters.Num());
 }
