@@ -1,20 +1,15 @@
-﻿#pragma once
+#pragma once
 
 #include "PrimitiveComponent.h"
+#include "UParticleSystemComponent.generated.h"
 
 struct FDynamicEmitterDataBase;
 class UParticleSystem;
 
-UCLASS()
-class UFXSystemComponent : public UPrimitiveComponent
+UCLASS(DisplayName = "파티클 컴포넌트", Description = "파티클을 렌더링하는 컴포넌트입니다")
+class UParticleSystemComponent : public UPrimitiveComponent
 {
-	DECLARE_CLASS(UFXSystemComponent, UPrimitiveComponent)
-};
-
-UCLASS()
-class UParticleSystemComponent : public UFXSystemComponent
-{
-	DECLARE_CLASS(UParticleSystemComponent, UFXSystemComponent)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	UParticleSystemComponent();
@@ -24,6 +19,8 @@ public:
 	//~ Begin UActorComponent Interface //
 	virtual void TickComponent(float DeltaTime) override;
 	//~ End UActorComponent Interface //
+
+	virtual void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) override;
 
 	/**
 	 * 파티클 시스템을 초기화하고 이미터 인스턴스를 생성한다.

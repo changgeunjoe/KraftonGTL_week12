@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ParticleEmitter.h"
 
 class UParticleSystemComponent;
@@ -15,8 +15,11 @@ enum EParticleScreenAlignment : int
 	PSA_MAX,
 };
 
+UCLASS()
 class UParticleSpriteEmitter : public UParticleEmitter
 {
+	DECLARE_CLASS(UParticleSpriteEmitter, UParticleEmitter)
+
 public:
 
 	//~ Begin UParticleEmitter Interface

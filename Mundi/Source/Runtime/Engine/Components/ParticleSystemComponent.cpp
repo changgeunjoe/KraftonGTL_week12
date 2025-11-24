@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ParticleSystemComponent.h"
 
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
@@ -6,10 +6,8 @@
 #include "Source/Runtime/Engine/Particle/ParticleHelper.h"
 #include "Source/Runtime/Engine/Particle/ParticleLODLevel.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
-
-IMPLEMENT_CLASS(UFXSystemComponent, UPrimitiveComponent)
-
-IMPLEMENT_CLASS(UParticleSystemComponent, UFXSystemComponent)
+#include "Source/Runtime/Engine/Particle/ParticleSpriteEmitter.h"
+#include "SceneView.h"
 
 UParticleSystemComponent::UParticleSystemComponent()
 	: Template(nullptr)
@@ -19,12 +17,25 @@ UParticleSystemComponent::UParticleSystemComponent()
 	, LODLevel(0)
 	, TotalActiveParticles(0)
 {
+	bCanEverTick = true;	// 에디터에서 tick 돌리기 위한
+
+	// NOTE: UParticleSystem 에셋 하드코딩 (추후 에셋으로 할당 필요)
+	Template = NewObject<UParticleSystem>();
+	Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
+
+	//InitParticles();	// tick에서 호출해줌
 }
 
 UParticleSystemComponent::~UParticleSystemComponent()
 {
 	ResetParticles(true);
 	ClearDynamicData();
+
+	if (Template)
+	{
+		DeleteObject(Template);
+		Template = nullptr;
+	}
 }
 
 void UParticleSystemComponent::InitParticles()
@@ -130,6 +141,21 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
 
 	UpdateDynamicData();
 }
+
+void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
+{
+	for (FDynamicEmitterDataBase* EmitterData : EmitterRenderData)
+	{
+		if (!EmitterData)
+		{
+			continue;
+		}
+
+		// 렌더링 배치를 수집 (Collect)
+		EmitterData->GetDynamicMeshElementsEmitter(OutMeshBatchElements, View);
+	}
+}
+
 
 void UParticleSystemComponent::ClearDynamicData()
 {

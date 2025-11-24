@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ParticleModule.h"
+#include "UParticleEmitter.generated.h"
 
 class UParticleSystemComponent;
 class UParticleLODLevel;
@@ -7,13 +8,14 @@ class UParticleLODLevel;
 UCLASS()
 class UParticleEmitter : public UObject
 {
-	DECLARE_CLASS(UParticleEmitter, UObject)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	//~=============================================================================
 	//	General variables
 	//~=============================================================================
 	/** 이미터의 이름 */
+	UPROPERTY(EditAnywhere, Category="ParticleEmitter")
 	FName EmitterName;
 
 	//~=============================================================================
@@ -28,6 +30,7 @@ public:
 	/** * 이 이미터가 동시에 가질 수 있는 최대 파티클 수의 추정치이다.
 	 * 메모리 프리사이징(Pre-sizing)에 사용
 	 */
+	UPROPERTY(EditAnywhere, Category="ParticleEmitter")
 	int32 PeakActiveParticles;
 
 	//~=============================================================================
@@ -35,6 +38,7 @@ public:
 	//~=============================================================================
 
 	/** 초기 할당 수 - 0보다 크면 PeakActiveParticles 대신 이 값을 사용해 메모리를 미리 할당한다. */
+	UPROPERTY(EditAnywhere, Category="ParticleEmitter")
 	int32 InitialAllocationCount;
 
 	/** * 모듈 포인터 -> 파티클 페이로드 내 오프셋(Offset) 매핑
@@ -51,12 +55,15 @@ public:
 	/** * 파티클 1개당 필요한 '추가' 데이터의 크기 (바이트 단위)
 	 * FBaseParticle 크기는 제외된 값이다.
 	 */
+	UPROPERTY(EditAnywhere, Category="ParticleEmitter")
 	int32 ParticleSize;
 
 	/** 이미터 인스턴스 하나당 필요한 데이터 크기 */
+	UPROPERTY(EditAnywhere, Category="ParticleEmitter")
 	int32 ReqInstanceBytes;
 
 	/** 이미터 인스턴스 데이터를 필요로하는 모듈의 배열 */
+	UPROPERTY(EditAnywhere, Category="ParticleEmitter")
 	TArray<UParticleModule*> ModulesNeedingInstanceData;
 
 public:

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "UParticleSystem.generated.h"
 
 class UParticleEmitter;
 class UParticleSystemComponent;
@@ -6,7 +7,7 @@ class UParticleSystemComponent;
 UCLASS()
 class UParticleSystem : public UObject
 {
-	DECLARE_CLASS(UParticleSystem, UObject)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	/** 시스템 내에 존재하는 이미터들의 배열 */

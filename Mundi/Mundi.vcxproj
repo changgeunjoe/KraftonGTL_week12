@@ -104,7 +104,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio;$(ProjectDir)Source\Runtime\Engine\Particle</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /MP %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -134,7 +134,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio;$(ProjectDir)Source\Runtime\Engine\Particle</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /MP %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -164,7 +164,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio;$(ProjectDir)Source\Runtime\Engine\Particle</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /MP %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -194,7 +194,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTex\;$(SolutionDir)Mundi\ThirdParty\Include\DirectXTK;$(SolutionDir)Mundi\ThirdParty\Include\Lua;$(SolutionDir)Mundi\ThirdParty\Include\sol;$(SolutionDir)Mundi\ThirdParty\Include;$(SolutionDir)Mundi\ThirdParty\Include\FBX;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\Audio;$(ProjectDir)Source\Runtime\Engine\Particle</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /MP %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -533,6 +533,7 @@
     <ClCompile Include="Source\Runtime\Engine\GameFramework\HeightFogActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Info.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Level.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Pawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerController.cpp" />
@@ -561,6 +562,7 @@
     <ClCompile Include="Source\Runtime\Engine\Scripting\LuaCoroutineScheduler.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Scripting\LuaManager.cpp" />
     <ClCompile Include="Source\Runtime\Engine\SkeletalViewer\SkeletalViewerBootstrap.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\ParticleViewer\ParticleViewerBootstrap.cpp" />
     <ClCompile Include="Source\Runtime\Engine\SkeletalViewer\ViewerState.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Spatial\BVHierarchy.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Spatial\MeshBVH.cpp" />
@@ -589,6 +591,30 @@
     <ClCompile Include="Source\Runtime\RHI\PipelineStateManager.cpp" />
     <ClCompile Include="Source\Runtime\RHI\PipelineStateObject.cpp" />
     <ClCompile Include="Source\Runtime\RHI\RHIDevice.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SGridPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SHorizontalBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SScrollBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SVerticalBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SViewportPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SButton.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SCheckBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SColorPicker.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SComboBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SEditableText.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SImage.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SListView.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SSeparator.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SSlider.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\STreeView.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\STextBlock.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SControlPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SDetailsWindow.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SSplitter.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SSplitterH.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SSplitterV.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SViewportWindow.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SWindow.cpp" />
     <ClCompile Include="Source\Slate\Factory\UIWindowFactory.cpp" />
     <ClCompile Include="Source\Slate\GlobalConsole.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -598,32 +624,28 @@
     <ClCompile Include="Source\Slate\StatsOverlayD2D.cpp" />
     <ClCompile Include="Source\Slate\ThumbnailManager.cpp" />
     <ClCompile Include="Source\Slate\UIManager.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\ConsoleWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\InputInformationWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\MainToolbarWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\ParticleModuleDetailWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\PropertyRenderer.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\SceneManagerWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\TargetActorTransformWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\AnimStateMachineWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\BlendSpace2DEditorWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ConsoleWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ContentBrowserWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ControlPanelWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ExperimentalFeatureWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\PreviewWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\PreviewWindow_Timeline.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ParticleEditorWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\PropertyWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\SceneWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\SlateTestWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\UIWindow.cpp" />
     <ClCompile Include="Source\Slate\USlateManager.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\ConsoleWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\InputInformationWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\MainToolbarWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\PropertyRenderer.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\SceneManagerWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\TargetActorTransformWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\Widget.cpp" />
-    <ClCompile Include="Source\Slate\Windows\BlendSpace2DEditorWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\ConsoleWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\ContentBrowserWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\ControlPanelWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\ExperimentalFeatureWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\PropertyWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\AnimStateMachineWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SceneWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SControlPanel.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SDetailsWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\PreviewWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\PreviewWindow_Timeline.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SSplitter.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SSplitterH.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SSplitterV.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SViewportWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\UIWindow.cpp" />
     <ClCompile Include="ThirdParty\Include\ImGui\crude_json.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -714,6 +736,18 @@
     <ClCompile Include="Generated\ASkeletalMeshActor.generated.cpp" />
     <ClCompile Include="Generated\ASpotLightActor.generated.cpp" />
     <ClCompile Include="Generated\AStaticMeshActor.generated.cpp" />
+    <ClCompile Include="Generated\UParticleSystemComponent.generated.cpp" />
+    <ClCompile Include="Generated\AParticleSystemActor.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModule.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleLifetimeBase.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleRequired.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleSpawnBase.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleLifetime.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleSpawn.generated.cpp" />
+    <ClCompile Include="Generated\UParticleEmitter.generated.cpp" />
+    <ClCompile Include="Generated\UParticleLODLevel.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleTypeDataBase.generated.cpp" />
+    <ClCompile Include="Generated\UParticleSystem.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -845,6 +879,7 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\HeightFogActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Info.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Level.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Pawn.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerController.h" />
@@ -872,6 +907,7 @@
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaCoroutineScheduler.h" />
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaManager.h" />
     <ClInclude Include="Source\Runtime\Engine\SkeletalViewer\SkeletalViewerBootstrap.h" />
+    <ClInclude Include="Source\Runtime\Engine\ParticleViewer\ParticleViewerBootstrap.h" />
     <ClInclude Include="Source\Runtime\Engine\SkeletalViewer\ViewerState.h" />
     <ClInclude Include="Source\Runtime\Engine\Spatial\BVHierarchy.h" />
     <ClInclude Include="Source\Runtime\Engine\Spatial\MeshBVH.h" />
@@ -907,6 +943,31 @@
     <ClInclude Include="Source\Runtime\RHI\PipelineStateObject.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIDevice.h" />
     <ClInclude Include="Source\Runtime\RHI\SwapGuard.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SGridPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SHorizontalBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SScrollBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SVerticalBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SViewportPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SButton.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SCheckBox.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SColorPicker.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SComboBox.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SCompoundWidget.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SEditableText.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SImage.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SListView.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SSeparator.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SSlider.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\STreeView.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\STextBlock.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SControlPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SDetailsWindow.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SSplitter.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SSplitterH.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SSplitterV.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SViewportWindow.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SWindow.h" />
     <ClInclude Include="Source\Slate\Factory\UIWindowFactory.h" />
     <ClInclude Include="Source\Slate\GlobalConsole.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -916,31 +977,27 @@
     <ClInclude Include="Source\Slate\StatsOverlayD2D.h" />
     <ClInclude Include="Source\Slate\ThumbnailManager.h" />
     <ClInclude Include="Source\Slate\UIManager.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\ConsoleWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\InputInformationWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\MainToolbarWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\ParticleModuleDetailWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\PropertyRenderer.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\SceneManagerWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\TargetActorTransformWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\Widget.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\AnimStateMachineWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\BlendSpace2DEditorWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ConsoleWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ContentBrowserWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ControlPanelWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ExperimentalFeatureWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ParticleEditorWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\PreviewWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\PropertyWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\SceneWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\SlateTestWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\UIWindow.h" />
     <ClInclude Include="Source\Slate\USlateManager.h" />
-    <ClInclude Include="Source\Slate\Widgets\ConsoleWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\InputInformationWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\MainToolbarWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\PropertyRenderer.h" />
-    <ClInclude Include="Source\Slate\Widgets\SceneManagerWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\TargetActorTransformWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\Widget.h" />
-    <ClInclude Include="Source\Slate\Windows\BlendSpace2DEditorWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\ConsoleWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\ContentBrowserWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\ControlPanelWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\ExperimentalFeatureWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\PropertyWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\AnimStateMachineWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\SceneWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\SControlPanel.h" />
-    <ClInclude Include="Source\Slate\Windows\SDetailsWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\PreviewWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\SSplitter.h" />
-    <ClInclude Include="Source\Slate\Windows\SSplitterH.h" />
-    <ClInclude Include="Source\Slate\Windows\SSplitterV.h" />
-    <ClInclude Include="Source\Slate\Windows\SViewportWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\SWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\UIWindow.h" />
     <ClInclude Include="ThirdParty\DirectXTK\include\Audio.h" />
     <ClInclude Include="ThirdParty\DirectXTK\include\BufferHelpers.h" />
     <ClInclude Include="ThirdParty\DirectXTK\include\CommonStates.h" />
@@ -1021,6 +1078,18 @@
     <ClInclude Include="Generated\ASkeletalMeshActor.generated.h" />
     <ClInclude Include="Generated\ASpotLightActor.generated.h" />
     <ClInclude Include="Generated\AStaticMeshActor.generated.h" />
+    <ClInclude Include="Generated\UParticleSystemComponent.generated.h" />
+    <ClInclude Include="Generated\AParticleSystemActor.generated.h" />
+    <ClInclude Include="Generated\UParticleModule.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleLifetimeBase.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleRequired.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleSpawnBase.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleLifetime.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleSpawn.generated.h" />
+    <ClInclude Include="Generated\UParticleEmitter.generated.h" />
+    <ClInclude Include="Generated\UParticleLODLevel.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleTypeDataBase.generated.h" />
+    <ClInclude Include="Generated\UParticleSystem.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

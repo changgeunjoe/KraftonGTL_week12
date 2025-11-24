@@ -2,7 +2,7 @@
 #include "ParticleModuleRequired.h"
 #include "ParticleSpriteEmitter.h"
 
-IMPLEMENT_CLASS(UParticleModuleRequired, UParticleModule)
+
 
 UParticleModuleRequired::UParticleModuleRequired()
 	: Material(nullptr)

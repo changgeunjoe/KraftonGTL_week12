@@ -1,4 +1,8 @@
-﻿#pragma once
+#pragma once
+
+#include "UEContainer.h"
+#include "MeshBatchElement.h"
+#include "SceneView.h"
 
 /*-----------------------------------------------------------------------------
 	Helper macros.
@@ -160,6 +164,8 @@ struct FDynamicEmitterDataBase
 	/** 이 파티클 시스템의 소스 데이터를 반환한다. */
 	virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
 
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const {}
+
 	uint32	bSelected:1;
 
 	int32  EmitterIndex;
@@ -199,14 +205,9 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
-	FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule) :
-		FDynamicSpriteEmitterDataBase(RequiredModule)
-	{
-	}
+	FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule);
 
-	virtual ~FDynamicSpriteEmitterData()
-	{
-	}
+	virtual ~FDynamicSpriteEmitterData();
 
 	void Init(bool bInSelected);
 
@@ -225,5 +226,13 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 		return &Source;
 	}
 
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const override;
+
 	FDynamicSpriteEmitterReplayData Source;
+
+	// GPU에 바인딩될 정점 버퍼입니다.
+	ID3D11Buffer* VertexBuffer = nullptr;
+
+	// GPU에 바인딩될 인덱스 버퍼입니다.
+	ID3D11Buffer* IndexBuffer = nullptr;
 };

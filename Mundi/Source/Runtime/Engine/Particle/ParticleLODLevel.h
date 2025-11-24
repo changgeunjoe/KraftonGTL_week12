@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "UParticleLODLevel.generated.h"
 
 class UParticleEmitter;
 class UParticleModuleTypeDataBase;
@@ -10,7 +11,7 @@ class UParticleModuleRequired;
 UCLASS()
 class UParticleLODLevel : public UObject
 {
-	DECLARE_CLASS(UParticleLODLevel, UObject)
+	GENERATED_REFLECTION_BODY()
 
 public:
 	/** LOD 레벨의 인덱스 */

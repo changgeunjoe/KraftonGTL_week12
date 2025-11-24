@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Widgets/ConsoleWidget.h"
+#include "Source/Slate/UObject/Widgets/ConsoleWidget.h"
 
 IMPLEMENT_CLASS(UGlobalConsole)
 

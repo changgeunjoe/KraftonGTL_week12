@@ -7,8 +7,6 @@
 #include "ParticleLODLevel.h"
 #include "ParticleModuleTypeDataBase.h"
 
-IMPLEMENT_CLASS(UParticleEmitter, UObject)
-
 UParticleEmitter::UParticleEmitter()
 	: PeakActiveParticles(0)
 	, InitialAllocationCount(0)

@@ -455,3 +455,5 @@ Document/*
 
 # Generated Files
 /Mundi/Generated/
+
+**.dmp

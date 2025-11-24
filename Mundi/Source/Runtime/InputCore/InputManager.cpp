@@ -141,6 +141,7 @@ void UInputManager::ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARA
                 const char* Name = Hovered->Name;
                 if (strcmp(Name, "SkeletalMeshViewport") == 0 ||
                     strcmp(Name, "BlendSpace2DViewport") == 0 ||
+                    strcmp(Name, "ParticleEditorViewport") == 0 ||
                     strcmp(Name, "ViewportRenderArea") == 0)
                 {
                     IsUIHover = false;
