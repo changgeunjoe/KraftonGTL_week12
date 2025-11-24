@@ -118,8 +118,6 @@ void FParticleEmitterInstance::Init()
 		ParticleStride = CalculateParticleStride(ParticleSize);
 	}
 
-	SetMeshMaterials(SpriteTemplate->MeshMaterials);
-
 	// 초기값 설정
 	SpawnFraction			= 0;
 	SecondsSinceCreation	= 0;
@@ -587,7 +585,7 @@ void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float Interpol
 		// }
 	 // }
 	Particle->OldLocation = Particle->Location;
-	Particle->Location = FVector(Particle->Velocity) * SpawnTime;
+	Particle->Location += FVector(Particle->Velocity) * SpawnTime;
 }
 
 void FParticleEmitterInstance::SetupEmitterDuration()

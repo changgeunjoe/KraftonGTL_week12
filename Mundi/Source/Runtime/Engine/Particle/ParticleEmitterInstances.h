@@ -212,14 +212,6 @@ public:
 	void UpdateTransforms();
 
 	/**
-	 * 렌더링되어야 할 메쉬 파티클의 머티리얼들을 설정한다.
-	 * @param InMaterials - 머티리얼들
-	 */
-	virtual void SetMeshMaterials(const TArray<UMaterialInterface*>& InMaterials)
-	{
-	}
-
-	/**
 	 * 현재 LOD 레벨을 가져오고 유효한지 검증한다.
 	 */
 	UParticleLODLevel* GetCurrentLODLevelChecked();
