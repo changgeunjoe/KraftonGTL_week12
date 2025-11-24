@@ -19,18 +19,31 @@ cbuffer ViewProjBuffer : register(b1)
 	row_major float4x4 InverseProjectionMatrix;
 };
 
-// C++의 FParticleForGPU 구조체와 일치해야 합니다 (패딩 포함).
-struct FParticleForGPU
+struct FParticleSpriteVertex
 {
-	float3 Location;
-	float _pad0;
+	// C++: FVector Position; (12바이트)
+	// C++: float RelativeTime; (4바이트) -> 합: float4 16바이트
+	float3 Position;
+	float RelativeTime;
+	
+	// C++: FVector OldPosition; (12바이트)
+	// C++: float ParticleId; (4바이트) -> 합: float4 16바이트
+	float3 OldPosition;
+	float ParticleId;
+	
+	// C++: FVector2D Size; (8바이트)
+	// C++: float Rotation; (4바이트)
+	// C++: float SubImageIndex; (4바이트) -> 합: float4 16바이트
 	float2 Size;
-	float2 _pad1;
+	float Rotation;
+	float SubImageIndex;
+
+	// C++: FLinearColor Color; (16바이트) -> float4 16바이트
 	float4 Color;
 };
 
 // 파티클 데이터를 담는 구조화 버퍼 (VS에서만 사용)
-StructuredBuffer<FParticleForGPU> ParticleBuffer : register(t10);
+StructuredBuffer<FParticleSpriteVertex> ParticleBuffer : register(t10);
 
 // 텍스처 및 샘플러 (PS에서 사용)
 Texture2D DiffuseTexture : register(t0);
@@ -68,7 +81,7 @@ PS_INPUT mainVS(VS_INPUT input)
 	PS_INPUT output = (PS_INPUT)0;
 
 	// 현재 인스턴스에 해당하는 파티클 데이터 가져오기
-	FParticleForGPU particle = ParticleBuffer[input.InstanceID];
+	FParticleSpriteVertex particle = ParticleBuffer[input.InstanceID];
 
 	// 카메라를 마주보도록 쿼드를 회전시키는 빌보드 로직
 	// ViewMatrix에서 카메라의 Right, Up 벡터를 추출
@@ -77,7 +90,7 @@ PS_INPUT mainVS(VS_INPUT input)
 
 	// 정점의 월드 위치 계산
 	// 파티클 위치를 기준으로, 카메라의 Right/Up 벡터와 파티클 크기를 사용하여 오프셋 적용
-	float3 worldPosition = particle.Location;
+	float3 worldPosition = particle.Position;
 	worldPosition += (camRight * input.Position.x * particle.Size.x);
 	worldPosition += (camUp * input.Position.y * particle.Size.y);
 

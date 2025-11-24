@@ -30,6 +30,13 @@ FBaseParticle&	Particle		= *(ParticleBase);
 
 class UParticleModuleRequired;
 
+// 인스턴싱을 위한 정점 구조체
+struct FParticleVertex
+{
+	FVector Position;
+	FVector2D UV;
+};
+
 /**
  * GPU에 전달되는 파티클 당 데이터
  */
@@ -83,6 +90,7 @@ struct FMeshParticleInstanceVertex
 	/** 파티클의 상대 시간 */
 	float RelativeTime;
 };
+
 
 struct FMeshRotationPayloadData
 {
@@ -278,6 +286,10 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 	/** 파티클 이미터가 DynamicParamter 모듈을 사용한다면 True */
 	uint32 bUsesDynamicParameter:1;
+
+	// GPU 파티클 데이터를 저장할 구조화 버퍼입니다.
+	ID3D11Buffer* ParticleStructuredBuffer = nullptr;
+	ID3D11ShaderResourceView* ParticleStructuredBufferSRV = nullptr;
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
@@ -306,10 +318,6 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const override;
 
 	FDynamicSpriteEmitterReplayData Source;
-
-	// GPU 파티클 데이터를 저장할 구조화 버퍼입니다.
-	ID3D11Buffer* ParticleStructuredBuffer = nullptr;
-	ID3D11ShaderResourceView* ParticleStructuredBufferSRV = nullptr;
 
 	// GPU 인스턴싱을 위한 정적 정점/인덱스 버퍼입니다.
 	ID3D11Buffer* VertexBuffer = nullptr;
@@ -346,6 +354,8 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 	{
 		return &Source;
 	}
+
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const override;
 
 	FDynamicMeshEmitterReplayData Source;
 

@@ -9,25 +9,6 @@ FDynamicEmitterDataBase::FDynamicEmitterDataBase(const class UParticleModuleRequ
 {
 }
 
-/**
- * GPU 파티클 렌더링을 위한 데이터 구조체
- */
-struct FParticleForGPU
-{
-	FVector Location;
-	float _pad0;
-	FVector2D Size;
-	float _pad1[2];
-	FLinearColor Color;
-};
-
-// 인스턴싱을 위한 정점 구조체
-struct FParticleVertex
-{
-	FVector Position;
-	FVector2D UV;
-};
-
 FDynamicSpriteEmitterData::FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule) : FDynamicSpriteEmitterDataBase(RequiredModule)
 {
 	constexpr uint32 MaxParticles = 4096u;
@@ -42,8 +23,8 @@ FDynamicSpriteEmitterData::FDynamicSpriteEmitterData(const UParticleModuleRequir
 		Sbd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		Sbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		Sbd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-		Sbd.StructureByteStride = sizeof(FParticleForGPU);
-		Sbd.ByteWidth = static_cast<UINT>(sizeof(FParticleForGPU) * MaxParticles);
+		Sbd.StructureByteStride = sizeof(FParticleSpriteVertex);
+		Sbd.ByteWidth = static_cast<UINT>(sizeof(FParticleSpriteVertex) * MaxParticles);
 
 		HRESULT Hr = Device->CreateBuffer(&Sbd, nullptr, &ParticleStructuredBuffer);
 		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer");
@@ -64,14 +45,14 @@ FDynamicSpriteEmitterData::FDynamicSpriteEmitterData(const UParticleModuleRequir
 		FParticleVertex QuadVertices[4];
 		QuadVertices[0] = { FVector(-0.5f, -0.5f, 0.0f), FVector2D(0.0f, 1.0f) }; // LB
 		QuadVertices[1] = { FVector(-0.5f,  0.5f, 0.0f), FVector2D(0.0f, 0.0f) }; // LT
-		QuadVertices[2] = { FVector( 0.5f,  0.5f, 0.0f), FVector2D(1.0f, 0.0f) }; // RT
-		QuadVertices[3] = { FVector( 0.5f, -0.5f, 0.0f), FVector2D(1.0f, 1.0f) }; // RB
+		QuadVertices[2] = { FVector(0.5f,  0.5f, 0.0f), FVector2D(1.0f, 0.0f) }; // RT
+		QuadVertices[3] = { FVector(0.5f, -0.5f, 0.0f), FVector2D(1.0f, 1.0f) }; // RB
 
 		D3D11_BUFFER_DESC Vbd{};
 		Vbd.Usage = D3D11_USAGE_DEFAULT;
 		Vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		Vbd.ByteWidth = sizeof(FParticleVertex) * 4;
-		
+
 		D3D11_SUBRESOURCE_DATA Srd{};
 		Srd.pSysMem = QuadVertices;
 
@@ -148,7 +129,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 			const uint16* Indices = Src->DataContainer.ParticleIndices;
 			bool bHasIndices = (Indices != nullptr);
 
-			TArray<FParticleForGPU> GpuParticles;
+			TArray<FParticleSpriteVertex> GpuParticles;
 			GpuParticles.SetNum(ParticleCount);
 
 			for (int32 i = 0; i < ParticleCount; ++i)
@@ -157,23 +138,22 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 				FBaseParticle* P = reinterpret_cast<FBaseParticle*>(BasePtr + SrcIndex * Stride);
 				if (!P) continue;
 
-				GpuParticles[i].Location = P->Location;
-				GpuParticles[i].Size = FVector2D(2,2);
+				GpuParticles[i].Position = P->Location;
+				GpuParticles[i].Size = FVector2D(2, 2);
 				//GpuParticles[i].Size = FVector2D(P->Size.X, P->Size.Y);
 				GpuParticles[i].Color = FLinearColor(1, 1, 1, 1);
 				//GpuParticles[i].Color = P->Color;
 			}
 
-
 			// 카메라 기준 Z(depth)로 내림차순 정렬 (멀리 있는 것부터 가까운 것)
-			GpuParticles.Sort([&](const FParticleForGPU& A, const FParticleForGPU& B)
+			GpuParticles.Sort([&](const FParticleSpriteVertex& A, const FParticleSpriteVertex& B)
 				{
-					float DistA = (A.Location - View->ViewLocation).SizeSquared();
-					float DistB = (B.Location - View->ViewLocation).SizeSquared();
+					float DistA = (A.Position - View->ViewLocation).SizeSquared();
+					float DistB = (B.Position - View->ViewLocation).SizeSquared();
 					return DistA > DistB; // Back-to-Front
 				});
 
-			memcpy(Mapped.pData, GpuParticles.GetData(), sizeof(FParticleForGPU) * ParticleCount);
+			memcpy(Mapped.pData, GpuParticles.GetData(), sizeof(FParticleSpriteVertex) * ParticleCount);
 			Context->Unmap(ParticleStructuredBuffer, 0);
 		}
 	}
@@ -225,6 +205,10 @@ void FDynamicMeshEmitterData::Init(bool bInSelected, const FParticleMeshEmitterI
 	assert(StaticMesh);
 
 	// @todo
+}
+
+void FDynamicMeshEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const
+{
 }
 
 void FParticleDataContainer::Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts)
