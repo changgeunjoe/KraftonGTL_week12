@@ -160,9 +160,18 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 				GpuParticles[i].Location = P->Location;
 				GpuParticles[i].Size = FVector2D(2,2);
 				//GpuParticles[i].Size = FVector2D(P->Size.X, P->Size.Y);
-				GpuParticles[i].Color = FLinearColor(1, 0, 0, 1);
+				GpuParticles[i].Color = FLinearColor(1, 1, 1, 1);
 				//GpuParticles[i].Color = P->Color;
 			}
+
+
+			// 카메라 기준 Z(depth)로 내림차순 정렬 (멀리 있는 것부터 가까운 것)
+			GpuParticles.Sort([&](const FParticleForGPU& A, const FParticleForGPU& B)
+				{
+					float DistA = (A.Location - View->ViewLocation).SizeSquared();
+					float DistB = (B.Location - View->ViewLocation).SizeSquared();
+					return DistA > DistB; // Back-to-Front
+				});
 
 			memcpy(Mapped.pData, GpuParticles.GetData(), sizeof(FParticleForGPU) * ParticleCount);
 			Context->Unmap(ParticleStructuredBuffer, 0);
