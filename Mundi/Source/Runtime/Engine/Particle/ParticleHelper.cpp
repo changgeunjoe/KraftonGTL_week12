@@ -204,6 +204,16 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	Collector.Add(BatchElement);
 }
 
+void FDynamicMeshEmitterData::Init(bool bInSelected, const FParticleMeshEmitterInstance* InEmitterInstance, UStaticMesh* InStaticMesh, bool InUseStaticMeshLODs, float InLODSizeScale)
+{
+	bSelected = bInSelected;
+
+	StaticMesh = InStaticMesh;
+	assert(StaticMesh);
+
+	// @todo
+}
+
 void FParticleDataContainer::Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts)
 {
 	Free();

@@ -268,3 +268,42 @@ protected:
 
 	UMaterialInterface* GetCurrentMaterial();
 };
+
+/*-----------------------------------------------------------------------------
+	ParticleMeshEmitterInstance
+-----------------------------------------------------------------------------*/
+
+struct FParticleMeshEmitterInstance : public FParticleEmitterInstance
+{
+	/** 렌더링할 메시 리소스 (모듈 대신 직접 들고 있음) */
+	UStaticMesh* Mesh;
+
+	/** 파티클 페이로드 내의 메시 회전 데이터 오프셋 */
+	int32 MeshRotationOffset;
+
+	FParticleMeshEmitterInstance(UParticleSystemComponent* InComponent);
+
+	virtual ~FParticleMeshEmitterInstance() = default;
+
+	//~ FParticleEmitterInstance 인터페이스 구현
+	virtual void InitParameters(UParticleEmitter* InTemplate) override;
+	virtual void Init() override;
+
+	// 파티클 메모리 할당 (기본 + 3D 회전값)
+	virtual uint32 RequiredBytes() override;
+
+	// 스폰 시 초기 회전값 설정
+	virtual void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
+
+	// 매 프레임 회전 및 바운딩 박스 업데이트
+	virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
+	// virtual void UpdateBoundingBox(float DeltaTime) override;
+
+	// 렌더 스레드로 데이터 전송
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
+	virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
+
+protected:
+	// 렌더 데이터 복사 헬퍼
+	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
+};
