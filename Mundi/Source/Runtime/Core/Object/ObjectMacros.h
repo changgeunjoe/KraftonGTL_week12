@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Property.h"
 #include "Color.h"
 #include "StaticMesh.h"
@@ -6,7 +6,7 @@
 #include <type_traits>
 
 // ===== 타입 자동 감지 템플릿 =====
-
+class UParticleSystem;
 // 기본 타입 감지 템플릿
 template<typename T>
 struct TPropertyTypeTraits
@@ -33,6 +33,8 @@ struct TPropertyTypeTraits
 			return EPropertyType::Texture;
 		else if constexpr (std::is_same_v<T, UStaticMesh>)
 			return EPropertyType::StaticMesh;
+		else if constexpr (std::is_same_v<T, UParticleSystem>)
+			return EPropertyType::ParticleSystem;
 		//else if constexpr (std::is_same_v<T, USound>)
 		//	return EPropertyType::Sound;
 		else if constexpr (std::is_enum_v<T>)
@@ -317,6 +319,21 @@ struct TPropertyTypeTraits
 		Prop.bIsEditAnywhere = bEditAnywhere; \
 		Prop.Tooltip = "" __VA_ARGS__; \
 		Prop.Metadata.Add(FName("FileExtension"), InExtension); \
+		Class->AddProperty(Prop); \
+	}
+
+// ParticleSystem 프로퍼티 추가
+#define ADD_PROPERTY_PARTICLE_SYSTEM(VarType, VarName, CategoryName, bEditAnywhere, ...) \
+	{ \
+		static_assert(std::is_array_v<std::remove_reference_t<decltype(CategoryName)>>, \
+					  "CategoryName must be a string literal!"); \
+		FProperty Prop; \
+		Prop.Name = #VarName; \
+		Prop.Type = EPropertyType::ParticleSystem; \
+		Prop.Offset = offsetof(ThisClass_t, VarName); \
+		Prop.Category = CategoryName; \
+		Prop.bIsEditAnywhere = bEditAnywhere; \
+		Prop.Tooltip = "" __VA_ARGS__; \
 		Class->AddProperty(Prop); \
 	}
 

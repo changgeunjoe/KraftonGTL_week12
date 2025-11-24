@@ -1,13 +1,14 @@
-﻿#pragma once
-#include "UParticleSystem.generated.h"
+#pragma once
+
 
 #include "Source/Runtime/Core/Misc/JsonSerializer.h"
-
+#include "Source/Runtime/AssetManagement/ResourceBase.h"
+#include "UParticleSystem.generated.h"
 class UParticleEmitter;
 class UParticleSystemComponent;
 
 UCLASS()
-class UParticleSystem : public UObject
+class UParticleSystem : public UResourceBase
 {
 	GENERATED_REFLECTION_BODY()
 
