@@ -27,6 +27,60 @@ FBaseParticle&	Particle		= *(ParticleBase);
 	FBaseParticle
 -----------------------------------------------------------------------------*/
 
+/**
+ * GPU에 전달되는 파티클 당 데이터
+ */
+struct FParticleSpriteVertex
+{
+	/** 파티클의 위치 */
+	FVector Position;
+	/** 파티클의 상대시간 */
+	float RelativeTime;
+	/** 파티클의 이전 위치 */
+	FVector	OldPosition;
+	/** 파티클의 수명 동안 변하지 않는 값 */
+	float ParticleId;
+	/** 파티클의 크기 */
+	FVector2D Size;
+	/** 파티클의 회전 */
+	float Rotation;
+	/** 파티클의 서브 이미지 인덱스 */
+	float SubImageIndex;
+	/** 파티클의 색 */
+	FLinearColor Color;
+};
+
+/**
+ * GPU에 전달되는 파티클 당 데이터
+ */
+struct FMeshParticleInstanceVertex
+{
+	/** 파티클의 색 */
+	FLinearColor Color;
+
+	/** 파티클의 월드 변환 */
+	FMatrix Transform;
+
+	/** 파티클의 속도, XYZ: 방향, W: 속도. */
+	FVector4 Velocity;
+
+	/**
+	 * 파티클의 서브 이미지 텍스쳐 오프셋
+	 *
+	 * SubUVParams[0]: 현재 프레임의 U 오프셋
+	 * SubUVParams[1]: 현재 프레임의 V 오프셋
+	 * SubUVParams[2]: 다음 프레임의 U 오프셋
+	 * SubUVParams[3]: 다음 프레임의 V 오프셋
+	 */
+	int32 SubUVParams[4];
+
+	/** 파티클의 서브 이미지 lerp 값 */
+	float SubUVLerp;
+
+	/** 파티클의 상대 시간 */
+	float RelativeTime;
+};
+
 class UParticleModuleRequired;
 
 struct FBaseParticle
@@ -107,6 +161,8 @@ struct FParticleDataContainer
 	void Free();
 };
 
+// ===== Dynamic Emitter Replay Data =====
+
 /** 모든 이미터 타입에 대한 데이터 베이스 클래스 */
 struct FDynamicEmitterReplayDataBase
 {
@@ -153,6 +209,16 @@ struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataB
 	{
 	}
 };
+
+struct FDynamicMeshEmitterReplayData : public FDynamicEmitterReplayDataBase
+{
+	FDynamicMeshEmitterReplayData()
+	{
+		eEmitterType = DET_Mesh;
+	}
+};
+
+// ===== Dynamic Emitter Data =====
 
 /** 모든 이미터 타입에 대한 베이스 클래스 */
 struct FDynamicEmitterDataBase
@@ -211,9 +277,9 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 	void Init(bool bInSelected);
 
-	virtual int32 GetDynamicParameterVertexStride() const
+	virtual int32 GetDynamicParameterVertexStride() const override
 	{
-		return 0;
+		return sizeof(FParticleSpriteVertex);
 	}
 
 	virtual const FDynamicSpriteEmitterReplayDataBase& GetSource() const override
@@ -235,4 +301,24 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 	// GPU에 바인딩될 인덱스 버퍼입니다.
 	ID3D11Buffer* IndexBuffer = nullptr;
+};
+
+struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
+{
+	FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule)
+		: FDynamicSpriteEmitterDataBase(RequiredModule)
+		, StaticMesh(nullptr)
+	{
+	}
+
+	virtual ~FDynamicMeshEmitterData() = default;
+
+	virtual int32 GetDynamicParameterVertexStride() const override
+	{
+		return sizeof(FMeshParticleInstanceVertex);
+	}
+
+	FDynamicMeshEmitterReplayData Source;
+
+	UStaticMesh* StaticMesh;
 };

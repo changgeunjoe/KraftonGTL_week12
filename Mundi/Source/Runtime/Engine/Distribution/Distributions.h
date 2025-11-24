@@ -184,6 +184,14 @@ struct FRawDistributionFloat
 
 	FRawDistributionFloat() : Distribution(nullptr) {}
 
+	~FRawDistributionFloat()
+	{
+		if (Distribution)
+		{
+			DeleteObject(Distribution);
+		}
+	}
+
 	bool IsCreated() const { return Distribution != nullptr; }
 
 	float GetValue(float F = 0.0f, void* Data = nullptr, FRandomStream* InRandomStream = nullptr)
@@ -225,6 +233,14 @@ struct FRawDistributionVector
 	UDistributionVector* Distribution;
 
 	FRawDistributionVector() : Distribution(nullptr) {}
+
+	~FRawDistributionVector()
+	{
+		if (Distribution)
+		{
+			DeleteObject(Distribution);
+		}
+	}
 
 	bool IsCreated() const { return Distribution != nullptr; }
 
