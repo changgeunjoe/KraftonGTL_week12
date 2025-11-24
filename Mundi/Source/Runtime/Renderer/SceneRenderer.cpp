@@ -1521,6 +1521,12 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 		RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(Batch.WorldMatrix, Batch.WorldMatrix.InverseAffine().Transpose()));
 		RHIDevice->SetAndUpdateConstantBuffer(ColorBufferType(Batch.InstanceColor, Batch.ObjectID));
 
+		// 파티클 데이터를 VS의 t10 슬롯에 바인딩합니다.
+		if (Batch.bIsParticle && Batch.ParticleDataSRV)
+		{
+			RHIDevice->GetDeviceContext()->VSSetShaderResources(10, 1, &Batch.ParticleDataSRV);
+		}
+
 		if (Batch.SkinningMatrices)
 		{
 			TIME_PROFILE(SKINNING_CPU_TASK)
@@ -1537,7 +1543,27 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 			RHIDevice->SetAndUpdateConstantBuffer_Pointer_FSkinningBuffer(pMatrixData, MatrixDataSize);
 		}
 
-		RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+		if (Batch.bIsInstanced && Batch.InstanceCount > 0)
+		{
+			RHIDevice->GetDeviceContext()->DrawIndexedInstanced(
+				Batch.IndexCount,
+				Batch.InstanceCount, // 인스턴스 개수 N
+				Batch.StartIndex,
+				Batch.BaseVertexIndex,
+				0 // StartInstanceLocation
+			);
+		}
+		else
+		{
+			RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+		}
+
+		// 파티클 데이터 SRV를 언바인딩합니다.
+		if (Batch.bIsParticle)
+		{
+			ID3D11ShaderResourceView* nullSRV = nullptr;
+			RHIDevice->GetDeviceContext()->VSSetShaderResources(10, 1, &nullSRV);
+		}
 	}
 
 	// 루프 종료 후 리스트 비우기 (옵션)

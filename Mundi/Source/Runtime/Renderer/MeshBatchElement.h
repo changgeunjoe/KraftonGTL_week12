@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "pch.h"
 
 // 전방 선언
@@ -67,6 +67,17 @@ struct FMeshBatchElement
 	 * (CPU 스키닝의 경우 nullptr입니다.)
 	 */
 	const TArray<FMatrix>* SkinningMatrices = nullptr;
+
+	// DrawIndexedInstanced 를 위한 데이터
+	UINT InstanceCount = 0;
+	bool bIsInstanced = false;
+
+	// --- Particle Data ---
+	// 파티클 렌더링에 사용될 구조화 버퍼의 SRV입니다.
+	ID3D11ShaderResourceView* ParticleDataSRV = nullptr;
+
+	// 이 배치 엘리먼트가 파티클인지 여부를 나타냅니다.
+	bool bIsParticle = false;
 
 	// --- 기본 생성자 ---
 	FMeshBatchElement() = default;

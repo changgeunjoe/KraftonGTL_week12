@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "MeshLoader.h"
 #include "ObjectFactory.h"
 #include "DDSTextureLoader.h"
@@ -509,6 +509,7 @@ void UResourceManager::InitShaderILMap()
     layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12,
                  D3D11_INPUT_PER_VERTEX_DATA, 0 });
     ShaderToInputLayoutMap["Shaders/UI/Billboard.hlsl"] = layout;
+    ShaderToInputLayoutMap["Shaders/Particles/ParticleSprite.hlsl"] = layout;
     layout.clear();
 
 

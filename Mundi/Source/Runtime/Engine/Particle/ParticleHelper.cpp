@@ -9,63 +9,106 @@ FDynamicEmitterDataBase::FDynamicEmitterDataBase(const class UParticleModuleRequ
 {
 }
 
+/**
+ * GPU 파티클 렌더링을 위한 데이터 구조체
+ */
+struct FParticleForGPU
+{
+	FVector Location;
+	float _pad0;
+	FVector2D Size;
+	float _pad1[2];
+	FLinearColor Color;
+};
+
+// 인스턴싱을 위한 정점 구조체
+struct FParticleVertex
+{
+	FVector Position;
+	FVector2D UV;
+};
+
 FDynamicSpriteEmitterData::FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule) : FDynamicSpriteEmitterDataBase(RequiredModule)
 {
 	constexpr uint32 MaxParticles = 4096u;
-	const uint32 MaxVerts = MaxParticles * 4u;
-	const uint32 MaxIndices = MaxParticles * 6u;
-
 	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
 	if (!Device) return;
 
-	// Vertex buffer (dynamic, CPU write)
-	if (!VertexBuffer)
+	// 1. 파티클별 데이터를 위한 동적 구조화 버퍼
+	if (!ParticleStructuredBuffer)
 	{
-		D3D11_BUFFER_DESC Vbd{};
-		Vbd.Usage = D3D11_USAGE_DYNAMIC;
-		Vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		Vbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		Vbd.MiscFlags = 0;
-		Vbd.ByteWidth = static_cast<UINT>(sizeof(FBillboardVertexInfo_GPU) * MaxVerts);
-		HRESULT Hr = Device->CreateBuffer(&Vbd, nullptr, &VertexBuffer);
-		assert(SUCCEEDED(Hr) && "Failed to create particle dynamic vertex buffer");
+		D3D11_BUFFER_DESC Sbd{};
+		Sbd.Usage = D3D11_USAGE_DYNAMIC;
+		Sbd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		Sbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		Sbd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		Sbd.StructureByteStride = sizeof(FParticleForGPU);
+		Sbd.ByteWidth = static_cast<UINT>(sizeof(FParticleForGPU) * MaxParticles);
+
+		HRESULT Hr = Device->CreateBuffer(&Sbd, nullptr, &ParticleStructuredBuffer);
+		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer");
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC Srvd{};
+		Srvd.Format = DXGI_FORMAT_UNKNOWN;
+		Srvd.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		Srvd.Buffer.FirstElement = 0;
+		Srvd.Buffer.NumElements = MaxParticles;
+
+		Hr = Device->CreateShaderResourceView(ParticleStructuredBuffer, &Srvd, &ParticleStructuredBufferSRV);
+		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer SRV");
 	}
 
-	// Index buffer (static, precomputed quad Indices)
+	// 2. 인스턴싱을 위한 정적 정점 버퍼 (단일 쿼드)
+	if (!VertexBuffer)
+	{
+		FParticleVertex QuadVertices[4];
+		QuadVertices[0] = { FVector(-0.5f, -0.5f, 0.0f), FVector2D(0.0f, 1.0f) }; // LB
+		QuadVertices[1] = { FVector(-0.5f,  0.5f, 0.0f), FVector2D(0.0f, 0.0f) }; // LT
+		QuadVertices[2] = { FVector( 0.5f,  0.5f, 0.0f), FVector2D(1.0f, 0.0f) }; // RT
+		QuadVertices[3] = { FVector( 0.5f, -0.5f, 0.0f), FVector2D(1.0f, 1.0f) }; // RB
+
+		D3D11_BUFFER_DESC Vbd{};
+		Vbd.Usage = D3D11_USAGE_DEFAULT;
+		Vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		Vbd.ByteWidth = sizeof(FParticleVertex) * 4;
+		
+		D3D11_SUBRESOURCE_DATA Srd{};
+		Srd.pSysMem = QuadVertices;
+
+		HRESULT Hr = Device->CreateBuffer(&Vbd, &Srd, &VertexBuffer);
+		assert(SUCCEEDED(Hr) && "Failed to create particle instancing vertex buffer");
+	}
+
+	// 3. 인스턴싱을 위한 정적 인덱스 버퍼 (단일 쿼드)
 	if (!IndexBuffer)
 	{
-		TArray<uint32> Indices;
-		Indices.reserve(MaxIndices);
-		for (uint32 Index = 0; Index < MaxParticles; ++Index)
-		{
-			uint32 base = Index * 4;
-			// two triangles: 0,1,2 and 0,2,3
-			Indices.push_back(base + 0);
-			Indices.push_back(base + 1);
-			Indices.push_back(base + 2);
-
-			Indices.push_back(base + 0);
-			Indices.push_back(base + 2);
-			Indices.push_back(base + 3);
-		}
+		uint32 Indices[] = { 0, 1, 2, 0, 2, 3 };
 
 		D3D11_BUFFER_DESC Ibd{};
 		Ibd.Usage = D3D11_USAGE_DEFAULT;
 		Ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		Ibd.CPUAccessFlags = 0;
-		Ibd.MiscFlags = 0;
-		Ibd.ByteWidth = static_cast<UINT>(sizeof(uint32) * Indices.size());
+		Ibd.ByteWidth = sizeof(uint32) * 6;
 
-		D3D11_SUBRESOURCE_DATA SourceData{};
-		SourceData.pSysMem = Indices.data();
+		D3D11_SUBRESOURCE_DATA Srd{};
+		Srd.pSysMem = Indices;
 
-		HRESULT Hr = Device->CreateBuffer(&Ibd, &SourceData, &IndexBuffer);
-		assert(SUCCEEDED(Hr) && "Failed to create particle index buffer");
+		HRESULT Hr = Device->CreateBuffer(&Ibd, &Srd, &IndexBuffer);
+		assert(SUCCEEDED(Hr) && "Failed to create particle instancing index buffer");
 	}
 }
 
 FDynamicSpriteEmitterData::~FDynamicSpriteEmitterData()
 {
+	if (ParticleStructuredBuffer)
+	{
+		ParticleStructuredBuffer->Release();
+		ParticleStructuredBuffer = nullptr;
+	}
+	if (ParticleStructuredBufferSRV)
+	{
+		ParticleStructuredBufferSRV->Release();
+		ParticleStructuredBufferSRV = nullptr;
+	}
 	if (VertexBuffer)
 	{
 		VertexBuffer->Release();
@@ -90,118 +133,77 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	const int32 ParticleCount = Src->ActiveParticleCount;
 	if (ParticleCount <= 0) return;
 	if (!Src->DataContainer.ParticleData) return;
-	if (!VertexBuffer || !IndexBuffer) return;
+	if (!ParticleStructuredBuffer || !VertexBuffer || !IndexBuffer) return;
 
-	// Prepare vertices from CPU particle data
-	const int32 Stride = Src->ParticleStride;
-	uint8* BasePtr = Src->DataContainer.ParticleData;
-
-	TArray<FVertexDynamic> Vertices;
-	Vertices.SetNum(ParticleCount * 4);
-
-	const uint16* Indices = Src->DataContainer.ParticleIndices;
-	bool bHasIndices = (Indices != nullptr);
-
-	for (int32 i = 0; i < ParticleCount; ++i)
-	{
-		int32 SrcIndex = bHasIndices ? Indices[i] : i;
-		uint8* ParticlePtr = BasePtr + SrcIndex * Stride;
-		FBaseParticle* P = reinterpret_cast<FBaseParticle*>(ParticlePtr);
-		if (!P) continue;
-
-		const FVector& Pos = P->Location;
-		const float SizeX = 2;	// NOTE: 크기 하드 코딩 (추후 아래 코드로 대체 필요)
-		const float SizeY = 2;	// NOTE: 크기 하드 코딩 (추후 아래 코드로 대체 필요)
-		//const float SizeX = P->Size.X;
-		//const float SizeY = P->Size.Y;
-
-		// 색상, 노멀, 탄젠트 설정
-		FVector Normal = FVector(-1,0,0);
-		FVector4 Tangent = FVector4(0, 1, 0, 1); //FVector4(Right.X, Right.Y, Right.Z, 1.0f);
-		FVector4 Color = FVector4(1, 1, 1, 1);
-		//FVector4 Color = FVector4(P->Color.R, P->Color.G, P->Color.B, P->Color.A);
-
-		FVector LB = Pos; // (0) -> UV (0,1)
-		LB.Y -= (SizeX * 0.5f);
-		LB.Z -= (SizeY * 0.5f);
-
-		FVector LT = Pos; // (1) -> UV (0,0)
-		LT.Y -= (SizeX * 0.5f);
-		LT.Z += (SizeY * 0.5f);
-
-		FVector RT = Pos; // (2) -> UV (1,0)
-		RT.Y += (SizeX * 0.5f);
-		RT.Z += (SizeY * 0.5f);
-
-		FVector RB = Pos; // (3) -> UV (1,1)
-		RB.Y += (SizeX * 0.5f);
-		RB.Z -= (SizeY * 0.5f);
-
-		{
-			FVertexDynamic V0; V0.Position = LB;V0.UV = FVector2D(0.0f, 1.0f); V0.Normal = Normal; V0.Tangent = Tangent; V0.Color = Color;
-			FVertexDynamic V1; V1.Position = LT;V1.UV = FVector2D(0.0f, 0.0f); V1.Normal = Normal; V1.Tangent = Tangent; V1.Color = Color;
-			FVertexDynamic V2; V2.Position = RT;V2.UV = FVector2D(1.0f, 0.0f); V2.Normal = Normal; V2.Tangent = Tangent; V2.Color = Color;
-			FVertexDynamic V3; V3.Position = RB; V3.UV = FVector2D(1.0f, 1.0f); V3.Normal = Normal; V3.Tangent = Tangent; V3.Color = Color;
-
-			Vertices[i * 4 + 0] = V0;
-			Vertices[i * 4 + 1] = V1;
-			Vertices[i * 4 + 2] = V2;
-			Vertices[i * 4 + 3] = V3;
-		}
-	}
-
-	// Upload vertex data to dynamic vertex buffer
+	// 1. 파티클 데이터를 구조화 버퍼에 업로드
 	ID3D11DeviceContext* Context = GEngine.GetRHIDevice()->GetDeviceContext();
 	if (Context)
 	{
 		D3D11_MAPPED_SUBRESOURCE Mapped{};
-		HRESULT Hr = Context->Map(VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+		HRESULT Hr = Context->Map(ParticleStructuredBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
 		if (SUCCEEDED(Hr))
 		{
-			const size_t CopySize = sizeof(FVertexDynamic) * Vertices.Num();
-			memcpy(Mapped.pData, Vertices.GetData(), CopySize);
-			Context->Unmap(VertexBuffer, 0);
+			const int32 Stride = Src->ParticleStride;
+			uint8* BasePtr = Src->DataContainer.ParticleData;
+			const uint16* Indices = Src->DataContainer.ParticleIndices;
+			bool bHasIndices = (Indices != nullptr);
+
+			TArray<FParticleForGPU> GpuParticles;
+			GpuParticles.SetNum(ParticleCount);
+
+			for (int32 i = 0; i < ParticleCount; ++i)
+			{
+				int32 SrcIndex = bHasIndices ? Indices[i] : i;
+				FBaseParticle* P = reinterpret_cast<FBaseParticle*>(BasePtr + SrcIndex * Stride);
+				if (!P) continue;
+
+				GpuParticles[i].Location = P->Location;
+				GpuParticles[i].Size = FVector2D(2,2);
+				//GpuParticles[i].Size = FVector2D(P->Size.X, P->Size.Y);
+				GpuParticles[i].Color = FLinearColor(1, 1, 1, 1);
+				//GpuParticles[i].Color = P->Color;
+			}
+
+			memcpy(Mapped.pData, GpuParticles.GetData(), sizeof(FParticleForGPU) * ParticleCount);
+			Context->Unmap(ParticleStructuredBuffer, 0);
 		}
 	}
 
-	// Create batch element referencing the uploaded buffers
+	// 2. 인스턴싱 드로우 콜을 위한 배치 엘리먼트 생성
 	FMeshBatchElement BatchElement;
-	if (Src->MaterialInterface && Src->MaterialInterface->GetShader())
+
+	UShader* ParticleShader = UResourceManager::GetInstance().Load<UShader>("Shaders/Particles/ParticleSprite.hlsl");
+
+	if (ParticleShader)
 	{
-		UShader* Shader = Src->MaterialInterface->GetShader();
-		FShaderVariant* Variant = Shader->GetOrCompileShaderVariant(View->ViewShaderMacros);
-		if (Variant)
-		{
-			BatchElement.VertexShader = Variant->VertexShader;
-			BatchElement.PixelShader = Variant->PixelShader;
-			BatchElement.InputLayout = Variant->InputLayout;
-		}
-		BatchElement.Material = Src->MaterialInterface;
-	}
-	// NOTE: 임시로 기본 머티리얼 사용
-	else
-	{
-		BatchElement.Material = UResourceManager::GetInstance().GetDefaultMaterial();
-		UShader* Shader = BatchElement.Material->GetShader();
-		FShaderVariant* Variant = Shader->GetOrCompileShaderVariant(View->ViewShaderMacros);
-		if (Variant)
-		{
-			BatchElement.VertexShader = Variant->VertexShader;
-			BatchElement.PixelShader = Variant->PixelShader;
-			BatchElement.InputLayout = Variant->InputLayout;
-		}
+		BatchElement.VertexShader = ParticleShader->GetVertexShader();
+		BatchElement.PixelShader = ParticleShader->GetPixelShader();
+		BatchElement.InputLayout = ParticleShader->GetInputLayout();
 	}
 
-	BatchElement.InstanceShaderResourceView = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_AddActor.png")->GetShaderResourceView();
+	// 재질 또는 텍스처 설정
+	BatchElement.Material = Src->MaterialInterface;
+	if (!BatchElement.Material)
+	{
+		BatchElement.InstanceShaderResourceView = UResourceManager::GetInstance().Load<UTexture>("Data/Textures/GreenLight.png")->GetShaderResourceView();
+	}
+	
 	BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	
+	// 인스턴싱 설정
 	BatchElement.VertexBuffer = VertexBuffer;
 	BatchElement.IndexBuffer = IndexBuffer;
-	BatchElement.IndexCount = static_cast<uint32>(ParticleCount * 6);
-	BatchElement.StartIndex = 0;
-	BatchElement.BaseVertexIndex = 0;
-	BatchElement.VertexStride = sizeof(FVertexDynamic);
-	BatchElement.WorldMatrix = FMatrix::Identity();	// TODO: 여기 파티클 컴포넌트의 월드 트랜스폼 매트릭스 넣기
-	BatchElement.ObjectID = 0;	// TODO: 여기 파티클 컴포넌트의 InternalIndex 넣기
+	BatchElement.VertexStride = sizeof(FParticleVertex);
+	BatchElement.IndexCount = 6;
+	BatchElement.bIsInstanced = true;
+	BatchElement.InstanceCount = ParticleCount;
+
+	// 파티클 데이터 설정
+	BatchElement.ParticleDataSRV = ParticleStructuredBufferSRV;
+	BatchElement.bIsParticle = true;
+	
+	BatchElement.WorldMatrix = FMatrix::Identity();
+	BatchElement.ObjectID = 0;
 
 	Collector.Add(BatchElement);
 }

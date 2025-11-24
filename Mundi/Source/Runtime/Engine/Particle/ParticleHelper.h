@@ -307,10 +307,12 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 	FDynamicSpriteEmitterReplayData Source;
 
-	// GPU에 바인딩될 정점 버퍼입니다.
-	ID3D11Buffer* VertexBuffer = nullptr;
+	// GPU 파티클 데이터를 저장할 구조화 버퍼입니다.
+	ID3D11Buffer* ParticleStructuredBuffer = nullptr;
+	ID3D11ShaderResourceView* ParticleStructuredBufferSRV = nullptr;
 
-	// GPU에 바인딩될 인덱스 버퍼입니다.
+	// GPU 인스턴싱을 위한 정적 정점/인덱스 버퍼입니다.
+	ID3D11Buffer* VertexBuffer = nullptr;
 	ID3D11Buffer* IndexBuffer = nullptr;
 };
 
