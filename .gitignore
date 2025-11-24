@@ -457,3 +457,5 @@ Document/*
 /Mundi/Generated/
 
 **.dmp
+
+**/[Uu]ntracked/**

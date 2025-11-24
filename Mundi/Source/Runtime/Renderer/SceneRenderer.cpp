@@ -189,6 +189,7 @@ void FSceneRenderer::RenderWireframePath()
     RHIDevice->RSSetState(ERasterizerMode::Wireframe);
     RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
     RenderOpaquePass(EViewMode::VMI_Unlit);
+	RenderParticlePass();
 
 	// 상태 복구
 	RHIDevice->RSSetState(ERasterizerMode::Solid);
