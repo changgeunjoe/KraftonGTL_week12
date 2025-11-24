@@ -368,19 +368,19 @@ void UParticleLODLevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				{
 					RequiredModule = RequiredMod;
 					// Required 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
-					Modules.Add(NewModule);
+					// Modules.Add(NewModule);
 				}
 				else if (UParticleModuleSpawn* SpawnMod = Cast<UParticleModuleSpawn>(NewModule))
 				{
 					SpawnModule = SpawnMod;
 					// Spawn 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
-					Modules.Add(NewModule);
+					// Modules.Add(NewModule);
 				}
 				else if (UParticleModuleTypeDataBase* TypeDataMod = Cast<UParticleModuleTypeDataBase>(NewModule))
 				{
 					TypeDataModule = TypeDataMod;
 					// TypeData 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
-					Modules.Add(NewModule);
+					// Modules.Add(NewModule);
 				}
 				else
 				{
