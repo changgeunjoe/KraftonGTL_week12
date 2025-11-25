@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "SViewportWindow.h"
 #include "World.h"
 #include "ImGui/imgui.h"
@@ -82,6 +82,7 @@ SViewportWindow::~SViewportWindow()
 	IconCollision = nullptr;
 	IconAntiAliasing = nullptr;
 	IconTile = nullptr;
+	IconParticle = nullptr;
 
 	IconSingleToMultiViewport = nullptr;
 	IconMultiToSingleViewport = nullptr;
@@ -443,6 +444,9 @@ void SViewportWindow::LoadToolbarIcons(ID3D11Device* Device)
 
 	IconSkinning = NewObject<UTexture>();
 	IconSkinning->Load(GDataDir + "/Icon/Viewport_Skinning.png", Device);
+
+	IconParticle = NewObject<UTexture>();
+	IconParticle->Load(GDataDir + "/Icon/Viewport_Particle.png", Device);
 
 	// 뷰포트 레이아웃 전환 아이콘 로드
 	IconSingleToMultiViewport = NewObject<UTexture>();
@@ -1696,6 +1700,24 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("그림자를 표시합니다.");
+		}
+
+		// 파티클
+		bool bParticle = RenderSettings.IsShowFlagEnabled(EEngineShowFlags::SF_Particles);
+		if (ImGui::Checkbox("##Particle", &bParticle))
+		{
+			RenderSettings.ToggleShowFlag(EEngineShowFlags::SF_Particles);
+		}
+		ImGui::SameLine();
+		if (IconParticle && IconParticle->GetShaderResourceView())
+		{
+			ImGui::Image((void*)IconParticle->GetShaderResourceView(), IconSize);
+			ImGui::SameLine(0, 4);
+		}
+		ImGui::Text(" 파티클");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("파티클을 표시합니다.");
 		}
 
 		// --- 섹션: 그래픽스 기능 ---
