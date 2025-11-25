@@ -225,3 +225,22 @@ void UParticleSystemComponent::SetTemplate(UParticleSystem* NewTemplate, bool bA
 		Activate(true);
 	}
 }
+
+int32 UParticleSystemComponent::GetTotalActiveParticles() const
+{
+	int32 TotalCount = 0;
+	for (int32 i = 0; i < EmitterInstances.Num(); i++)
+	{
+		TotalCount += GetActiveParticleCount(i);
+	}
+	return TotalCount;
+}
+
+int32 UParticleSystemComponent::GetActiveParticleCount(int32 EmitterIndex) const
+{
+	if ((0 <= EmitterIndex && EmitterIndex < EmitterInstances.Num()) && EmitterInstances[EmitterIndex])
+	{
+		return EmitterInstances[EmitterIndex]->ActiveParticles;
+	}
+	return 0;
+}

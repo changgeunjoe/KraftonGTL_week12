@@ -60,6 +60,10 @@ public:
 	 */
 	UParticleSystem* GetTemplate() const { return Template; }
 
+	int32 GetTotalActiveParticles() const;
+
+	int32 GetActiveParticleCount(int32 EmitterIndex) const;
+
 	UPROPERTY(EditAnywhere, Category = "파티클")
 	UParticleSystem* Template;
 
