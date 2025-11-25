@@ -142,6 +142,12 @@ class Property:
 
         # Struct 타입 체크 (F로 시작하는 타입)
         if self.type.startswith('F'):
+            # FRawDistributionFloat, FRawDistributionVector 특수 처리
+            if self.type == 'FRawDistributionFloat':
+                return 'ADD_PROPERTY_DISTRIBUTION_FLOAT'
+            elif self.type == 'FRawDistributionVector':
+                return 'ADD_PROPERTY_DISTRIBUTION_VECTOR'
+
             # Struct 타입 이름을 metadata에 저장
             self.metadata['StructType'] = self.type
             return 'ADD_PROPERTY'
