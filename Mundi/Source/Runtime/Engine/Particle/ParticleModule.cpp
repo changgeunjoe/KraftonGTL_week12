@@ -6,6 +6,7 @@
 #include "ParticleSystemComponent.h"
 #include "Source/Runtime/Core/Misc/JsonSerializer.h"
 #include "Source/Runtime/Engine/Distribution/Distributions.h"
+#include "Source/Runtime/Renderer/Material.h"
 
 
 UParticleModule::UParticleModule()
@@ -318,26 +319,56 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		}
 		case EPropertyType::Material:
 		{
-			// UMaterialInterface* 타입 직렬화 - 파일 경로로 저장/로드
+			// UMaterialInterface* 타입 직렬화 - UMaterial은 파일 경로로, MID는 오브젝트로 저장/로드
 			UMaterialInterface** ValuePtr = Prop.GetValuePtr<UMaterialInterface*>(this);
 			if (bInIsLoading)
 			{
-				FString MaterialPath;
-				FJsonSerializer::ReadString(InOutHandle, Prop.Name, MaterialPath);
-				if (!MaterialPath.empty())
+				// JSON이 오브젝트인지 문자열인지 확인
+				if (InOutHandle.hasKey(Prop.Name) && InOutHandle[Prop.Name].JSONType() == JSON::Class::Object)
 				{
-					*ValuePtr = UResourceManager::GetInstance().Load<UMaterial>(MaterialPath);
+					// MID 로드
+					JSON MaterialJson = InOutHandle[Prop.Name];
+					UMaterialInstanceDynamic* MID = new UMaterialInstanceDynamic();
+					MID->Serialize(true, MaterialJson);
+					*ValuePtr = MID;
 				}
 				else
 				{
-					*ValuePtr = nullptr;
+					// 일반 Material 로드 (경로 문자열)
+					FString MaterialPath;
+					FJsonSerializer::ReadString(InOutHandle, Prop.Name, MaterialPath);
+					if (!MaterialPath.empty())
+					{
+						*ValuePtr = UResourceManager::GetInstance().Load<UMaterial>(MaterialPath);
+					}
+					else
+					{
+						*ValuePtr = nullptr;
+					}
 				}
 			}
 			else
 			{
-				if (*ValuePtr && !(*ValuePtr)->GetFilePath().empty())
+				// 저장
+				if (*ValuePtr)
 				{
-					InOutHandle[Prop.Name] = (*ValuePtr)->GetFilePath();
+					UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(*ValuePtr);
+					if (MID)
+					{
+						// MID인 경우 오브젝트로 저장
+						JSON MaterialJson = JSON::Make(JSON::Class::Object);
+						MID->Serialize(false, MaterialJson);
+						InOutHandle[Prop.Name] = MaterialJson;
+					}
+					else if (!(*ValuePtr)->GetFilePath().empty())
+					{
+						// 일반 Material인 경우 경로로 저장
+						InOutHandle[Prop.Name] = (*ValuePtr)->GetFilePath();
+					}
+					else
+					{
+						InOutHandle[Prop.Name] = "";
+					}
 				}
 				else
 				{

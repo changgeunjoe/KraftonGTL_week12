@@ -4,6 +4,7 @@
 #include "ParticleEmitter.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleTypeDataBase.h"
+#include "ParticleSpriteEmitter.h"
 #include "Source/Runtime/Core/Misc/JsonSerializer.h"
 
 IMPLEMENT_CLASS(UParticleSystem, UObject)
@@ -105,7 +106,7 @@ void UParticleSystem::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				JSON EmitterJson = EmittersJson.at(i);
 
 				// 이미터 생성
-				UParticleEmitter* NewEmitter = NewObject<UParticleEmitter>();
+				UParticleEmitter* NewEmitter = NewObject<UParticleSpriteEmitter>();
 				if (NewEmitter)
 				{
 					NewEmitter->Serialize(bInIsLoading, EmitterJson);

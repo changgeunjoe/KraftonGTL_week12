@@ -1843,12 +1843,13 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		// ImGui 위젯 값이 변경될 때만 호출됩니다.
 		UMeshComponent* MeshComponent = Cast<UMeshComponent>(OwningObject);
 
-		if (!MeshComponent)
-		{
-			ImGui::Text("UMeshComponent만 텍스처를 변경할 수 있습니다");
-			ImGui::Unindent();
-			return false;
-		}
+		// UMeshComponent가 아닌 경우 (예: 파티클 모듈) 텍스처/컬러 변경 UI를 건너뛰고
+		// Material 선택 결과만 반환합니다.
+		// if (!MeshComponent)
+		// {
+		// 	ImGui::Unindent();
+		// 	return bElementChanged;
+		// }
 
 		for (uint8 TexSlotIndex = 0; TexSlotIndex < (uint8)EMaterialTextureSlot::Max; ++TexSlotIndex)
 		{
@@ -1866,8 +1867,29 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 			UTexture* NewTexture = nullptr;
 			if (RenderTextureSelectionCombo(TextureLabel.c_str(), CurrentTexture, NewTexture))
 			{
-				MeshComponent->SetMaterialTextureByUser(MaterialIndex, Slot, NewTexture);
-				bElementChanged = true;
+				if (MeshComponent)
+				{
+					MeshComponent->SetMaterialTextureByUser(MaterialIndex, Slot, NewTexture);
+					bElementChanged = true;
+				}
+				else
+				{
+					// MeshComponent가 아닌 경우 (파티클 모듈 등)
+					// MaterialPtr을 직접 MID로 변환하여 텍스처 설정
+					UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(CurrentMaterial);
+					if (MID == nullptr && CurrentMaterial)
+					{
+						// MID가 아니면 새로 생성하고 MaterialPtr을 교체
+						MID = UMaterialInstanceDynamic::Create(CurrentMaterial);
+						*MaterialPtr = MID;
+						CurrentMaterial = MID;
+					}
+					if (MID)
+					{
+						MID->SetTextureParameterValue(Slot, NewTexture);
+						bElementChanged = true;
+					}
+				}
 			}
 		}
 
@@ -1880,6 +1902,23 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 
 		ImGui::Separator();
 
+		// MID를 가져오거나 생성하는 헬퍼 람다
+		auto GetOrCreateMID = [&]() -> UMaterialInstanceDynamic*
+		{
+			if (MeshComponent)
+			{
+				return nullptr; // MeshComponent가 있으면 MeshComponent의 함수 사용
+			}
+			UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(CurrentMaterial);
+			if (MID == nullptr && CurrentMaterial)
+			{
+				MID = UMaterialInstanceDynamic::Create(CurrentMaterial);
+				*MaterialPtr = MID;
+				CurrentMaterial = MID;
+			}
+			return MID;
+		};
+
 		// --- Colors (FVector -> ImGui::ColorEdit3) ---
 		FLinearColor TempColor; // ImGui 위젯에 바인딩할 임시 변수
 
@@ -1888,7 +1927,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString DiffuseLabel = "Diffuse Color##" + FString(Label);
 		if (ImGui::ColorEdit3(DiffuseLabel.c_str(), &TempColor.R))
 		{
-			MeshComponent->SetMaterialColorByUser(MaterialIndex, "DiffuseColor", TempColor);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialColorByUser(MaterialIndex, "DiffuseColor", TempColor);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetColorParameterValue("DiffuseColor", TempColor);
+			}
 			bElementChanged = true;
 		}
 
@@ -1897,7 +1943,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString AmbientLabel = "Ambient Color##" + FString(Label);
 		if (ImGui::ColorEdit3(AmbientLabel.c_str(), &TempColor.R))
 		{
-			MeshComponent->SetMaterialColorByUser(MaterialIndex, "AmbientColor", TempColor);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialColorByUser(MaterialIndex, "AmbientColor", TempColor);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetColorParameterValue("AmbientColor", TempColor);
+			}
 			bElementChanged = true;
 		}
 
@@ -1906,7 +1959,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString SpecularLabel = "Specular Color##" + FString(Label);
 		if (ImGui::ColorEdit3(SpecularLabel.c_str(), &TempColor.R))
 		{
-			MeshComponent->SetMaterialColorByUser(MaterialIndex, "SpecularColor", TempColor);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialColorByUser(MaterialIndex, "SpecularColor", TempColor);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetColorParameterValue("SpecularColor", TempColor);
+			}
 			bElementChanged = true;
 		}
 
@@ -1915,7 +1975,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString EmissiveLabel = "Emissive Color##" + FString(Label);
 		if (ImGui::ColorEdit3(EmissiveLabel.c_str(), &TempColor.R))
 		{
-			MeshComponent->SetMaterialColorByUser(MaterialIndex, "EmissiveColor", TempColor);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialColorByUser(MaterialIndex, "EmissiveColor", TempColor);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetColorParameterValue("EmissiveColor", TempColor);
+			}
 			bElementChanged = true;
 		}
 
@@ -1924,7 +1991,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString TransmissionLabel = "Transmission Filter##" + FString(Label);
 		if (ImGui::ColorEdit3(TransmissionLabel.c_str(), &TempColor.R))
 		{
-			MeshComponent->SetMaterialColorByUser(MaterialIndex, "TransmissionFilter", TempColor);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialColorByUser(MaterialIndex, "TransmissionFilter", TempColor);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetColorParameterValue("TransmissionFilter", TempColor);
+			}
 			bElementChanged = true;
 		}
 
@@ -1936,7 +2010,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString SpecExpLabel = "Specular Exponent##" + FString(Label);
 		if (ImGui::DragFloat(SpecExpLabel.c_str(), &TempFloat, 1.0f, 0.0f, 1024.0f))
 		{
-			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "SpecularExponent", TempFloat);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialScalarByUser(MaterialIndex, "SpecularExponent", TempFloat);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetScalarParameterValue("SpecularExponent", TempFloat);
+			}
 			bElementChanged = true;
 		}
 
@@ -1945,7 +2026,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString TransparencyLabel = "Transparency##" + FString(Label);
 		if (ImGui::DragFloat(TransparencyLabel.c_str(), &TempFloat, 0.01f, 0.0f, 1.0f))
 		{
-			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "Transparency", TempFloat);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialScalarByUser(MaterialIndex, "Transparency", TempFloat);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetScalarParameterValue("Transparency", TempFloat);
+			}
 			bElementChanged = true;
 		}
 
@@ -1954,7 +2042,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString OpticalDensityLabel = "Optical Density##" + FString(Label);
 		if (ImGui::DragFloat(OpticalDensityLabel.c_str(), &TempFloat, 0.01f, 0.0f, 10.0f)) // 범위는 임의로 지정
 		{
-			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "OpticalDensity", TempFloat);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialScalarByUser(MaterialIndex, "OpticalDensity", TempFloat);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetScalarParameterValue("OpticalDensity", TempFloat);
+			}
 			bElementChanged = true;
 		}
 
@@ -1963,7 +2058,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString BumpMultiplierLabel = "Bump Multiplier##" + FString(Label);
 		if (ImGui::DragFloat(BumpMultiplierLabel.c_str(), &TempFloat, 0.01f, 0.0f, 5.0f)) // 범위는 임의로 지정
 		{
-			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "BumpMultiplier", TempFloat);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialScalarByUser(MaterialIndex, "BumpMultiplier", TempFloat);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetScalarParameterValue("BumpMultiplier", TempFloat);
+			}
 			bElementChanged = true;
 		}
 
@@ -1972,7 +2074,14 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString IllumModelLabel = "Illum Model##" + FString(Label);
 		if (ImGui::DragInt(IllumModelLabel.c_str(), &TempInt, 1, 0, 10)) // 0-10은 OBJ 표준 범위
 		{
-			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "IlluminationModel", (float)TempInt);
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterialScalarByUser(MaterialIndex, "IlluminationModel", (float)TempInt);
+			}
+			else if (UMaterialInstanceDynamic* MID = GetOrCreateMID())
+			{
+				MID->SetScalarParameterValue("IlluminationModel", (float)TempInt);
+			}
 			bElementChanged = true;
 		}
 

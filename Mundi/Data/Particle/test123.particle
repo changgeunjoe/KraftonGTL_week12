@@ -1,0 +1,47 @@
+{
+  "Emitters" : [{
+      "EmitterName" : "TestEmitter",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDuration" : 1.000000,
+              "EmitterDurationLow" : 1.000000,
+              "EmitterLoops" : 0,
+              "Material" : "",
+              "ScreenAlignment" : 1,
+              "Type" : "UParticleModuleRequired",
+              "bUseLocalSpace" : false
+            }, {
+              "Rate" : 10.000000,
+              "RateScale" : 1.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "Lifetime" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.000000,
+                "Min" : 0.100000
+              },
+              "Type" : "UParticleModuleLifetime"
+            }, {
+              "StartVelocity" : {
+                "DistributionType" : "Uniform",
+                "Max" : [10.000000, 10.000000, 100.000000],
+                "Min" : [-10.000000, -10.000000, 50.000000]
+              },
+              "StartVelocityRadial" : {
+                "Constant" : 0.000000,
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleVelocity",
+              "bApplyOwnerScale" : true,
+              "bInWorldSpace" : false
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 12,
+      "Type" : "UParticleEmitter"
+    }],
+  "Type" : "UParticleSystem"
+}
