@@ -67,7 +67,7 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
         CloseHandle(hFile);
 
         // 심볼 서버에 타임스탬프 폴더 생성 후 덤프 + PDB + EXE 복사 (서버 접속 실패해도 무시)
-        std::wstring SymbolServerBase = L"\\\\172.21.11.91\\symbols\\CrashDumps\\";
+        std::wstring SymbolServerBase = L"\\\\172.21.11.119\\symbols\\CrashDumps\\";
 
         // 서버 접속 가능 여부 확인 (폴더 생성 시도)
         if (CreateDirectoryW(SymbolServerBase.c_str(), nullptr) || GetLastError() == ERROR_ALREADY_EXISTS)
