@@ -41,6 +41,7 @@ private:
 	void RenderDetailsPanel();
 	void RenderEmittersPanel();
 	void RenderCurveEditorPanel();
+	void RenderStatsOverlay(const ImVec2& ViewportMin, const ImVec2& ViewportSize);
 
 	// 헬퍼 함수
 	UParticleModule* GetModuleFromCurrentEmitter(int32 ModuleIndex);
@@ -62,6 +63,7 @@ private:
 	// State
 	bool bIsOpen = true;
 	bool bIsPlaying = false;
+	bool bShowStatsOverlay = true;
 	FString StatusMessage = "Ready";
 
 	// Details Panel Widget

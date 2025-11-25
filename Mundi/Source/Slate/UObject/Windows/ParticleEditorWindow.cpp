@@ -331,6 +331,9 @@ void SParticleEditorWindow::RenderViewportPanel()
 
 	ImGui::Spacing();
 
+	ImGui::SameLine();
+	ImGui::Checkbox("Show Stats", &bShowStatsOverlay);
+
 	// Get available region for viewport
 	ImVec2 ViewportPos = ImGui::GetCursorScreenPos();
 	ImVec2 ViewportSize = ImGui::GetContentRegionAvail();
@@ -354,6 +357,11 @@ void SParticleEditorWindow::RenderViewportPanel()
 			ImGui::Image((void*)SRV, ViewportSize);
 			// Update viewport hover state for Z-order aware input handling
 			PreviewState->Viewport->SetViewportHovered(ImGui::IsItemHovered());
+
+			if (bShowStatsOverlay)
+			{
+				RenderStatsOverlay(ViewportPos, ViewportSize);
+			}
 		}
 		else
 		{
@@ -736,6 +744,146 @@ void SParticleEditorWindow::RenderCurveEditorPanel()
 	{
 		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No properties available");
 	}
+}
+
+void SParticleEditorWindow::RenderStatsOverlay(const ImVec2& ViewportMin, const ImVec2& ViewportSize)
+{
+    // 0. 토글 및 유효성 체크
+    if (!bShowStatsOverlay || !EditingParticleSystem || !PreviewActor) return;
+
+    UParticleSystemComponent* PSC = Cast<UParticleSystemComponent>(PreviewActor->GetRootComponent());
+    if (!PSC) return;
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    // --- 설정 값 ---
+    const float Margin = 5.0f;      // 10 -> 5로 줄여서 오른쪽에 더 붙임
+    const float PaddingX = 10.0f;   // 텍스트 좌우 여백 (좌5 + 우5)
+    const float Spacing = 5.0f;     // 패널 간 간격
+    const float TextHeight = 18.0f; // 텍스트 한 줄 높이 (헤더 등)
+
+    // --- 1. 텍스트 내용 미리 준비 및 너비/높이 계산 ---
+
+    float FrameRate = ImGui::GetIO().Framerate;
+    char fpsBuf[64];
+    sprintf_s(fpsBuf, "FPS: %.1f (%.2f ms)", FrameRate, 1000.0f / FrameRate);
+    ImVec2 fpsSize = ImGui::CalcTextSize(fpsBuf);
+
+    int32 TotalActive = PSC->GetTotalActiveParticles();
+    int32 EmitterCount = (int32)EditingParticleSystem->Emitters.size();
+    char totalBuf[128];
+    sprintf_s(totalBuf, "Total Particles: %d\nActive Emitters: %d", TotalActive, EmitterCount);
+    ImVec2 totalSize = ImGui::CalcTextSize(totalBuf);
+
+    float maxEmitterTextWidth = 0.0f;
+    ImVec2 headerSize = ImGui::CalcTextSize("Emitter Stats");
+    maxEmitterTextWidth = headerSize.x;
+
+    for (int i = 0; i < EmitterCount; ++i)
+    {
+        UParticleEmitter* Emitter = EditingParticleSystem->Emitters[i];
+        if (!Emitter) continue;
+
+        char tempBuf[128];
+        int32 count = PSC->GetActiveParticleCount(i);
+        sprintf_s(tempBuf, "%s: %d", Emitter->GetEmitterName().ToString().c_str(), count);
+
+        ImVec2 itemSize = ImGui::CalcTextSize(tempBuf);
+        if (itemSize.x > maxEmitterTextWidth)
+        {
+            maxEmitterTextWidth = itemSize.x;
+        }
+    }
+
+    // --- 2. 최종 패널 너비 결정 (Dynamic Width) ---
+    float contentMaxWidth = fpsSize.x;
+    if (totalSize.x > contentMaxWidth) contentMaxWidth = totalSize.x;
+    if (maxEmitterTextWidth > contentMaxWidth) contentMaxWidth = maxEmitterTextWidth;
+
+    float FinalPanelWidth = contentMaxWidth + PaddingX;
+    if (FinalPanelWidth < 120.0f) FinalPanelWidth = 120.0f;
+
+
+    // --- 3. 높이 및 시작 위치 계산 ---
+
+    float fpsPanelHeight = fpsSize.y + 10.0f;
+    float totalPanelHeight = totalSize.y + 10.0f;
+
+    float listBodyHeight = 0.0f;
+    if (EmitterCount > 0)
+        listBodyHeight = (EmitterCount * TextHeight) + 5.0f;
+    else
+        listBodyHeight = 20.0f; // "No Emitters" or empty space
+
+    float emitterTotalHeight = 20.0f + listBodyHeight; // Header(20) + Body
+
+    float totalOverlayHeight = fpsPanelHeight + Spacing + totalPanelHeight + Spacing + emitterTotalHeight;
+
+    ImVec2 CurrentPos;
+    CurrentPos.x = (ViewportMin.x + ViewportSize.x) - FinalPanelWidth - Margin;
+    CurrentPos.y = (ViewportMin.y + ViewportSize.y) - totalOverlayHeight - Margin;
+
+
+    // --- 4. 실제 그리기 ---
+
+    // [FPS Panel]
+    {
+        drawList->AddRectFilled(
+            CurrentPos,
+            ImVec2(CurrentPos.x + FinalPanelWidth, CurrentPos.y + fpsPanelHeight),
+            IM_COL32(0, 0, 0, 150), 4.0f
+        );
+        drawList->AddText(
+            ImVec2(CurrentPos.x + 5.0f, CurrentPos.y + 5.0f),
+            IM_COL32(255, 255, 0, 255), fpsBuf
+        );
+        CurrentPos.y += fpsPanelHeight + Spacing;
+    }
+
+    // [Total Stats Panel]
+    {
+        drawList->AddRectFilled(
+            CurrentPos,
+            ImVec2(CurrentPos.x + FinalPanelWidth, CurrentPos.y + totalPanelHeight),
+            IM_COL32(0, 0, 0, 150), 4.0f
+        );
+        drawList->AddText(
+            ImVec2(CurrentPos.x + 5.0f, CurrentPos.y + 5.0f),
+            IM_COL32(135, 206, 235, 255), totalBuf
+        );
+        CurrentPos.y += totalPanelHeight + Spacing;
+    }
+
+    // [Emitter List Panel]
+    {
+        ImVec4 emitterColors[] = {
+            ImVec4(1.0f, 0.5f, 0.0f, 1.0f), ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+            ImVec4(0.3f, 0.3f, 0.3f, 1.0f), ImVec4(0.4f, 0.4f, 1.0f, 1.0f)
+        };
+
+        // Header
+        drawList->AddRectFilled(CurrentPos, ImVec2(CurrentPos.x + FinalPanelWidth, CurrentPos.y + 20), IM_COL32(0, 0, 0, 200), 4.0f, ImDrawFlags_RoundCornersTop);
+        drawList->AddText(ImVec2(CurrentPos.x + 5, CurrentPos.y + 2), IM_COL32(255, 255, 255, 255), "Emitter Stats");
+        CurrentPos.y += 20;
+
+        // List Body
+        drawList->AddRectFilled(CurrentPos, ImVec2(CurrentPos.x + FinalPanelWidth, CurrentPos.y + listBodyHeight), IM_COL32(0, 0, 0, 150), 4.0f, ImDrawFlags_RoundCornersBottom);
+
+        float TextY = CurrentPos.y + 2.0f;
+        for (int i = 0; i < EmitterCount; ++i)
+        {
+            UParticleEmitter* Emitter = EditingParticleSystem->Emitters[i];
+            if (!Emitter) continue;
+
+            int32 count = PSC->GetActiveParticleCount(i);
+            char buf[128];
+            sprintf_s(buf, "%s: %d", Emitter->GetEmitterName().ToString().c_str(), count);
+
+            ImU32 color = ImGui::ColorConvertFloat4ToU32(emitterColors[i % 4]);
+            drawList->AddText(ImVec2(CurrentPos.x + 5, TextY), color, buf);
+            TextY += TextHeight;
+        }
+    }
 }
 
 // Event Handlers
