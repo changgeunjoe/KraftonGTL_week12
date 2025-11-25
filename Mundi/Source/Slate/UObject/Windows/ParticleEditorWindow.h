@@ -7,6 +7,8 @@ class UParticleSystem;
 class UParticleEmitter;
 class UParticleModuleDetailWidget;
 class AParticleSystemActor;
+class UDistributionFloatBezier;
+class UDistributionVectorBezier;
 
 class SParticleEditorWindow : public SWindow
 {
@@ -42,6 +44,8 @@ private:
 	void RenderEmittersPanel();
 	void RenderCurveEditorPanel();
 	void RenderStatsOverlay(const ImVec2& ViewportMin, const ImVec2& ViewportSize);
+	void RenderBezierFloatCurveEditor(const char* PropName, UDistributionFloatBezier* BezierDist);
+	void RenderBezierVectorCurveEditor(const char* PropName, UDistributionVectorBezier* BezierDist);
 
 	// 헬퍼 함수
 	UParticleModule* GetModuleFromCurrentEmitter(int32 ModuleIndex);
