@@ -48,6 +48,10 @@ public:
 
     EViewMode GetViewMode() { return ViewMode;}
 
+    // 배경색 설정
+    void SetBackgroundColor(const FLinearColor& InColor) { BackgroundColor = InColor; }
+    FLinearColor GetBackgroundColor() const { return BackgroundColor; }
+
 protected:
     EViewportType ViewportType = EViewportType::Perspective;
     UWorld* World = nullptr;
@@ -65,6 +69,9 @@ protected:
     float OrthographicZoom = 30.0f;
     //뷰모드
     EViewMode ViewMode = EViewMode::VMI_Lit_Phong;
+
+    // 배경색 (기본값: 검은색)
+    FLinearColor BackgroundColor = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     //원근 투영 기본값
     bool PerspectiveCameraInput = false;

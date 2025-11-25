@@ -66,6 +66,10 @@ private:
 	bool bShowStatsOverlay = true;
 	FString StatusMessage = "Ready";
 
+	// 뷰포트 배경색
+	FLinearColor ViewportBackgroundColor = FLinearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	bool bShowBackgroundColorPicker = false;
+
 	// Details Panel Widget
 	UParticleModuleDetailWidget* DetailWidget = nullptr;
 

@@ -156,6 +156,7 @@ void FViewportClient::Draw(FViewport* Viewport)
 	}
 
 	FSceneView RenderView(Camera->GetCameraComponent(), Viewport, &World->GetRenderSettings());
+	RenderView.BackgroundColor = BackgroundColor;
 
 	// 2. 렌더링 호출은 뷰 타입 설정이 모두 끝난 후 마지막에 한 번만 수행
 	World->GetRenderSettings().SetViewMode(ViewMode);

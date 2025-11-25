@@ -68,6 +68,12 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 		PreviewState->Viewport->SetUseRenderTarget(true);
 	}
 
+	// 초기 배경색 설정
+	if (PreviewState->Client)
+	{
+		PreviewState->Client->SetBackgroundColor(ViewportBackgroundColor);
+	}
+
 	// Detail Widget 생성 및 초기화
 	DetailWidget = NewObject<UParticleModuleDetailWidget>();
 	DetailWidget->Initialize();
@@ -258,7 +264,7 @@ void SParticleEditorWindow::RenderTopToolbar()
 		// Background Color
 		if (ImGui::Button("Background Color"))
 		{
-			// TODO: Background color picker
+			bShowBackgroundColorPicker = !bShowBackgroundColorPicker;
 		}
 
 		ImGui::SameLine();
@@ -333,6 +339,28 @@ void SParticleEditorWindow::RenderViewportPanel()
 
 	ImGui::SameLine();
 	ImGui::Checkbox("Show Stats", &bShowStatsOverlay);
+
+	// 배경색 피커 표시
+	if (bShowBackgroundColorPicker)
+	{
+		ImGui::Spacing();
+		ImGui::Text("Background Color");
+		float color[4] = { ViewportBackgroundColor.R, ViewportBackgroundColor.G, ViewportBackgroundColor.B, ViewportBackgroundColor.A };
+		if (ImGui::ColorEdit4("##BgColor", color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar))
+		{
+			ViewportBackgroundColor = FLinearColor(color[0], color[1], color[2], color[3]);
+			// ViewportClient에 배경색 적용
+			if (PreviewState && PreviewState->Client)
+			{
+				PreviewState->Client->SetBackgroundColor(ViewportBackgroundColor);
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close##BgColorClose"))
+		{
+			bShowBackgroundColorPicker = false;
+		}
+	}
 
 	// Get available region for viewport
 	ImVec2 ViewportPos = ImGui::GetCursorScreenPos();
