@@ -7,6 +7,8 @@
 #include "Quad.h"
 #include "MeshBVH.h"
 #include "Enums.h"
+#include "FBXLoader.h"
+#include "FAudioDevice.h"
 
 #include <filesystem>
 #include <cwctype>
@@ -50,12 +52,30 @@ void UResourceManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* I
     CreateDefaultShader();
     CreateDefaultMaterial();
 	PreLoadAnimStateMachines();
+
+	FObjManager::Preload();
+	UFbxLoader::PreLoad();
+
+	// Initialize audio device for game runtime
+	FAudioDevice::Initialize();
+	FAudioDevice::Preload();
+
 	PreLoadParticleSystems();
 }
 
 // 전체 해제
 void UResourceManager::Clear()
 {
+	// Clear FObjManager's static map BEFORE static destruction
+	// This must be done in Shutdown() (before main() exits) rather than ~UEditorEngine()
+	// because ObjStaticMeshMap is a static member variable that may be destroyed
+	// before the global GEngine variable's destructor runs
+	FObjManager::Clear();
+
+	// AudioDevice 종료
+	FAudioDevice::Shutdown();
+
+
     {////////////// Deprecated //////////////
         for (auto& [Key, Data] : ResourceMap)
         {

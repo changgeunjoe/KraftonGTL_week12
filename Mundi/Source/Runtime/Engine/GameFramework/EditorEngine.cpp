@@ -1,10 +1,7 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "EditorEngine.h"
 #include "USlateManager.h"
 #include "SelectionManager.h"
-#include "FAudioDevice.h"
-#include "FbxLoader.h"
-#include <ObjManager.h>
 
 #include "MiniDump.h"
 
@@ -187,16 +184,9 @@ bool UEditorEngine::Startup(HINSTANCE hInstance)
     RHIDevice.Initialize(HWnd);
     Renderer = std::make_unique<URenderer>(&RHIDevice);
 
-    // Audio Device 초기화
-    FAudioDevice::Initialize();
-
     //매니저 초기화
     UI.Initialize(HWnd, RHIDevice.GetDevice(), RHIDevice.GetDeviceContext());
     INPUT.Initialize(HWnd);
-
-    FObjManager::Preload();
-    UFbxLoader::PreLoad();
-    FAudioDevice::Preload();
 
     ///////////////////////////////////
     WorldContexts.Add(FWorldContext(NewObject<UWorld>(), EWorldType::Editor));
@@ -347,15 +337,6 @@ void UEditorEngine::Shutdown()
     // Delete all UObjects (Components, Actors, Resources)
     // Resource destructors will properly release D3D resources
     ObjectFactory::DeleteAll(true);
-
-    // Clear FObjManager's static map BEFORE static destruction
-    // This must be done in Shutdown() (before main() exits) rather than ~UEditorEngine()
-    // because ObjStaticMeshMap is a static member variable that may be destroyed
-    // before the global GEngine variable's destructor runs
-    FObjManager::Clear();
-
-    // AudioDevice 종료
-    FAudioDevice::Shutdown();
 
     // IMPORTANT: Explicitly release Renderer before RHIDevice destructor runs
     // Renderer may hold references to D3D resources

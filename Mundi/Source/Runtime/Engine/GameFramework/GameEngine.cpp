@@ -1,11 +1,9 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GameEngine.h"
 #include "USlateManager.h"
 #include "SelectionManager.h"
 #include "FViewport.h"
 #include "PlayerCameraManager.h"
-#include <ObjManager.h>
-#include "FAudioDevice.h"
 #include <sol/sol.hpp>
 
 float UGameEngine::ClientWidth = 1024.0f;
@@ -180,9 +178,6 @@ bool UGameEngine::Startup(HINSTANCE hInstance)
     RHIDevice.Initialize(HWnd);
     Renderer = std::make_unique<URenderer>(&RHIDevice);
 
-    // Initialize audio device for game runtime
-    FAudioDevice::Initialize();
-
     // 뷰포트 생성
     GameViewport = std::make_unique<FViewport>();
     if (!GameViewport->Initialize(0, 0, ClientWidth, ClientHeight, GetRHIDevice()->GetDevice()))
@@ -193,11 +188,6 @@ bool UGameEngine::Startup(HINSTANCE hInstance)
 
     // 매니저 초기화
     INPUT.Initialize(HWnd);
-
-    FObjManager::Preload();
-
-    // Preload audio assets
-    FAudioDevice::Preload();
 
     ///////////////////////////////////
     WorldContexts.Add(FWorldContext(NewObject<UWorld>(), EWorldType::Game));
@@ -335,18 +325,9 @@ void UGameEngine::Shutdown()
     // Resource destructors will properly release D3D resources
     ObjectFactory::DeleteAll(true);
 
-    // Clear FObjManager's static map BEFORE static destruction
-    // This must be done in Shutdown() (before main() exits) rather than ~UGameEngine()
-    // because ObjStaticMeshMap is a static member variable that may be destroyed
-    // before the global GEngine variable's destructor runs
-    FObjManager::Clear();
-
     // IMPORTANT: Explicitly release Renderer before RHIDevice destructor runs
     // Renderer may hold references to D3D resources
     Renderer.reset();
-
-    // Shutdown audio device
-    FAudioDevice::Shutdown();
 
     // Explicitly release D3D11RHI resources before global destruction
     RHIDevice.Release();
