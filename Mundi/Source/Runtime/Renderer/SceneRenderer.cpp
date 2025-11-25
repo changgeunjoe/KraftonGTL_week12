@@ -129,7 +129,13 @@ void FSceneRenderer::Render()
 		//그리드와 디버그용 Primitive는 Post Processing 적용하지 않음.
 		RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
 		RenderDebugPass();	//  그리드, 선택한 물체의 경계 출력 (상호작용, 피킹 X)
+	}
 
+	// NOTE: 그리드 이후에 파티클을 그려서 그리드에 겹치는 현상 일시적 해결
+	RenderParticlePass();
+
+	if (!World->bPie)
+	{
 		// 오버레이(Overlay) Primitive 렌더링
 		RenderOverayEditorPrimitivesPass();	// 기즈모 출력
 	}
@@ -172,7 +178,6 @@ void FSceneRenderer::RenderLitPath()
 	// Base Pass
 	RenderOpaquePass(View->RenderSettings->GetViewMode());
 	RenderDecalPass();
-	RenderParticlePass();
 }
 
 void FSceneRenderer::RenderWireframePath()
@@ -189,7 +194,6 @@ void FSceneRenderer::RenderWireframePath()
     RHIDevice->RSSetState(ERasterizerMode::Wireframe);
     RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
     RenderOpaquePass(EViewMode::VMI_Unlit);
-	RenderParticlePass();
 
 	// 상태 복구
 	RHIDevice->RSSetState(ERasterizerMode::Solid);
@@ -1067,6 +1071,17 @@ void FSceneRenderer::RenderParticlePass()
 
 	GPU_EVENT_TIMER(RHIDevice->GetDeviceContext(), "ParticlePass", OwnerRenderer->GetGPUTimer());
 
+	// Wireframe으로 그리기
+	if (View->RenderSettings->GetViewMode() == EViewMode::VMI_Wireframe)
+	{
+		RHIDevice->RSSetState(ERasterizerMode::Wireframe);
+		RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
+	}
+	else
+	{
+		RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
+	}
+
 	RHIDevice->OMSetBlendState(true);
 	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly);
 
@@ -1081,6 +1096,8 @@ void FSceneRenderer::RenderParticlePass()
 	DrawMeshBatches(MeshBatchElements, true);
 
 	// 상태 복구
+	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
+	RHIDevice->RSSetState(ERasterizerMode::Solid);
 	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
 	RHIDevice->OMSetBlendState(false);
 }
