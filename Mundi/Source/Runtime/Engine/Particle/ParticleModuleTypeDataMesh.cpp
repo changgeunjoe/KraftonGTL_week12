@@ -11,6 +11,19 @@ UParticleModuleTypeDataMesh::UParticleModuleTypeDataMesh()
 {
 	// NOTE: 하드 코딩으로 스태틱 메시 추가 (추후 삭제 필요)
 	Mesh = UResourceManager::GetInstance().Load<UStaticMesh>(GDataDir + "/Model/cube-tex.obj");
+
+	InitializeDefaults();
+}
+
+void UParticleModuleTypeDataMesh::InitializeDefaults()
+{
+	if (!RollPitchYawRange.IsCreated())
+	{
+		UDistributionVectorUniform* Dist = NewObject<UDistributionVectorUniform>();
+		Dist->Min = FVector(0, 0, 0);
+		Dist->Max = FVector(90, 90, 90);
+		RollPitchYawRange.Distribution = Dist;
+	}
 }
 
 FParticleEmitterInstance* UParticleModuleTypeDataMesh::CreateInstance(UParticleEmitter* InEmitterParent, UParticleSystemComponent* InComponent)
@@ -20,8 +33,6 @@ FParticleEmitterInstance* UParticleModuleTypeDataMesh::CreateInstance(UParticleE
 	assert(Instance);
 
 	Instance->InitParameters(InEmitterParent);
-	// @note 일단 메시 정보를 이곳에서 전달함
-	Instance->Mesh = Mesh;
 
 	return Instance;
 }

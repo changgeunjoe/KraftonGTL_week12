@@ -1,5 +1,6 @@
 #pragma once
 
+class UParticleModuleTypeDataMesh;
 struct FDynamicEmitterReplayDataBase;
 struct FDynamicEmitterDataBase;
 class UParticleModule;
@@ -269,8 +270,7 @@ protected:
 
 struct FParticleMeshEmitterInstance : public FParticleEmitterInstance
 {
-	/** 렌더링할 메시 리소스 (모듈 대신 직접 들고 있음) */
-	UStaticMesh* Mesh;
+	UParticleModuleTypeDataMesh* MeshTypeData;
 
 	/** 파티클 페이로드 내의 메시 회전 데이터 오프셋 */
 	int32 MeshRotationOffset;

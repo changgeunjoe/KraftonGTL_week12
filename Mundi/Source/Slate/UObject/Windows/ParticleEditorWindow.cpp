@@ -1053,6 +1053,16 @@ void SParticleEditorWindow::CreateTestParticleSystem()
 	// 이미터를 파티클 시스템에 추가
 	EditingParticleSystem->Emitters.Add(TestEmitter);
 
+	if (PreviewActor)
+	{
+		UParticleSystemComponent* Component = PreviewActor->GetParticleSystemComponent();
+		if (Component)
+		{
+			// 이미터 추가시 인스턴스를 재생성
+			Component->InitializeSystem();
+		}
+	}
+
 	UE_LOG("Test ParticleSystem created with %d emitters and %d modules",
 		EditingParticleSystem->Emitters.Num(),
 		LODLevel->Modules.Num());
@@ -1095,6 +1105,15 @@ void SParticleEditorWindow::ShowAddModuleContextMenu(int32 EmitterIndex)
 			{
 				// AddModule은 UClass*를 받아서 내부에서 객체를 생성함
 				UParticleModule* newModule = LODLevel->AddModule(classType);
+				if (PreviewActor)
+				{
+					UParticleSystemComponent* Component = PreviewActor->GetParticleSystemComponent();
+					if (Component)
+					{
+						// 모듈 추가시 인스턴스를 재생성
+						Component->InitializeSystem();
+					}
+				}
 				if (newModule)
 				{
 					// 기본값 설정

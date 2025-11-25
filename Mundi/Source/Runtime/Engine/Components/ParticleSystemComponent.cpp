@@ -75,6 +75,22 @@ void UParticleSystemComponent::InitParticles()
 	}
 }
 
+void UParticleSystemComponent::InitializeSystem()
+{
+	if (Template == nullptr)
+	{
+		return;
+	}
+
+	ResetParticles(true);
+
+	ClearDynamicData();
+
+	Template->UpdateAllModuleLists();
+
+	InitParticles();
+}
+
 void UParticleSystemComponent::ResetParticles(bool bEmptyInstances)
 {
 	for (int32 i = 0; i < EmitterInstances.Num(); i++)
@@ -190,8 +206,6 @@ void UParticleSystemComponent::Activate(bool bReset)
 	bSuppressSpawning = false;
 	bWasCompleted = false;
 
-	Template->UpdateAllModuleLists();
-
 	if (EmitterInstances.Num() == 0)
 	{
 		InitParticles();
@@ -212,12 +226,10 @@ void UParticleSystemComponent::SetTemplate(UParticleSystem* NewTemplate, bool bA
 		return;
 	}
 
-	// 기존 파티클 인스턴스 정리
-	ResetParticles(true);
-	ClearDynamicData();
-
 	// 새로운 템플릿 설정
 	Template = NewTemplate;
+
+	InitializeSystem();
 
 	// 템플릿이 유효하고 자동 활성화가 켜져있으면 활성화
 	if (Template && bAutoActivate)
