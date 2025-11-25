@@ -8,6 +8,7 @@
 #include "ParticleModuleRequired.h"
 #include "ParticleModuleSpawn.h"
 #include "ParticleModuleTypeDataBase.h"
+#include "ParticleModuleTypeDataMesh.h"
 #include "ParticleSystemComponent.h"
 
 /*-----------------------------------------------------------------------------
@@ -834,7 +835,7 @@ UMaterialInterface* FParticleSpriteEmitterInstance::GetCurrentMaterial()
 
 FParticleMeshEmitterInstance::FParticleMeshEmitterInstance(UParticleSystemComponent* InComponent)
     : FParticleEmitterInstance(InComponent)
-    , Mesh(nullptr)
+    , MeshTypeData(nullptr)
     , MeshRotationOffset(0)
 {
 	NewEmitterData = new FDynamicMeshEmitterData();
@@ -852,6 +853,11 @@ FParticleMeshEmitterInstance::~FParticleMeshEmitterInstance()
 void FParticleMeshEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
 {
     FParticleEmitterInstance::InitParameters(InTemplate);
+
+	UParticleLODLevel* LODLevel = InTemplate->GetLODLevel(0);
+	assert(LODLevel);
+	MeshTypeData = Cast<UParticleModuleTypeDataMesh>(LODLevel->TypeDataModule);
+	assert(MeshTypeData);
 }
 
 void FParticleMeshEmitterInstance::Init()
@@ -874,8 +880,8 @@ void FParticleMeshEmitterInstance::PostSpawn(FBaseParticle* Particle, float Inte
     FParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
 
     FMeshRotationPayloadData* PayloadData = (FMeshRotationPayloadData*)((uint8*)Particle + MeshRotationOffset);
-    PayloadData->InitialOrientation = FVector::Zero();
-    PayloadData->Rotation = FVector::Zero();
+    PayloadData->InitialOrientation = MeshTypeData->RollPitchYawRange.GetValue(SpawnTime);
+    PayloadData->Rotation = PayloadData->InitialOrientation;
     PayloadData->RotationRate = FVector::Zero();
     PayloadData->CurContinuousRotation = FVector::Zero();
 }
@@ -901,7 +907,7 @@ void FParticleMeshEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
 FDynamicEmitterDataBase* FParticleMeshEmitterInstance::GetDynamicData(bool bSelected)
 {
     // 메시가 없거나 파티클이 없으면 렌더링 안 함
-    if (Mesh == nullptr || ActiveParticles <= 0)
+    if (MeshTypeData->Mesh == nullptr || ActiveParticles <= 0)
     {
         return nullptr;
     }
@@ -916,7 +922,7 @@ FDynamicEmitterDataBase* FParticleMeshEmitterInstance::GetDynamicData(bool bSele
     NewEmitterData->Init(
         bSelected,
         this,   // 복사된 데이터를 사용하므로 this 접근 주의
-        Mesh,   // 렌더링할 메시 전달
+        MeshTypeData->Mesh,   // 렌더링할 메시 전달
         false,  // UseStaticMeshLODs (단순화: 미사용)
         1.0f    // LODSizeScale
     );

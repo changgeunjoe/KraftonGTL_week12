@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "ParticleModuleTypeDataBase.h"
 #include "ParticleSystemComponent.h"
+#include "Source/Runtime/Engine/Distribution/Distributions.h"
 
 enum EMeshScreenAlignment : int
 {
@@ -23,7 +24,6 @@ public:
 	 * PSMA_MeshFaceCameraWithSpin
 	 * PSMA_MeshFaceCameraWithLockedAxis
 	 */
-
 	EMeshScreenAlignment MeshAlignment;
 
 	/**
@@ -31,10 +31,15 @@ public:
 	 */
 	uint8 bOverrideMaterial:1;
 
+	/** @todo PROPERTY */
+	FRawDistributionVector RollPitchYawRange;
+
 public:
 	UParticleModuleTypeDataMesh();
 
 	virtual ~UParticleModuleTypeDataMesh() = default;
+
+	void InitializeDefaults();
 
 	virtual FParticleEmitterInstance* CreateInstance(UParticleEmitter* InEmitterParent, UParticleSystemComponent* InComponent) override;
 

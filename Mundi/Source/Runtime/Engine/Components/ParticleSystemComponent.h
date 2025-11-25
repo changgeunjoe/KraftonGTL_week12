@@ -29,6 +29,12 @@ public:
 	virtual void InitParticles();
 
 	/**
+	 * 기존의 인스턴스를 제거하고, 새로운 인스턴스를 생성한다.
+	 * 이미터나 모듈 등이 변경되어 메모리 레이아웃이 변경되었을 때 호출해야한다.
+	 */
+	void InitializeSystem();
+
+	/**
 	 * 생성된 모든 이미터 인스턴스를 제거하고 메모리를 해제한다.
 	 * @param bEmptyInstances		true일 경우 배열을 비운다.
 	 */
