@@ -14,7 +14,7 @@ USkeletalMeshComponent::USkeletalMeshComponent()
     bCanEverTick = true;
 
     // 테스트용 기본 메시 설정 제거 (메모리 누수 방지)
-    // SetSkeletalMesh(GDataDir + "/Test.fbx");
+    SetSkeletalMesh(GDataDir + "/Model/FBX/Y Bot.fbx");
 }
 
 USkeletalMeshComponent::~USkeletalMeshComponent()
