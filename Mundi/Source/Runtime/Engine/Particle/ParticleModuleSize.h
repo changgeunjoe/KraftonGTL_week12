@@ -11,6 +11,7 @@ class UParticleModuleSize : public UParticleModule
 public:
 	/** 파티클의 초기 크기	*/
 	/** @todo PROPERTY */
+	UPROPERTY(EditAnywhere, Category="ParticleModuleSize")
 	FRawDistributionVector StartSize;
 
 public:
