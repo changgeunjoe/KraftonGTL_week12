@@ -13,6 +13,8 @@
 #include "Source/Runtime/Engine/Particle/ParticleModuleSpawn.h"
 #include "Source/Runtime/Engine/Particle/ParticleModuleLifetime.h"
 #include "Source/Runtime/Engine/Particle/ParticleModuleTypeDataBase.h"
+#include "Source/Runtime/Engine/GameFramework/ParticleSystemActor.h"
+#include "Source/Runtime/Engine/Components/ParticleSystemComponent.h"
 #include "Source/Slate/UObject/Widgets/ParticleModuleDetailWidget.h"
 #include "Source/Slate/UObject/Widgets/PropertyRenderer.h"
 #include "ImGui/imgui.h"
@@ -68,6 +70,16 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	DetailWidget = NewObject<UParticleModuleDetailWidget>();
 	DetailWidget->Initialize();
 
+	// 프리뷰 액터 생성 (원점에 배치)
+	if (PreviewState && PreviewState->World)
+	{
+		PreviewActor = PreviewState->World->SpawnActor<AParticleSystemActor>();
+		if (PreviewActor)
+		{
+			PreviewActor->SetActorLocation(FVector::Zero());
+		}
+	}
+
 	// 테스트용 파티클 시스템 생성
 	CreateTestParticleSystem();
 
@@ -76,6 +88,9 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	{
 		DetailWidget->SetParticleSystem(EditingParticleSystem);
 	}
+
+	// 프리뷰 액터에 파티클 시스템 설정
+	//UpdatePreviewActor();
 
 	return true;
 }
@@ -1007,6 +1022,9 @@ void SParticleEditorWindow::LoadParticleSystemFromFile()
 			DetailWidget->SetParticleSystem(EditingParticleSystem);
 		}
 
+		// 프리뷰 액터 업데이트
+		//UpdatePreviewActor();
+
 		if (bLoadSuccess)
 		{
 			CurrentFilePath = UTF8ToWide(FinalPathStr);
@@ -1083,5 +1101,19 @@ void SParticleEditorWindow::SaveParticleSystemToFileAs()
 			StatusMessage = "Failed to save particle system";
 			UE_LOG("[Error] Failed to save ParticleSystem: %S", AbsolutePath.c_str());
 		}
+	}
+}
+
+void SParticleEditorWindow::UpdatePreviewActor()
+{
+	if (!PreviewActor)
+		return;
+
+	// 파티클 시스템 컴포넌트 가져오기
+	UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PreviewActor->GetRootComponent());
+	if (ParticleComp)
+	{
+		// 현재 편집 중인 파티클 시스템으로 템플릿 설정
+		ParticleComp->SetTemplate(EditingParticleSystem);
 	}
 }
