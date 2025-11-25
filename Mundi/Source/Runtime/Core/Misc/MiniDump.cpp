@@ -66,21 +66,28 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
 
         CloseHandle(hFile);
 
-        // 심볼 서버로 덤프 파일 자동 복사
-        std::wstring SymbolServerPath = L"\\\\172.21.11.91\\symbols\\CrashDumps\\";
+        // 심볼 서버에 타임스탬프 폴더 생성 후 덤프 + PDB 복사
+        std::wstring SymbolServerBase = L"\\\\172.21.11.91\\symbols\\CrashDumps\\";
+        CreateDirectoryW(SymbolServerBase.c_str(), nullptr);
 
-        // CrashDumps 폴더 생성 시도
-        CreateDirectoryW(SymbolServerPath.c_str(), nullptr);
+        // 타임스탬프 폴더명 생성
+        std::wstringstream folderSS;
+        folderSS << L"Crash_";
+        folderSS << std::put_time(&TimeInfo, L"%Y-%m-%d_%H-%M-%S");
+        std::wstring CrashFolderName = folderSS.str();
 
-        // 파일명만 추출
-        size_t FileNameStart = DumpFileName.find_last_of(L"\\/");
-        std::wstring JustFileName = (FileNameStart != std::wstring::npos)
-            ? DumpFileName.substr(FileNameStart + 1)
-            : DumpFileName;
+        // 크래시 폴더 경로
+        std::wstring CrashFolderPath = SymbolServerBase + CrashFolderName + L"\\";
+        CreateDirectoryW(CrashFolderPath.c_str(), nullptr);
 
-        // 심볼 서버로 복사
-        std::wstring DestPath = SymbolServerPath + JustFileName;
-        CopyFileW(DumpFileName.c_str(), DestPath.c_str(), FALSE);
+        // 덤프 파일 복사
+        std::wstring DumpDestPath = CrashFolderPath + L"Mundi_CrashDump.dmp";
+        CopyFileW(DumpFileName.c_str(), DumpDestPath.c_str(), FALSE);
+
+        // PDB 파일 복사 (exe 옆에 있는 PDB 사용)
+        std::wstring PdbSourcePath = ExeDir + L"Mundi.pdb";
+        std::wstring PdbDestPath = CrashFolderPath + L"Mundi.pdb";
+        CopyFileW(PdbSourcePath.c_str(), PdbDestPath.c_str(), FALSE);
     }
 }
 
