@@ -1,10 +1,9 @@
 ﻿#pragma once
 #include "ParticleModule.h"
-#include "ParticleModule.h"
 #include "UParticleModuleSize.generated.h"
 #include "Source/Runtime/Engine/Distribution/Distributions.h"
 
-ULCASS()
+UCLASS()
 class UParticleModuleSize : public UParticleModule
 {
 	GENERATED_REFLECTION_BODY()

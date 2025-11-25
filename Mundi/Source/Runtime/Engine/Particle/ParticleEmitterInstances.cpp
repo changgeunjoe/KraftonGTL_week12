@@ -112,7 +112,7 @@ void FParticleEmitterInstance::Init()
 		ParticleSize += RequiredBytes();
 
 		// SIMD(SSE) 연산을 위해 16 바이트 정렬
-		// ParticleSize = Align(ParticleSize, 16);
+		ParticleSize = ((ParticleSize + 15) & (~15));
 
 		// E.g. trail emitters store trailing particles directly after leading one.
 		ParticleStride = CalculateParticleStride(ParticleSize);
@@ -920,7 +920,7 @@ bool FParticleMeshEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase&
 
     // 2. 메시 정보 복사
     FDynamicMeshEmitterReplayData* MeshReplayData = static_cast<FDynamicMeshEmitterReplayData*>(&OutData);
-    // MeshReplayData->MeshRotationOffset = MeshRotationOffset;
+    MeshReplayData->MeshRotationOffset = MeshRotationOffset;
 
     return true;
 }

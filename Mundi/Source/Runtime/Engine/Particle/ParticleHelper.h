@@ -223,6 +223,8 @@ struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataB
 
 struct FDynamicMeshEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
 {
+	int32 MeshRotationOffset;
+
 	FDynamicMeshEmitterReplayData()
 	{
 		eEmitterType = DET_Mesh;

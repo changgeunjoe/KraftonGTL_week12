@@ -1,6 +1,9 @@
 ﻿#include "pch.h"
 
 #include "ParticleModule.h"
+
+#include "ParticleEmitterInstances.h"
+#include "ParticleSystemComponent.h"
 #include "Source/Runtime/Core/Misc/JsonSerializer.h"
 
 
@@ -184,4 +187,27 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			break;
 		}
 	}
+}
+
+const FTransform& UParticleModule::FContext::GetTransform() const
+{
+	return Owner.Component->GetWorldTransform();
+}
+
+UObject* UParticleModule::FContext::GetDistributionData() const
+{
+	// @todo 언리얼엔진의 컨벤션을 따르기 위한 함수, 현재는 구현 없음
+	return nullptr;
+}
+
+FString UParticleModule::FContext::GetTemplateName() const
+{
+	// @todo 언리얼엔진의 컨벤션을 따르기 위한 함수, 현재는 구현 없음
+	return "";
+}
+
+FString UParticleModule::FContext::GetInstanceName() const
+{
+	// @todo 언리얼엔진의 컨벤션을 따르기 위한 함수, 현재는 구현 없음
+	return "";
 }

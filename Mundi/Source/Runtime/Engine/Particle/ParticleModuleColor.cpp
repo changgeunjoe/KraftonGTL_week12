@@ -28,8 +28,8 @@ void UParticleModuleColor::Spawn(const FSpawnContext& Context)
 
 	SPAWN_INIT
 	{
-		FVector ColorVec = (FVector)StartColor.GetValue(Owner->EmitterTime, Context.GetDistributionData());
-		float Alpha = StartAlpha.GetValue(Owner->EmitterTime, Context.GetDistributionData());
+		FVector ColorVec = (FVector)StartColor.GetValue(Owner->EmitterTime);
+		float Alpha = StartAlpha.GetValue(Owner->EmitterTime);
 		Particle.Color = ColorVec;
 		Particle.Color.A = Alpha;
 		Particle.BaseColor = Particle.Color;

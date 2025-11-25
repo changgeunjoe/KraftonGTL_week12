@@ -24,7 +24,7 @@ void UParticleModuleSize::Spawn(const FSpawnContext& Context)
 	FParticleEmitterInstance* Owner = &Context.Owner;
 
 	SPAWN_INIT;
-	FVector Size = StartSize.GetValue(Owner->EmitterTime, Context.GetDistributionData());
+	FVector Size = StartSize.GetValue(Owner->EmitterTime);
 	Particle.Size += Size;
 	Particle.BaseSize += Size;
 }
