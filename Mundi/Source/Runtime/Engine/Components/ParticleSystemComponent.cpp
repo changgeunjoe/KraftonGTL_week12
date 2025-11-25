@@ -29,7 +29,7 @@ UParticleSystemComponent::UParticleSystemComponent()
 	auto SpriteEmitter = Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleVelocity::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleLifetime::StaticClass());
-	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleTypeDataMesh::StaticClass());
+	// SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleTypeDataMesh::StaticClass());
 
 	//InitParticles();	// tick에서 호출해줌
 }
@@ -56,7 +56,6 @@ void UParticleSystemComponent::InitParticles()
 	}
 
 	const int32 NumEmitters = Template->Emitters.Num();
-	EmitterInstances.SetNum(NumEmitters);
 
 	for (int32 Idx = 0; Idx < NumEmitters; Idx++)
 	{
@@ -203,6 +202,8 @@ void UParticleSystemComponent::Activate(bool bReset)
 	bWasDeactivated = false;
 	bSuppressSpawning = false;
 	bWasCompleted = false;
+
+	Template->UpdateAllModuleLists();
 
 	if (EmitterInstances.Num() == 0)
 	{

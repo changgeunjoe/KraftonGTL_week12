@@ -21,6 +21,8 @@
 #include "PlatformProcess.h"
 #include <filesystem>
 
+#include "ParticleSpriteEmitter.h"
+
 SParticleEditorWindow::SParticleEditorWindow()
 {
 }
@@ -90,7 +92,7 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	}
 
 	// 프리뷰 액터에 파티클 시스템 설정
-	//UpdatePreviewActor();
+	UpdatePreviewActor();
 
 	return true;
 }
@@ -871,7 +873,7 @@ void SParticleEditorWindow::CreateTestParticleSystem()
 	EditingParticleSystem = NewObject<UParticleSystem>();
 
 	// 테스트용 이미터 생성
-	UParticleEmitter* TestEmitter = NewObject<UParticleEmitter>();
+	UParticleEmitter* TestEmitter = NewObject<UParticleSpriteEmitter>();
 	TestEmitter->EmitterName = "TestEmitter";
 
 	// LOD 레벨 생성
@@ -885,13 +887,13 @@ void SParticleEditorWindow::CreateTestParticleSystem()
 	RequiredModule->EmitterDurationLow = 1.0f;
 	RequiredModule->EmitterLoops = 0;
 	RequiredModule->EmitterDelay = 0.0f;
-	LODLevel->Modules.Add(RequiredModule);
+	LODLevel->RequiredModule = RequiredModule;
 
 	// Spawn 모듈 생성 및 추가
 	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
 	SpawnModule->Rate = 10.0f;
 	SpawnModule->RateScale = 1.0f;
-	LODLevel->Modules.Add(SpawnModule);
+	LODLevel->SpawnModule = SpawnModule;
 
 	// Lifetime 모듈 생성 및 추가
 	UParticleModuleLifetime* LifetimeModule = NewObject<UParticleModuleLifetime>();
@@ -962,7 +964,7 @@ void SParticleEditorWindow::AddNewEmitter()
 		return;
 
 	// AddEmitter는 UClass*를 받아서 내부에서 객체를 생성함
-	UParticleEmitter* NewEmitter = EditingParticleSystem->AddEmitter(UParticleEmitter::StaticClass());
+	UParticleEmitter* NewEmitter = EditingParticleSystem->AddEmitter(UParticleSpriteEmitter::StaticClass());
 
 	if (NewEmitter)
 	{
@@ -1023,7 +1025,7 @@ void SParticleEditorWindow::LoadParticleSystemFromFile()
 		}
 
 		// 프리뷰 액터 업데이트
-		//UpdatePreviewActor();
+		UpdatePreviewActor();
 
 		if (bLoadSuccess)
 		{

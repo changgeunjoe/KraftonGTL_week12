@@ -169,6 +169,7 @@ bool FParticleEmitterInstance::Resize(int32 NewMaxActiveParticles, bool bSetMaxA
 		MaxActiveParticles = 0;
 	}
 	ParticleIndices = (uint16*) std::realloc(ParticleIndices, sizeof(uint16) * (NewMaxActiveParticles + 1));
+	assert(ParticleIndices);
 
 	for (int32 i = MaxActiveParticles; i < NewMaxActiveParticles; i++)
 	{
