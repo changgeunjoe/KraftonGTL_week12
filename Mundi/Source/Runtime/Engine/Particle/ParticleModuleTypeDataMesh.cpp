@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ParticleModuleTypeDataMesh.h"
 #include "ParticleEmitterInstances.h"
 
@@ -9,6 +9,8 @@ UParticleModuleTypeDataMesh::UParticleModuleTypeDataMesh()
 	, bOverrideMaterial(true)
 	, MeshAlignment(PSMA_MeshFaceCameraWithSpin)
 {
+	// NOTE: 하드 코딩으로 스태틱 메시 추가 (추후 삭제 필요)
+	Mesh = UResourceManager::GetInstance().Load<UStaticMesh>(GDataDir + "/Model/cube-tex.obj");
 }
 
 FParticleEmitterInstance* UParticleModuleTypeDataMesh::CreateInstance(UParticleEmitter* InEmitterParent, UParticleSystemComponent* InComponent)

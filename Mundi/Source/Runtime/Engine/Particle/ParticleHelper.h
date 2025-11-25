@@ -68,7 +68,7 @@ struct FMeshParticleInstanceVertex
 	/** 파티클의 색 */
 	FLinearColor Color;
 
-	/** 파티클의 월드 변환 */
+	/** 파티클의 월드 변환 행렬 */
 	FMatrix Transform;
 
 	/** 파티클의 속도, XYZ: 방향, W: 속도. */
@@ -89,6 +89,8 @@ struct FMeshParticleInstanceVertex
 
 	/** 파티클의 상대 시간 */
 	float RelativeTime;
+
+	float Pad[2];
 };
 
 
@@ -259,12 +261,7 @@ struct FDynamicEmitterDataBase
 /** 스프라이트 이미터와 다른 이미터 타입들을 위한 베이스 클래스 */
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
-	FDynamicSpriteEmitterDataBase(const UParticleModuleRequired* RequiredModule) :
-		FDynamicEmitterDataBase( RequiredModule ),
-		bUsesDynamicParameter(false)
-	{
-		// MaterialResource = nullptr;
-	}
+	FDynamicSpriteEmitterDataBase(const UParticleModuleRequired* RequiredModule);
 
 	virtual ~FDynamicSpriteEmitterDataBase()
 	{
@@ -326,11 +323,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
-	FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule)
-		: FDynamicSpriteEmitterDataBase(RequiredModule)
-		, StaticMesh(nullptr)
-	{
-	}
+	FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule);
 
 	virtual ~FDynamicMeshEmitterData() = default;
 

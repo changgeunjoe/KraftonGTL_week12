@@ -9,6 +9,7 @@
 #include "Source/Runtime/Engine/Particle/ParticleLODLevel.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
 #include "Source/Runtime/Engine/Particle/ParticleSpriteEmitter.h"
+#include "Source/Runtime/Engine/Particle/ParticleModuleTypeDataMesh.h"
 #include "SceneView.h"
 
 class UParticleModuleVelocity;
@@ -28,6 +29,7 @@ UParticleSystemComponent::UParticleSystemComponent()
 	auto SpriteEmitter = Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleVelocity::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleLifetime::StaticClass());
+	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleTypeDataMesh::StaticClass());
 
 	//InitParticles();	// tick에서 호출해줌
 }
