@@ -23,6 +23,7 @@ public:
 	 * PSMA_MeshFaceCameraWithSpin
 	 * PSMA_MeshFaceCameraWithLockedAxis
 	 */
+
 	EMeshScreenAlignment MeshAlignment;
 
 	/**

@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "MeshLoader.h"
 #include "ObjectFactory.h"
 #include "DDSTextureLoader.h"
@@ -50,6 +50,7 @@ void UResourceManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* I
     CreateDefaultShader();
     CreateDefaultMaterial();
 	PreLoadAnimStateMachines();
+	PreLoadParticleSystems();
 }
 
 // 전체 해제
@@ -488,6 +489,7 @@ void UResourceManager::InitShaderILMap()
 	ShaderToInputLayoutMap["Shaders/Materials/Fireball.hlsl"] = layout; // Use same vertex format as UberLit
 	ShaderToInputLayoutMap["Shaders/Shadow/PointLightShadow.hlsl"] = layout;  // Shadow map rendering uses same vertex format
 	ShaderToInputLayoutMap["Shaders/Shadows/DepthOnly_VS.hlsl"] = layout;
+	ShaderToInputLayoutMap["Shaders/Particles/ParticleMesh.hlsl"] = layout;
 
 	layout.Add({ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 	layout.Add({ "BLENDWEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
@@ -502,25 +504,14 @@ void UResourceManager::InitShaderILMap()
     layout.clear();
 
     // ────────────────────────────────
-    // 일반 빌보드 (Position + UV)
+    // Position + UV
     // ────────────────────────────────
     layout.Add({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
                  D3D11_INPUT_PER_VERTEX_DATA, 0 });
     layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12,
                  D3D11_INPUT_PER_VERTEX_DATA, 0 });
     ShaderToInputLayoutMap["Shaders/UI/Billboard.hlsl"] = layout;
-    layout.clear();
-
-
-    // ────────────────────────────────
-    // Quad 렌더링을 쓰는 Shader들 (Position + UV)
-    // ────────────────────────────────
-    layout.Add({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
-    layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 48,
-                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
-    ShaderToInputLayoutMap["Shaders/PostProcess/HeightFog_PS.hlsl"] = layout;
-    ShaderToInputLayoutMap["Shaders/Utility/SceneDepth_PS.hlsl"] = layout;
+    ShaderToInputLayoutMap["Shaders/Particles/ParticleSprite.hlsl"] = layout;
     layout.clear();
 
     ShaderToInputLayoutMap["Shaders/Utility/FullScreenTriangle_VS.hlsl"] = {};  // FullScreenTriangle 는 InputLayout을 사용하지 않는다
@@ -590,6 +581,37 @@ void UResourceManager::PreLoadAnimStateMachines()
 			FString PathStr = NormalizePath(WideToUTF8(WPathStr));
 
 			Load<UAnimStateMachine>(PathStr);
+		}
+	}
+}
+
+void UResourceManager::PreLoadParticleSystems()
+{
+	FString ParticleDir = GDataDir + "/Particle";
+	FWideString WParticleDir = UTF8ToWide(ParticleDir);
+	const fs::path DataDir(WParticleDir);
+
+	if (!fs::exists(DataDir) || !fs::is_directory(DataDir))
+	{
+		return;
+	}
+
+	for (const auto& Entry : fs::recursive_directory_iterator(DataDir))
+	{
+		if (!Entry.is_regular_file())
+			continue;
+
+		const fs::path& Path = Entry.path();
+
+		FWideString Extension = Path.extension().wstring();
+		std::ranges::transform(Extension, Extension.begin(), ::towlower);
+
+		if (Extension == L".particle")
+		{
+			FWideString WPathStr = Path.wstring();
+			FString PathStr = NormalizePath(WideToUTF8(WPathStr));
+
+			Load<UParticleSystem>(PathStr);
 		}
 	}
 }

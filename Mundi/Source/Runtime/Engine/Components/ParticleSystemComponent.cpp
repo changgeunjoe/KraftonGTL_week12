@@ -9,6 +9,7 @@
 #include "Source/Runtime/Engine/Particle/ParticleLODLevel.h"
 #include "Source/Runtime/Engine/Particle/ParticleSystem.h"
 #include "Source/Runtime/Engine/Particle/ParticleSpriteEmitter.h"
+#include "Source/Runtime/Engine/Particle/ParticleModuleTypeDataMesh.h"
 #include "SceneView.h"
 
 class UParticleModuleVelocity;
@@ -28,6 +29,7 @@ UParticleSystemComponent::UParticleSystemComponent()
 	auto SpriteEmitter = Template->AddEmitter(UParticleSpriteEmitter::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleVelocity::StaticClass());
 	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleLifetime::StaticClass());
+	SpriteEmitter->LODLevels[0]->AddModule(UParticleModuleTypeDataMesh::StaticClass());
 
 	//InitParticles();	// tick에서 호출해줌
 }
@@ -37,11 +39,8 @@ UParticleSystemComponent::~UParticleSystemComponent()
 	ResetParticles(true);
 	ClearDynamicData();
 
-	if (Template)
-	{
-		DeleteObject(Template);
-		Template = nullptr;
-	}
+	// Template은 ResourceManager가 관리하므로 여기서 삭제하지 않음
+	Template = nullptr;
 }
 
 void UParticleSystemComponent::InitParticles()
@@ -215,4 +214,26 @@ void UParticleSystemComponent::Deactivate()
 {
 	bSuppressSpawning = true;
 	bWasDeactivated = true;
+}
+
+void UParticleSystemComponent::SetTemplate(UParticleSystem* NewTemplate, bool bAutoActivate)
+{
+	// 기존 템플릿과 동일하면 아무것도 하지 않음
+	if (Template == NewTemplate)
+	{
+		return;
+	}
+
+	// 기존 파티클 인스턴스 정리
+	ResetParticles(true);
+	ClearDynamicData();
+
+	// 새로운 템플릿 설정
+	Template = NewTemplate;
+
+	// 템플릿이 유효하고 자동 활성화가 켜져있으면 활성화
+	if (Template && bAutoActivate)
+	{
+		Activate(true);
+	}
 }

@@ -23,6 +23,9 @@
 #include "Source/Runtime/Engine/Animation/BlendSpace2D.h"
 #include "Source/Runtime/Core/Misc/Enums.h"
 #include "AnimStateMachine.h"
+#include "Source/Runtime/Engine/Particle/ParticleSystem.h"
+#include "Source/Runtime/Engine/Components/ParticleSystemComponent.h"
+#include "Source/Runtime/Engine/Distribution/Distributions.h"
 
 // Disable warnings for third-party library
 #pragma warning(push)
@@ -52,6 +55,8 @@ TArray<FString> UPropertyRenderer::CachedScriptPaths;
 TArray<const char*> UPropertyRenderer::CachedScriptItems;
 TArray<FString> UPropertyRenderer::CachedAnimStateMachinePaths;
 TArray<const char*> UPropertyRenderer::CachedAnimStateMachineItems;
+TArray<FString> UPropertyRenderer::CachedParticleSystemPaths;
+TArray<const char*> UPropertyRenderer::CachedParticleSystemItems;
 
 static bool ItemsGetter(void* Data, int Index, const char** CItem)
 {
@@ -200,6 +205,18 @@ bool UPropertyRenderer::RenderPropertyInternal(const FProperty& Property, void* 
 
 	case EPropertyType::AnimSequence:
 		bChanged = RenderAnimSequenceProperty(Property, Instance);
+		break;
+
+	case EPropertyType::ParticleSystem:
+		bChanged = RenderParticleSystemProperty(Property, Instance);
+		break;
+
+	case EPropertyType::RawDistributionFloat:
+		bChanged = RenderDistributionFloatProperty(Property, Instance);
+		break;
+
+	case EPropertyType::RawDistributionVector:
+		bChanged = RenderDistributionVectorProperty(Property, Instance);
 		break;
 
 	default:
@@ -540,6 +557,17 @@ void UPropertyRenderer::CacheResources()
             CachedAnimStateMachineItems.push_back(CachedAnimStateMachinePaths[i].c_str());
         }
     }
+
+    // 8. ParticleSystem (.particle)
+    if (CachedParticleSystemPaths.IsEmpty() && CachedParticleSystemItems.IsEmpty())
+    {
+        CachedParticleSystemPaths = ResMgr.GetAllFilePaths<UParticleSystem>();
+        CachedParticleSystemItems.Add("None");
+        for (size_t i = 0; i < CachedParticleSystemPaths.size(); ++i)
+        {
+            CachedParticleSystemItems.push_back(CachedParticleSystemPaths[i].c_str());
+        }
+    }
 }
 
 void UPropertyRenderer::ClearResourcesCache()
@@ -562,6 +590,8 @@ void UPropertyRenderer::ClearResourcesCache()
 	CachedAnimSequenceItems.Empty();
 	CachedAnimStateMachinePaths.Empty();
 	CachedAnimStateMachineItems.Empty();
+	CachedParticleSystemPaths.Empty();
+	CachedParticleSystemItems.Empty();
 }
 
 // ===== 타입별 렌더링 구현 =====
@@ -2428,6 +2458,247 @@ bool UPropertyRenderer::RenderAnimSequenceSelectionCombo(const char* Label, UAni
 			OutNewAnim = ResMgr.Load<UAnimSequence>(SelectedPath);
 		}
 		bChanged = true;
+	}
+
+	return bChanged;
+}
+
+bool UPropertyRenderer::RenderParticleSystemProperty(const FProperty& Prop, void* Instance)
+{
+	UParticleSystem** ParticlePtr = Prop.GetValuePtr<UParticleSystem*>(Instance);
+	UParticleSystem* CurrentParticle = *ParticlePtr;
+
+	// 현재 선택된 인덱스 찾기
+	int CurrentIndex = 0;
+	if (CurrentParticle && !CurrentParticle->GetFilePath().empty())
+	{
+		const FString& CurrentPath = CurrentParticle->GetFilePath();
+		for (size_t i = 0; i < CachedParticleSystemPaths.size(); ++i)
+		{
+			if (CachedParticleSystemPaths[i] == CurrentPath)
+			{
+				CurrentIndex = static_cast<int>(i + 1); // +1 for "None" offset
+				break;
+			}
+		}
+	}
+
+	// 콤보박스 렌더링
+	bool bChanged = false;
+	if (ImGui::Combo(Prop.Name, &CurrentIndex, ItemsGetterConstChar,
+		&CachedParticleSystemItems, static_cast<int>(CachedParticleSystemItems.size())))
+	{
+		UResourceManager& ResMgr = UResourceManager::GetInstance();
+		UParticleSystem* NewParticle = nullptr;
+
+		if (CurrentIndex == 0)
+		{
+			// "None" 선택
+			NewParticle = nullptr;
+		}
+		else
+		{
+			// 파티클 시스템 선택 (인덱스 조정: -1 for "None" offset)
+			FString SelectedPath = CachedParticleSystemPaths[CurrentIndex - 1];
+			NewParticle = ResMgr.Load<UParticleSystem>(SelectedPath);
+		}
+
+		// 프로퍼티 포인터 업데이트
+		*ParticlePtr = NewParticle;
+
+		// ParticleSystemComponent일 경우 SetTemplate 호출
+		UObject* Obj = static_cast<UObject*>(Instance);
+		if (UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(Obj))
+		{
+			ParticleComp->SetTemplate(NewParticle);
+		}
+
+		bChanged = true;
+	}
+
+	return bChanged;
+}
+
+bool UPropertyRenderer::RenderDistributionFloatProperty(const FProperty& Prop, void* Instance)
+{
+	FRawDistributionFloat* DistFloat = Prop.GetValuePtr<FRawDistributionFloat>(Instance);
+	if (!DistFloat)
+	{
+		ImGui::Text("%s: [Invalid]", Prop.Name);
+		return false;
+	}
+
+	bool bChanged = false;
+
+	// 분포 타입 선택 콤보박스
+	const char* DistributionTypes[] = { "None", "Constant", "Uniform" };
+	int CurrentType = 0;
+
+	if (DistFloat->Distribution)
+	{
+		if (Cast<UDistributionFloatConstant>(DistFloat->Distribution))
+		{
+			CurrentType = 1;
+		}
+		else if (Cast<UDistributionFloatUniform>(DistFloat->Distribution))
+		{
+			CurrentType = 2;
+		}
+	}
+
+	FString ComboLabel = FString(Prop.Name) + " Type";
+	if (ImGui::Combo(ComboLabel.c_str(), &CurrentType, DistributionTypes, IM_ARRAYSIZE(DistributionTypes)))
+	{
+		// 기존 분포 삭제
+		if (DistFloat->Distribution)
+		{
+			DeleteObject(DistFloat->Distribution);
+			DistFloat->Distribution = nullptr;
+		}
+
+		// 새 분포 생성
+		switch (CurrentType)
+		{
+		case 1: // Constant
+			DistFloat->Distribution = NewObject<UDistributionFloatConstant>();
+			break;
+		case 2: // Uniform
+			DistFloat->Distribution = NewObject<UDistributionFloatUniform>();
+			break;
+		default:
+			break;
+		}
+		bChanged = true;
+	}
+
+	// 분포 타입에 따른 값 편집
+	if (DistFloat->Distribution)
+	{
+		ImGui::Indent();
+
+		if (auto* ConstDist = Cast<UDistributionFloatConstant>(DistFloat->Distribution))
+		{
+			FString ConstLabel = FString(Prop.Name) + " Value";
+			if (ImGui::DragFloat(ConstLabel.c_str(), &ConstDist->Constant, 0.1f))
+			{
+				bChanged = true;
+			}
+		}
+		else if (auto* UniformDist = Cast<UDistributionFloatUniform>(DistFloat->Distribution))
+		{
+			FString MinLabel = FString(Prop.Name) + " Min";
+			FString MaxLabel = FString(Prop.Name) + " Max";
+
+			if (ImGui::DragFloat(MinLabel.c_str(), &UniformDist->Min, 0.1f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(MaxLabel.c_str(), &UniformDist->Max, 0.1f))
+			{
+				bChanged = true;
+			}
+		}
+
+		ImGui::Unindent();
+	}
+
+	return bChanged;
+}
+
+bool UPropertyRenderer::RenderDistributionVectorProperty(const FProperty& Prop, void* Instance)
+{
+	FRawDistributionVector* DistVector = Prop.GetValuePtr<FRawDistributionVector>(Instance);
+	if (!DistVector)
+	{
+		ImGui::Text("%s: [Invalid]", Prop.Name);
+		return false;
+	}
+
+	bool bChanged = false;
+
+	// 분포 타입 선택 콤보박스
+	const char* DistributionTypes[] = { "None", "Constant", "Uniform" };
+	int CurrentType = 0;
+
+	if (DistVector->Distribution)
+	{
+		if (Cast<UDistributionVectorConstant>(DistVector->Distribution))
+		{
+			CurrentType = 1;
+		}
+		else if (Cast<UDistributionVectorUniform>(DistVector->Distribution))
+		{
+			CurrentType = 2;
+		}
+	}
+
+	FString ComboLabel = FString(Prop.Name) + " Type";
+	if (ImGui::Combo(ComboLabel.c_str(), &CurrentType, DistributionTypes, IM_ARRAYSIZE(DistributionTypes)))
+	{
+		// 기존 분포 삭제
+		if (DistVector->Distribution)
+		{
+			DeleteObject(DistVector->Distribution);
+			DistVector->Distribution = nullptr;
+		}
+
+		// 새 분포 생성
+		switch (CurrentType)
+		{
+		case 1: // Constant
+			DistVector->Distribution = NewObject<UDistributionVectorConstant>();
+			break;
+		case 2: // Uniform
+			DistVector->Distribution = NewObject<UDistributionVectorUniform>();
+			break;
+		default:
+			break;
+		}
+		bChanged = true;
+	}
+
+	// 분포 타입에 따른 값 편집
+	if (DistVector->Distribution)
+	{
+		ImGui::Indent();
+
+		if (auto* ConstDist = Cast<UDistributionVectorConstant>(DistVector->Distribution))
+		{
+			FString ConstLabel = FString(Prop.Name) + " Value";
+			float Vec[3] = { ConstDist->Constant.X, ConstDist->Constant.Y, ConstDist->Constant.Z };
+			if (ImGui::DragFloat3(ConstLabel.c_str(), Vec, 0.1f))
+			{
+				ConstDist->Constant.X = Vec[0];
+				ConstDist->Constant.Y = Vec[1];
+				ConstDist->Constant.Z = Vec[2];
+				bChanged = true;
+			}
+		}
+		else if (auto* UniformDist = Cast<UDistributionVectorUniform>(DistVector->Distribution))
+		{
+			FString MinLabel = FString(Prop.Name) + " Min";
+			FString MaxLabel = FString(Prop.Name) + " Max";
+
+			float MinVec[3] = { UniformDist->Min.X, UniformDist->Min.Y, UniformDist->Min.Z };
+			float MaxVec[3] = { UniformDist->Max.X, UniformDist->Max.Y, UniformDist->Max.Z };
+
+			if (ImGui::DragFloat3(MinLabel.c_str(), MinVec, 0.1f))
+			{
+				UniformDist->Min.X = MinVec[0];
+				UniformDist->Min.Y = MinVec[1];
+				UniformDist->Min.Z = MinVec[2];
+				bChanged = true;
+			}
+			if (ImGui::DragFloat3(MaxLabel.c_str(), MaxVec, 0.1f))
+			{
+				UniformDist->Max.X = MaxVec[0];
+				UniformDist->Max.Y = MaxVec[1];
+				UniformDist->Max.Z = MaxVec[2];
+				bChanged = true;
+			}
+		}
+
+		ImGui::Unindent();
 	}
 
 	return bChanged;

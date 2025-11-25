@@ -12,6 +12,9 @@
 #include "Source/Runtime/Engine/Particle/ParticleModuleRequired.h"
 #include "Source/Runtime/Engine/Particle/ParticleModuleSpawn.h"
 #include "Source/Runtime/Engine/Particle/ParticleModuleLifetime.h"
+#include "Source/Runtime/Engine/Particle/ParticleModuleTypeDataBase.h"
+#include "Source/Runtime/Engine/GameFramework/ParticleSystemActor.h"
+#include "Source/Runtime/Engine/Components/ParticleSystemComponent.h"
 #include "Source/Slate/UObject/Widgets/ParticleModuleDetailWidget.h"
 #include "Source/Slate/UObject/Widgets/PropertyRenderer.h"
 #include "ImGui/imgui.h"
@@ -67,6 +70,16 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	DetailWidget = NewObject<UParticleModuleDetailWidget>();
 	DetailWidget->Initialize();
 
+	// 프리뷰 액터 생성 (원점에 배치)
+	if (PreviewState && PreviewState->World)
+	{
+		PreviewActor = PreviewState->World->SpawnActor<AParticleSystemActor>();
+		if (PreviewActor)
+		{
+			PreviewActor->SetActorLocation(FVector::Zero());
+		}
+	}
+
 	// 테스트용 파티클 시스템 생성
 	CreateTestParticleSystem();
 
@@ -75,6 +88,9 @@ bool SParticleEditorWindow::Initialize(float StartX, float StartY, float Width, 
 	{
 		DetailWidget->SetParticleSystem(EditingParticleSystem);
 	}
+
+	// 프리뷰 액터에 파티클 시스템 설정
+	//UpdatePreviewActor();
 
 	return true;
 }
@@ -530,13 +546,14 @@ void SParticleEditorWindow::RenderEmittersPanel()
 						if (strstr(className, "Spawn")) return ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
 						if (strstr(className, "Lifetime")) return ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 						if (strstr(className, "Drag")) return ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+						if (strstr(className, "TypeData")) return ImVec4(0.5f, 1.0f, 0.5f, 1.0f);
+						if (strstr(className, "Velocity")) return ImVec4(0.5f, 0.8f, 1.0f, 1.0f);
 						return ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 					};
 
-					for (int moduleIdx = 0; moduleIdx < LODLevel->Modules.size(); moduleIdx++)
-					{
-						UParticleModule* module = LODLevel->Modules[moduleIdx];
-						if (!module) continue;
+					// 렌더링할 모듈 람다 함수
+					auto RenderModuleItem = [&](UParticleModule* module, int moduleIdx, bool isSpecialModule) {
+						if (!module) return;
 
 						const char* moduleName = module->GetClass()->Name;
 						ImVec4 moduleColor = GetModuleColor(moduleName);
@@ -575,8 +592,8 @@ void SParticleEditorWindow::RenderEmittersPanel()
 							}
 						}
 
-						// 우클릭 컨텍스트 메뉴
-						if (ImGui::BeginPopupContextItem(("ModuleCtx_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str()))
+						// 우클릭 컨텍스트 메뉴 (특수 모듈은 삭제 불가)
+						if (!isSpecialModule && ImGui::BeginPopupContextItem(("ModuleCtx_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str()))
 						{
 							if (ImGui::MenuItem("Delete Module"))
 							{
@@ -584,6 +601,32 @@ void SParticleEditorWindow::RenderEmittersPanel()
 							}
 							ImGui::EndPopup();
 						}
+					};
+
+					int moduleIdx = 0;
+
+					// RequiredModule 먼저 표시
+					if (LODLevel->RequiredModule)
+					{
+						RenderModuleItem(LODLevel->RequiredModule, moduleIdx++, true);
+					}
+
+					// SpawnModule 표시
+					if (LODLevel->SpawnModule)
+					{
+						RenderModuleItem(LODLevel->SpawnModule, moduleIdx++, true);
+					}
+
+					// TypeDataModule 표시
+					if (LODLevel->TypeDataModule)
+					{
+						RenderModuleItem(LODLevel->TypeDataModule, moduleIdx++, true);
+					}
+
+					// 일반 Modules 배열 표시
+					for (int i = 0; i < LODLevel->Modules.size(); i++)
+					{
+						RenderModuleItem(LODLevel->Modules[i], moduleIdx++, false);
 					}
 
 					// 빈 공간 우클릭으로 모듈 추가
@@ -979,6 +1022,9 @@ void SParticleEditorWindow::LoadParticleSystemFromFile()
 			DetailWidget->SetParticleSystem(EditingParticleSystem);
 		}
 
+		// 프리뷰 액터 업데이트
+		//UpdatePreviewActor();
+
 		if (bLoadSuccess)
 		{
 			CurrentFilePath = UTF8ToWide(FinalPathStr);
@@ -1055,5 +1101,19 @@ void SParticleEditorWindow::SaveParticleSystemToFileAs()
 			StatusMessage = "Failed to save particle system";
 			UE_LOG("[Error] Failed to save ParticleSystem: %S", AbsolutePath.c_str());
 		}
+	}
+}
+
+void SParticleEditorWindow::UpdatePreviewActor()
+{
+	if (!PreviewActor)
+		return;
+
+	// 파티클 시스템 컴포넌트 가져오기
+	UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PreviewActor->GetRootComponent());
+	if (ParticleComp)
+	{
+		// 현재 편집 중인 파티클 시스템으로 템플릿 설정
+		ParticleComp->SetTemplate(EditingParticleSystem);
 	}
 }

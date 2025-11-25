@@ -153,7 +153,7 @@ bool UWorld::TryLoadLastUsedLevel()
 	JSON LevelJsonData;
 	if (FJsonSerializer::LoadJsonFromFile(LevelJsonData, LastUsedLevelPath))
 	{
-		//NewLevel->Serialize(true, LevelJsonData);
+		NewLevel->Serialize(true, LevelJsonData);
 	}
 	else
 	{

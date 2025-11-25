@@ -38,6 +38,9 @@ public:
 	static bool RenderTextureProperty(const FProperty& Prop, void* Instance);
 	static bool RenderSoundProperty(const FProperty& Prop, void* Instance);
 	static bool RenderAnimSequenceProperty(const FProperty& Prop, void* Instance);
+	static bool RenderParticleSystemProperty(const FProperty& Prop, void* Instance);
+	static bool RenderDistributionFloatProperty(const FProperty& Prop, void* Instance);
+	static bool RenderDistributionVectorProperty(const FProperty& Prop, void* Instance);
 	static bool RenderSRVProperty(const FProperty& Prop, void* Instance);
 	static bool RenderScriptFileProperty(const FProperty& Prop, void* Instance);
 	static bool RenderCurveProperty(const FProperty& Prop, void* Instance);
@@ -83,4 +86,6 @@ private:
 	static TArray<const char*> CachedAnimSequenceItems;
 	static TArray<FString> CachedAnimStateMachinePaths;
 	static TArray<const char*> CachedAnimStateMachineItems;
+	static TArray<FString> CachedParticleSystemPaths;
+	static TArray<const char*> CachedParticleSystemItems;
 };

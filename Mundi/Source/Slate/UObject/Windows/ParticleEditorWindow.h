@@ -6,6 +6,7 @@ class UParticleModule;
 class UParticleSystem;
 class UParticleEmitter;
 class UParticleModuleDetailWidget;
+class AParticleSystemActor;
 
 class SParticleEditorWindow : public SWindow
 {
@@ -51,6 +52,12 @@ private:
 	ViewerState* PreviewState = nullptr;
 	FRect PreviewViewportRect = FRect(0, 0, 0, 0);
 	ID3D11Device* Device = nullptr;
+
+	// Preview Actor (파티클 미리보기용)
+	AParticleSystemActor* PreviewActor = nullptr;
+
+	// 프리뷰 업데이트 함수
+	void UpdatePreviewActor();
 
 	// State
 	bool bIsOpen = true;

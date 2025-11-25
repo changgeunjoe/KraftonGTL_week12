@@ -10,6 +10,7 @@ class UParticleModuleLifetime : public UParticleModuleLifetimeBase
 
 public:
 	/** 파티클의 기본 수명 (초 단위) */
+	UPROPERTY(EditAnywhere, Category="Spawn")
 	FRawDistributionFloat Lifetime;
 
 public:

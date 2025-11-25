@@ -30,6 +30,13 @@ FBaseParticle&	Particle		= *(ParticleBase);
 
 class UParticleModuleRequired;
 
+// 인스턴싱을 위한 정점 구조체
+struct FParticleVertex
+{
+	FVector Position;
+	FVector2D UV;
+};
+
 /**
  * GPU에 전달되는 파티클 당 데이터
  */
@@ -61,7 +68,7 @@ struct FMeshParticleInstanceVertex
 	/** 파티클의 색 */
 	FLinearColor Color;
 
-	/** 파티클의 월드 변환 */
+	/** 파티클의 월드 변환 행렬 */
 	FMatrix Transform;
 
 	/** 파티클의 속도, XYZ: 방향, W: 속도. */
@@ -82,7 +89,10 @@ struct FMeshParticleInstanceVertex
 
 	/** 파티클의 상대 시간 */
 	float RelativeTime;
+
+	float Pad[2];
 };
+
 
 struct FMeshRotationPayloadData
 {
@@ -253,12 +263,7 @@ struct FDynamicEmitterDataBase
 /** 스프라이트 이미터와 다른 이미터 타입들을 위한 베이스 클래스 */
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
-	FDynamicSpriteEmitterDataBase(const UParticleModuleRequired* RequiredModule) :
-		FDynamicEmitterDataBase( RequiredModule ),
-		bUsesDynamicParameter(false)
-	{
-		// MaterialResource = nullptr;
-	}
+	FDynamicSpriteEmitterDataBase(const UParticleModuleRequired* RequiredModule);
 
 	virtual ~FDynamicSpriteEmitterDataBase()
 	{
@@ -280,6 +285,10 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 	/** 파티클 이미터가 DynamicParamter 모듈을 사용한다면 True */
 	uint32 bUsesDynamicParameter:1;
+
+	// GPU 파티클 데이터를 저장할 구조화 버퍼입니다.
+	ID3D11Buffer* ParticleStructuredBuffer = nullptr;
+	ID3D11ShaderResourceView* ParticleStructuredBufferSRV = nullptr;
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
@@ -309,20 +318,14 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 	FDynamicSpriteEmitterReplayData Source;
 
-	// GPU에 바인딩될 정점 버퍼입니다.
+	// GPU 인스턴싱을 위한 정적 정점/인덱스 버퍼입니다.
 	ID3D11Buffer* VertexBuffer = nullptr;
-
-	// GPU에 바인딩될 인덱스 버퍼입니다.
 	ID3D11Buffer* IndexBuffer = nullptr;
 };
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
-	FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule)
-		: FDynamicSpriteEmitterDataBase(RequiredModule)
-		, StaticMesh(nullptr)
-	{
-	}
+	FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule);
 
 	virtual ~FDynamicMeshEmitterData() = default;
 
@@ -346,6 +349,8 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 	{
 		return &Source;
 	}
+
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const override;
 
 	FDynamicMeshEmitterReplayData Source;
 
