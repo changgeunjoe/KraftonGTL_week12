@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Material.h"
 #include "Shader.h"
 #include "Texture.h"
@@ -33,8 +33,8 @@ void UMaterial::Load(const FString& InFilePath, ID3D11Device* InDevice)
 	}
 	else
 	{
-		throw std::runtime_error(".dds나 .hlsl만 입력해주세요. 현재 입력 파일명 : " + InFilePath);
-	}
+		//throw std::runtime_error(".dds나 .hlsl만 입력해주세요. 현재 입력 파일명 : " + InFilePath);
+	}//이 부분은 주석이 달려있기 때문에 강제 처리된 것이므로 나중에 구조를 바꾸기 위해 필요할 수 있다.
 }
 
 void UMaterial::Serialize(const bool bInIsLoading, JSON& InOutHandle)

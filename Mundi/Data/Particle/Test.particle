@@ -65,31 +65,13 @@
               "Type" : "UParticleModuleVelocity",
               "bApplyOwnerScale" : true,
               "bInWorldSpace" : false
-            }, {
-              "EmitterDelay" : 0.000000,
-              "EmitterDuration" : 1.000000,
-              "EmitterDurationLow" : 0.000000,
-              "EmitterLoops" : 0,
-              "Material" : "",
-              "ScreenAlignment" : 1,
-              "Type" : "UParticleModuleRequired",
-              "bUseLocalSpace" : false
-            }, {
-              "EmitterDelay" : 0.000000,
-              "EmitterDuration" : 1.000000,
-              "EmitterDurationLow" : 0.000000,
-              "EmitterLoops" : 0,
-              "Material" : "",
-              "ScreenAlignment" : 1,
-              "Type" : "UParticleModuleRequired",
-              "bUseLocalSpace" : false
             }],
           "bEnabled" : true
         }],
       "PeakActiveParticles" : 207518,
       "Type" : "UParticleEmitter"
     }, {
-      "EmitterName" : "Emitter_1",
+      "EmitterName" : "김진철 갓데미",
       "InitialAllocationCount" : 0,
       "LODLevels" : [{
           "Level" : 0,
