@@ -24,6 +24,29 @@ uint32			CurrentOffset	= Context.Offset;																	\
 FBaseParticle*	ParticleBase	= Context.ParticleBase;																\
 FBaseParticle&	Particle		= *(ParticleBase);
 
+#define BEGIN_UPDATE_LOOP																								\
+{																													\
+	int32&			ActiveParticles = Context.Owner.ActiveParticles;												\
+	int32			Offset	= Context.Offset;																		\
+	uint32			CurrentOffset	= Offset;																		\
+	float			DeltaTime = Context.DeltaTime;																	\
+	const uint8*	ParticleData	= Context.Owner.ParticleData;													\
+	const uint32	ParticleStride	= Context.Owner.ParticleStride;													\
+	uint16*			ParticleIndices	= Context.Owner.ParticleIndices;												\
+	for(int32 i=ActiveParticles-1; i>=0; i--)																		\
+	{																												\
+		const int32	CurrentIndex	= ParticleIndices[i];															\
+		const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;									\
+		FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);												\
+		if ((Particle.Flags) == 0)															\
+		{																											\
+
+#define END_UPDATE_LOOP																									\
+		}																											\
+		CurrentOffset				= Offset;																		\
+	}																												\
+}
+
 /*-----------------------------------------------------------------------------
 	FBaseParticle
 -----------------------------------------------------------------------------*/
@@ -139,8 +162,8 @@ struct FBaseParticle
 	// 16 bytes
 	float			RelativeTime;
 	float			OneOverMaxLifetime; // lifetime의 역수
+	float			SubImageIndex;
 	float			Placeholder2;
-	float			Placeholder3;
 };
 
 /*-----------------------------------------------------------------------------
