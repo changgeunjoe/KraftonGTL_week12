@@ -163,10 +163,6 @@ void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& Out
 
 void UParticleSystemComponent::ClearDynamicData()
 {
-	for (auto* Data : EmitterRenderData)
-	{
-		delete Data;
-	}
 	EmitterRenderData.Empty();
 }
 

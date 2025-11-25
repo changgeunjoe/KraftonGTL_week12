@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ParticleEmitterInstances.h"
 
 #include "ParticleEmitter.h"
@@ -753,6 +753,16 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
 FParticleSpriteEmitterInstance::FParticleSpriteEmitterInstance(UParticleSystemComponent* InComponent)
 	: FParticleEmitterInstance(InComponent)
 {
+	NewEmitterData = new FDynamicSpriteEmitterData();
+}
+
+FParticleSpriteEmitterInstance::~FParticleSpriteEmitterInstance()
+{
+	if (NewEmitterData)
+	{
+		delete NewEmitterData;
+		NewEmitterData = nullptr;
+	}
 }
 
 FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected)
@@ -763,11 +773,8 @@ FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSe
 		return nullptr;
 	}
 
-	FDynamicSpriteEmitterData* NewEmitterData = new FDynamicSpriteEmitterData(LODLevel->RequiredModule);
-
 	if (!FillReplayData(NewEmitterData->Source))
 	{
-		delete NewEmitterData;
 		return nullptr;
 	}
 
@@ -830,6 +837,16 @@ FParticleMeshEmitterInstance::FParticleMeshEmitterInstance(UParticleSystemCompon
     , Mesh(nullptr)
     , MeshRotationOffset(0)
 {
+	NewEmitterData = new FDynamicMeshEmitterData();
+}
+
+FParticleMeshEmitterInstance::~FParticleMeshEmitterInstance()
+{
+	if (NewEmitterData)
+	{
+		delete NewEmitterData;
+		NewEmitterData = nullptr;
+	}
 }
 
 void FParticleMeshEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
@@ -891,11 +908,8 @@ FDynamicEmitterDataBase* FParticleMeshEmitterInstance::GetDynamicData(bool bSele
 
     UParticleLODLevel* LODLevel = SpriteTemplate->GetLODLevel(0);
 
-    FDynamicMeshEmitterData* NewEmitterData = new FDynamicMeshEmitterData(LODLevel->RequiredModule);
-
     if (!FillReplayData(NewEmitterData->Source))
     {
-        delete NewEmitterData;
         return nullptr;
     }
 

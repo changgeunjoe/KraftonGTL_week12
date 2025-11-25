@@ -5,19 +5,18 @@
 
 constexpr uint32 MaxParticles = 4096u;
 
-FDynamicEmitterDataBase::FDynamicEmitterDataBase(const class UParticleModuleRequired* RequiredModule)
+FDynamicEmitterDataBase::FDynamicEmitterDataBase()
 	: bSelected(false)
 	, EmitterIndex(-1)
 {
 }
 
-FDynamicSpriteEmitterDataBase::FDynamicSpriteEmitterDataBase(const UParticleModuleRequired* RequiredModule) :
-	FDynamicEmitterDataBase(RequiredModule),
+FDynamicSpriteEmitterDataBase::FDynamicSpriteEmitterDataBase() :
 	bUsesDynamicParameter(false)
 {
 }
 
-FDynamicSpriteEmitterData::FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule) : FDynamicSpriteEmitterDataBase(RequiredModule)
+FDynamicSpriteEmitterData::FDynamicSpriteEmitterData()
 {
 	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
 	if (!Device) return;
@@ -204,9 +203,8 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	Collector.Add(BatchElement);
 }
 
-FDynamicMeshEmitterData::FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule)
-	: FDynamicSpriteEmitterDataBase(RequiredModule)
-	, StaticMesh(nullptr)
+FDynamicMeshEmitterData::FDynamicMeshEmitterData()
+	: StaticMesh(nullptr)
 {
 	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
 	if (!Device) return;

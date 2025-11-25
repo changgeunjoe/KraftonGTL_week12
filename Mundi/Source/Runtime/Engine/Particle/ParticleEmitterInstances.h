@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 struct FDynamicEmitterReplayDataBase;
 struct FDynamicEmitterDataBase;
@@ -233,7 +233,7 @@ struct FParticleSpriteEmitterInstance : public FParticleEmitterInstance
 {
 	FParticleSpriteEmitterInstance(UParticleSystemComponent* InComponent);
 
-	virtual ~FParticleSpriteEmitterInstance() = default;
+	virtual ~FParticleSpriteEmitterInstance();
 
 	/**
 	 * 렌더링 스레드에서 사용할 동적 데이터를 생성하고 반환한다.
@@ -259,6 +259,8 @@ protected:
 	virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData ) override;
 
 	UMaterialInterface* GetCurrentMaterial();
+
+	class FDynamicSpriteEmitterData* NewEmitterData;
 };
 
 /*-----------------------------------------------------------------------------
@@ -275,7 +277,7 @@ struct FParticleMeshEmitterInstance : public FParticleEmitterInstance
 
 	FParticleMeshEmitterInstance(UParticleSystemComponent* InComponent);
 
-	virtual ~FParticleMeshEmitterInstance() = default;
+	virtual ~FParticleMeshEmitterInstance();
 
 	//~ FParticleEmitterInstance 인터페이스 구현
 	virtual void InitParameters(UParticleEmitter* InTemplate) override;
@@ -298,4 +300,6 @@ struct FParticleMeshEmitterInstance : public FParticleEmitterInstance
 protected:
 	// 렌더 데이터 복사 헬퍼
 	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
+
+	class FDynamicMeshEmitterData* NewEmitterData;
 };

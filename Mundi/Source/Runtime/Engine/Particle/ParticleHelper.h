@@ -246,7 +246,7 @@ struct FDynamicMeshEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 /** 모든 이미터 타입에 대한 베이스 클래스 */
 struct FDynamicEmitterDataBase
 {
-	FDynamicEmitterDataBase(const class UParticleModuleRequired* RequiredModule);
+	FDynamicEmitterDataBase();
 
 	virtual ~FDynamicEmitterDataBase() = default;
 
@@ -263,7 +263,7 @@ struct FDynamicEmitterDataBase
 /** 스프라이트 이미터와 다른 이미터 타입들을 위한 베이스 클래스 */
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
-	FDynamicSpriteEmitterDataBase(const UParticleModuleRequired* RequiredModule);
+	FDynamicSpriteEmitterDataBase();
 
 	virtual ~FDynamicSpriteEmitterDataBase()
 	{
@@ -293,7 +293,7 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
-	FDynamicSpriteEmitterData(const UParticleModuleRequired* RequiredModule);
+	FDynamicSpriteEmitterData();
 
 	virtual ~FDynamicSpriteEmitterData();
 
@@ -325,7 +325,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
-	FDynamicMeshEmitterData(const UParticleModuleRequired* RequiredModule);
+	FDynamicMeshEmitterData();
 
 	virtual ~FDynamicMeshEmitterData() = default;
 
