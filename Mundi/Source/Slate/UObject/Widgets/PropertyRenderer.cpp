@@ -2640,7 +2640,7 @@ bool UPropertyRenderer::RenderDistributionFloatProperty(const FProperty& Prop, v
 	bool bChanged = false;
 
 	// 분포 타입 선택 콤보박스
-	const char* DistributionTypes[] = { "None", "Constant", "Uniform" };
+	const char* DistributionTypes[] = { "None", "Constant", "Uniform", "Bezier" };
 	int CurrentType = 0;
 
 	if (DistFloat->Distribution)
@@ -2652,6 +2652,10 @@ bool UPropertyRenderer::RenderDistributionFloatProperty(const FProperty& Prop, v
 		else if (Cast<UDistributionFloatUniform>(DistFloat->Distribution))
 		{
 			CurrentType = 2;
+		}
+		else if (Cast<UDistributionFloatBezier>(DistFloat->Distribution))
+		{
+			CurrentType = 3;
 		}
 	}
 
@@ -2674,6 +2678,18 @@ bool UPropertyRenderer::RenderDistributionFloatProperty(const FProperty& Prop, v
 		case 2: // Uniform
 			DistFloat->Distribution = NewObject<UDistributionFloatUniform>();
 			break;
+		case 3: // Bezier
+		{
+			auto* BezierDist = NewObject<UDistributionFloatBezier>();
+			BezierDist->MinInput = 0.0f;
+			BezierDist->MaxInput = 1.0f;
+			BezierDist->P0 = 0.0f;
+			BezierDist->P1 = 0.33f;
+			BezierDist->P2 = 0.66f;
+			BezierDist->P3 = 1.0f;
+			DistFloat->Distribution = BezierDist;
+			break;
+		}
 		default:
 			break;
 		}
@@ -2707,6 +2723,40 @@ bool UPropertyRenderer::RenderDistributionFloatProperty(const FProperty& Prop, v
 				bChanged = true;
 			}
 		}
+		else if (auto* BezierDist = Cast<UDistributionFloatBezier>(DistFloat->Distribution))
+		{
+			FString MinInputLabel = FString(Prop.Name) + " MinInput";
+			FString MaxInputLabel = FString(Prop.Name) + " MaxInput";
+			FString P0Label = FString(Prop.Name) + " P0 (Start)";
+			FString P1Label = FString(Prop.Name) + " P1 (StartTan)";
+			FString P2Label = FString(Prop.Name) + " P2 (EndTan)";
+			FString P3Label = FString(Prop.Name) + " P3 (End)";
+
+			if (ImGui::DragFloat(MinInputLabel.c_str(), &BezierDist->MinInput, 0.01f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(MaxInputLabel.c_str(), &BezierDist->MaxInput, 0.01f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(P0Label.c_str(), &BezierDist->P0, 0.1f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(P1Label.c_str(), &BezierDist->P1, 0.1f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(P2Label.c_str(), &BezierDist->P2, 0.1f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(P3Label.c_str(), &BezierDist->P3, 0.1f))
+			{
+				bChanged = true;
+			}
+		}
 
 		ImGui::Unindent();
 	}
@@ -2726,7 +2776,7 @@ bool UPropertyRenderer::RenderDistributionVectorProperty(const FProperty& Prop, 
 	bool bChanged = false;
 
 	// 분포 타입 선택 콤보박스
-	const char* DistributionTypes[] = { "None", "Constant", "Uniform" };
+	const char* DistributionTypes[] = { "None", "Constant", "Uniform", "Bezier" };
 	int CurrentType = 0;
 
 	if (DistVector->Distribution)
@@ -2738,6 +2788,10 @@ bool UPropertyRenderer::RenderDistributionVectorProperty(const FProperty& Prop, 
 		else if (Cast<UDistributionVectorUniform>(DistVector->Distribution))
 		{
 			CurrentType = 2;
+		}
+		else if (Cast<UDistributionVectorBezier>(DistVector->Distribution))
+		{
+			CurrentType = 3;
 		}
 	}
 
@@ -2760,6 +2814,18 @@ bool UPropertyRenderer::RenderDistributionVectorProperty(const FProperty& Prop, 
 		case 2: // Uniform
 			DistVector->Distribution = NewObject<UDistributionVectorUniform>();
 			break;
+		case 3: // Bezier
+		{
+			auto* BezierDist = NewObject<UDistributionVectorBezier>();
+			BezierDist->MinInput = 0.0f;
+			BezierDist->MaxInput = 1.0f;
+			BezierDist->P0 = FVector(0.0f, 0.0f, 0.0f);
+			BezierDist->P1 = FVector(0.33f, 0.33f, 0.33f);
+			BezierDist->P2 = FVector(0.66f, 0.66f, 0.66f);
+			BezierDist->P3 = FVector(1.0f, 1.0f, 1.0f);
+			DistVector->Distribution = BezierDist;
+			break;
+		}
 		default:
 			break;
 		}
@@ -2803,6 +2869,60 @@ bool UPropertyRenderer::RenderDistributionVectorProperty(const FProperty& Prop, 
 				UniformDist->Max.X = MaxVec[0];
 				UniformDist->Max.Y = MaxVec[1];
 				UniformDist->Max.Z = MaxVec[2];
+				bChanged = true;
+			}
+		}
+		else if (auto* BezierDist = Cast<UDistributionVectorBezier>(DistVector->Distribution))
+		{
+			FString MinInputLabel = FString(Prop.Name) + " MinInput";
+			FString MaxInputLabel = FString(Prop.Name) + " MaxInput";
+			FString P0Label = FString(Prop.Name) + " P0 (Start)";
+			FString P1Label = FString(Prop.Name) + " P1 (StartTan)";
+			FString P2Label = FString(Prop.Name) + " P2 (EndTan)";
+			FString P3Label = FString(Prop.Name) + " P3 (End)";
+
+			if (ImGui::DragFloat(MinInputLabel.c_str(), &BezierDist->MinInput, 0.01f))
+			{
+				bChanged = true;
+			}
+			if (ImGui::DragFloat(MaxInputLabel.c_str(), &BezierDist->MaxInput, 0.01f))
+			{
+				bChanged = true;
+			}
+
+			float P0Vec[3] = { BezierDist->P0.X, BezierDist->P0.Y, BezierDist->P0.Z };
+			if (ImGui::DragFloat3(P0Label.c_str(), P0Vec, 0.1f))
+			{
+				BezierDist->P0.X = P0Vec[0];
+				BezierDist->P0.Y = P0Vec[1];
+				BezierDist->P0.Z = P0Vec[2];
+				bChanged = true;
+			}
+
+			float P1Vec[3] = { BezierDist->P1.X, BezierDist->P1.Y, BezierDist->P1.Z };
+			if (ImGui::DragFloat3(P1Label.c_str(), P1Vec, 0.1f))
+			{
+				BezierDist->P1.X = P1Vec[0];
+				BezierDist->P1.Y = P1Vec[1];
+				BezierDist->P1.Z = P1Vec[2];
+				bChanged = true;
+			}
+
+			float P2Vec[3] = { BezierDist->P2.X, BezierDist->P2.Y, BezierDist->P2.Z };
+			if (ImGui::DragFloat3(P2Label.c_str(), P2Vec, 0.1f))
+			{
+				BezierDist->P2.X = P2Vec[0];
+				BezierDist->P2.Y = P2Vec[1];
+				BezierDist->P2.Z = P2Vec[2];
+				bChanged = true;
+			}
+
+			float P3Vec[3] = { BezierDist->P3.X, BezierDist->P3.Y, BezierDist->P3.Z };
+			if (ImGui::DragFloat3(P3Label.c_str(), P3Vec, 0.1f))
+			{
+				BezierDist->P3.X = P3Vec[0];
+				BezierDist->P3.Y = P3Vec[1];
+				BezierDist->P3.Z = P3Vec[2];
 				bChanged = true;
 			}
 		}

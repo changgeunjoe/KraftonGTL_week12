@@ -216,6 +216,17 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 						FJsonSerializer::ReadFloat(DistJson, "Max", UniformDist->Max);
 						ValuePtr->Distribution = UniformDist;
 					}
+					else if (DistType == "Bezier")
+					{
+						auto* BezierDist = NewObject<UDistributionFloatBezier>();
+						FJsonSerializer::ReadFloat(DistJson, "MinInput", BezierDist->MinInput);
+						FJsonSerializer::ReadFloat(DistJson, "MaxInput", BezierDist->MaxInput);
+						FJsonSerializer::ReadFloat(DistJson, "P0", BezierDist->P0);
+						FJsonSerializer::ReadFloat(DistJson, "P1", BezierDist->P1);
+						FJsonSerializer::ReadFloat(DistJson, "P2", BezierDist->P2);
+						FJsonSerializer::ReadFloat(DistJson, "P3", BezierDist->P3);
+						ValuePtr->Distribution = BezierDist;
+					}
 				}
 			}
 			else
@@ -234,6 +245,16 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 						DistJson["DistributionType"] = "Uniform";
 						DistJson["Min"] = UniformDist->Min;
 						DistJson["Max"] = UniformDist->Max;
+					}
+					else if (auto* BezierDist = Cast<UDistributionFloatBezier>(ValuePtr->Distribution))
+					{
+						DistJson["DistributionType"] = "Bezier";
+						DistJson["MinInput"] = BezierDist->MinInput;
+						DistJson["MaxInput"] = BezierDist->MaxInput;
+						DistJson["P0"] = BezierDist->P0;
+						DistJson["P1"] = BezierDist->P1;
+						DistJson["P2"] = BezierDist->P2;
+						DistJson["P3"] = BezierDist->P3;
 					}
 				}
 				else
@@ -276,6 +297,17 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 						FJsonSerializer::ReadVector(DistJson, "Max", UniformDist->Max);
 						ValuePtr->Distribution = UniformDist;
 					}
+					else if (DistType == "Bezier")
+					{
+						auto* BezierDist = NewObject<UDistributionVectorBezier>();
+						FJsonSerializer::ReadFloat(DistJson, "MinInput", BezierDist->MinInput);
+						FJsonSerializer::ReadFloat(DistJson, "MaxInput", BezierDist->MaxInput);
+						FJsonSerializer::ReadVector(DistJson, "P0", BezierDist->P0);
+						FJsonSerializer::ReadVector(DistJson, "P1", BezierDist->P1);
+						FJsonSerializer::ReadVector(DistJson, "P2", BezierDist->P2);
+						FJsonSerializer::ReadVector(DistJson, "P3", BezierDist->P3);
+						ValuePtr->Distribution = BezierDist;
+					}
 				}
 			}
 			else
@@ -307,6 +339,36 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 						MaxArray.append(UniformDist->Max.Y);
 						MaxArray.append(UniformDist->Max.Z);
 						DistJson["Max"] = MaxArray;
+					}
+					else if (auto* BezierDist = Cast<UDistributionVectorBezier>(ValuePtr->Distribution))
+					{
+						DistJson["DistributionType"] = "Bezier";
+						DistJson["MinInput"] = BezierDist->MinInput;
+						DistJson["MaxInput"] = BezierDist->MaxInput;
+
+						JSON P0Array = JSON::Make(JSON::Class::Array);
+						P0Array.append(BezierDist->P0.X);
+						P0Array.append(BezierDist->P0.Y);
+						P0Array.append(BezierDist->P0.Z);
+						DistJson["P0"] = P0Array;
+
+						JSON P1Array = JSON::Make(JSON::Class::Array);
+						P1Array.append(BezierDist->P1.X);
+						P1Array.append(BezierDist->P1.Y);
+						P1Array.append(BezierDist->P1.Z);
+						DistJson["P1"] = P1Array;
+
+						JSON P2Array = JSON::Make(JSON::Class::Array);
+						P2Array.append(BezierDist->P2.X);
+						P2Array.append(BezierDist->P2.Y);
+						P2Array.append(BezierDist->P2.Z);
+						DistJson["P2"] = P2Array;
+
+						JSON P3Array = JSON::Make(JSON::Class::Array);
+						P3Array.append(BezierDist->P3.X);
+						P3Array.append(BezierDist->P3.Y);
+						P3Array.append(BezierDist->P3.Z);
+						DistJson["P3"] = P3Array;
 					}
 				}
 				else
