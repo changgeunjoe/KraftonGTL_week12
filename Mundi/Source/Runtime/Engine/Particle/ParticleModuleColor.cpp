@@ -4,6 +4,8 @@
 
 UParticleModuleColor::UParticleModuleColor()
 {
+	bSpawnModule = true;
+
 	InitializeDefaults();
 }
 

@@ -5,6 +5,8 @@
 
 UParticleModuleSize::UParticleModuleSize()
 {
+	bSpawnModule = true;
+
 	InitializeDefaults();
 }
 
