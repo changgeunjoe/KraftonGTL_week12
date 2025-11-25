@@ -470,8 +470,10 @@
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleHelper.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModule.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleColor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSize.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataMesh.cpp" />
@@ -818,8 +820,10 @@
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleHelper.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModule.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleLODLevel.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleColor.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSize.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataMesh.h" />
