@@ -18,7 +18,7 @@ void UMaterial::Load(const FString& InFilePath, ID3D11Device* InDevice)
 	MaterialInfo.MaterialName = InFilePath;
 
 	// 기본 쉐이더 로드 (LayoutType에 따라)
-	// dds 의 경우 
+	// dds 의 경우
 	if (InFilePath.find(".dds") != std::string::npos)
 	{
 		FString shaderName = UResourceManager::GetInstance().GetProperShader(InFilePath);
@@ -26,7 +26,7 @@ void UMaterial::Load(const FString& InFilePath, ID3D11Device* InDevice)
 		Shader = UResourceManager::GetInstance().Load<UShader>(shaderName);
 		UResourceManager::GetInstance().Load<UTexture>(InFilePath);
 		MaterialInfo.DiffuseTextureFileName = InFilePath;
-	} // hlsl 의 경우 
+	} // hlsl 의 경우
 	else if (InFilePath.find(".hlsl") != std::string::npos)
 	{
 		Shader = UResourceManager::GetInstance().Load<UShader>(InFilePath);
@@ -440,7 +440,7 @@ const FMaterialInfo& UMaterialInstanceDynamic::GetMaterialInfo() const
 				CachedMaterialInfo.NormalTextureFileName = TexturePath;
 				break;
 				// 참고: FMaterialInfo에 정의된 다른 텍스처(Ambient, Specular 등)를
-				// 런타임에 오버라이드하려면, EMaterialTextureSlot enum에도 
+				// 런타임에 오버라이드하려면, EMaterialTextureSlot enum에도
 				// 해당 항목들을 추가하고 여기에 case문을 추가해야 합니다.
 			}
 		}

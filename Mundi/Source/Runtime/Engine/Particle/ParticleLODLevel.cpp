@@ -360,6 +360,9 @@ void UParticleLODLevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				if (!NewModule)
 					continue;
 
+				// OwnerEmitter 설정
+				NewModule->OwnerEmitter = OwnerEmitter;
+
 				// 모듈 데이터 역직렬화
 				NewModule->Serialize(bInIsLoading, ModuleJson);
 
@@ -367,20 +370,14 @@ void UParticleLODLevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				if (UParticleModuleRequired* RequiredMod = Cast<UParticleModuleRequired>(NewModule))
 				{
 					RequiredModule = RequiredMod;
-					// Required 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
-					// Modules.Add(NewModule);
 				}
 				else if (UParticleModuleSpawn* SpawnMod = Cast<UParticleModuleSpawn>(NewModule))
 				{
 					SpawnModule = SpawnMod;
-					// Spawn 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
-					// Modules.Add(NewModule);
 				}
 				else if (UParticleModuleTypeDataBase* TypeDataMod = Cast<UParticleModuleTypeDataBase>(NewModule))
 				{
 					TypeDataModule = TypeDataMod;
-					// TypeData 모듈도 Modules 배열에 추가 (UpdateModuleLists에서 필요)
-					// Modules.Add(NewModule);
 				}
 				else
 				{

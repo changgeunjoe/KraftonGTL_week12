@@ -2,6 +2,7 @@
 
 #include "ParticleModule.h"
 #include "Source/Runtime/Core/Misc/JsonSerializer.h"
+#include "Source/Runtime/Engine/Distribution/Distributions.h"
 
 
 UParticleModule::UParticleModule()
@@ -177,6 +178,239 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 					CurveArray.append(ValuePtr[i]);
 				InOutHandle[Prop.Name] = CurveArray;
 			}
+			break;
+		}
+		case EPropertyType::RawDistributionFloat:
+		{
+			FRawDistributionFloat* ValuePtr = Prop.GetValuePtr<FRawDistributionFloat>(this);
+			if (bInIsLoading)
+			{
+				// Distribution 타입과 값 로드
+				if (InOutHandle.hasKey(Prop.Name))
+				{
+					JSON& DistJson = InOutHandle[Prop.Name];
+					FString DistType;
+					FJsonSerializer::ReadString(DistJson, "DistributionType", DistType);
+
+					// 기존 분포 삭제
+					if (ValuePtr->Distribution)
+					{
+						DeleteObject(ValuePtr->Distribution);
+						ValuePtr->Distribution = nullptr;
+					}
+
+					if (DistType == "Constant")
+					{
+						auto* ConstDist = NewObject<UDistributionFloatConstant>();
+						FJsonSerializer::ReadFloat(DistJson, "Constant", ConstDist->Constant);
+						ValuePtr->Distribution = ConstDist;
+					}
+					else if (DistType == "Uniform")
+					{
+						auto* UniformDist = NewObject<UDistributionFloatUniform>();
+						FJsonSerializer::ReadFloat(DistJson, "Min", UniformDist->Min);
+						FJsonSerializer::ReadFloat(DistJson, "Max", UniformDist->Max);
+						ValuePtr->Distribution = UniformDist;
+					}
+				}
+			}
+			else
+			{
+				// Distribution 타입과 값 저장
+				JSON DistJson = JSON::Make(JSON::Class::Object);
+				if (ValuePtr->Distribution)
+				{
+					if (auto* ConstDist = Cast<UDistributionFloatConstant>(ValuePtr->Distribution))
+					{
+						DistJson["DistributionType"] = "Constant";
+						DistJson["Constant"] = ConstDist->Constant;
+					}
+					else if (auto* UniformDist = Cast<UDistributionFloatUniform>(ValuePtr->Distribution))
+					{
+						DistJson["DistributionType"] = "Uniform";
+						DistJson["Min"] = UniformDist->Min;
+						DistJson["Max"] = UniformDist->Max;
+					}
+				}
+				else
+				{
+					DistJson["DistributionType"] = "None";
+				}
+				InOutHandle[Prop.Name] = DistJson;
+			}
+			break;
+		}
+		case EPropertyType::RawDistributionVector:
+		{
+			FRawDistributionVector* ValuePtr = Prop.GetValuePtr<FRawDistributionVector>(this);
+			if (bInIsLoading)
+			{
+				// Distribution 타입과 값 로드
+				if (InOutHandle.hasKey(Prop.Name))
+				{
+					JSON& DistJson = InOutHandle[Prop.Name];
+					FString DistType;
+					FJsonSerializer::ReadString(DistJson, "DistributionType", DistType);
+
+					// 기존 분포 삭제
+					if (ValuePtr->Distribution)
+					{
+						DeleteObject(ValuePtr->Distribution);
+						ValuePtr->Distribution = nullptr;
+					}
+
+					if (DistType == "Constant")
+					{
+						auto* ConstDist = NewObject<UDistributionVectorConstant>();
+						FJsonSerializer::ReadVector(DistJson, "Constant", ConstDist->Constant);
+						ValuePtr->Distribution = ConstDist;
+					}
+					else if (DistType == "Uniform")
+					{
+						auto* UniformDist = NewObject<UDistributionVectorUniform>();
+						FJsonSerializer::ReadVector(DistJson, "Min", UniformDist->Min);
+						FJsonSerializer::ReadVector(DistJson, "Max", UniformDist->Max);
+						ValuePtr->Distribution = UniformDist;
+					}
+				}
+			}
+			else
+			{
+				// Distribution 타입과 값 저장
+				JSON DistJson = JSON::Make(JSON::Class::Object);
+				if (ValuePtr->Distribution)
+				{
+					if (auto* ConstDist = Cast<UDistributionVectorConstant>(ValuePtr->Distribution))
+					{
+						DistJson["DistributionType"] = "Constant";
+						JSON VecArray = JSON::Make(JSON::Class::Array);
+						VecArray.append(ConstDist->Constant.X);
+						VecArray.append(ConstDist->Constant.Y);
+						VecArray.append(ConstDist->Constant.Z);
+						DistJson["Constant"] = VecArray;
+					}
+					else if (auto* UniformDist = Cast<UDistributionVectorUniform>(ValuePtr->Distribution))
+					{
+						DistJson["DistributionType"] = "Uniform";
+						JSON MinArray = JSON::Make(JSON::Class::Array);
+						MinArray.append(UniformDist->Min.X);
+						MinArray.append(UniformDist->Min.Y);
+						MinArray.append(UniformDist->Min.Z);
+						DistJson["Min"] = MinArray;
+
+						JSON MaxArray = JSON::Make(JSON::Class::Array);
+						MaxArray.append(UniformDist->Max.X);
+						MaxArray.append(UniformDist->Max.Y);
+						MaxArray.append(UniformDist->Max.Z);
+						DistJson["Max"] = MaxArray;
+					}
+				}
+				else
+				{
+					DistJson["DistributionType"] = "None";
+				}
+				InOutHandle[Prop.Name] = DistJson;
+			}
+			break;
+		}
+		case EPropertyType::Material:
+		{
+			// UMaterialInterface* 타입 직렬화 - 파일 경로로 저장/로드
+			UMaterialInterface** ValuePtr = Prop.GetValuePtr<UMaterialInterface*>(this);
+			if (bInIsLoading)
+			{
+				FString MaterialPath;
+				FJsonSerializer::ReadString(InOutHandle, Prop.Name, MaterialPath);
+				if (!MaterialPath.empty())
+				{
+					*ValuePtr = UResourceManager::GetInstance().Load<UMaterial>(MaterialPath);
+				}
+				else
+				{
+					*ValuePtr = nullptr;
+				}
+			}
+			else
+			{
+				if (*ValuePtr && !(*ValuePtr)->GetFilePath().empty())
+				{
+					InOutHandle[Prop.Name] = (*ValuePtr)->GetFilePath();
+				}
+				else
+				{
+					InOutHandle[Prop.Name] = "";
+				}
+			}
+			break;
+		}
+		case EPropertyType::StaticMesh:
+		{
+			// UStaticMesh* 타입 직렬화 - 파일 경로로 저장/로드
+			UStaticMesh** ValuePtr = Prop.GetValuePtr<UStaticMesh*>(this);
+			if (bInIsLoading)
+			{
+				FString MeshPath;
+				FJsonSerializer::ReadString(InOutHandle, Prop.Name, MeshPath);
+				if (!MeshPath.empty())
+				{
+					*ValuePtr = UResourceManager::GetInstance().Load<UStaticMesh>(MeshPath);
+				}
+				else
+				{
+					*ValuePtr = nullptr;
+				}
+			}
+			else
+			{
+				if (*ValuePtr && !(*ValuePtr)->GetFilePath().empty())
+				{
+					InOutHandle[Prop.Name] = (*ValuePtr)->GetFilePath();
+				}
+				else
+				{
+					InOutHandle[Prop.Name] = "";
+				}
+			}
+			break;
+		}
+		case EPropertyType::Texture:
+		{
+			// UTexture* 타입 직렬화 - 파일 경로로 저장/로드
+			UTexture** ValuePtr = Prop.GetValuePtr<UTexture*>(this);
+			if (bInIsLoading)
+			{
+				FString TexturePath;
+				FJsonSerializer::ReadString(InOutHandle, Prop.Name, TexturePath);
+				if (!TexturePath.empty())
+				{
+					*ValuePtr = UResourceManager::GetInstance().Load<UTexture>(TexturePath);
+				}
+				else
+				{
+					*ValuePtr = nullptr;
+				}
+			}
+			else
+			{
+				if (*ValuePtr && !(*ValuePtr)->GetFilePath().empty())
+				{
+					InOutHandle[Prop.Name] = (*ValuePtr)->GetFilePath();
+				}
+				else
+				{
+					InOutHandle[Prop.Name] = "";
+				}
+			}
+			break;
+		}
+		case EPropertyType::Enum:
+		{
+			// Enum 타입 직렬화 - int32로 저장/로드
+			int32* ValuePtr = Prop.GetValuePtr<int32>(this);
+			if (bInIsLoading)
+				FJsonSerializer::ReadInt32(InOutHandle, Prop.Name, *ValuePtr);
+			else
+				InOutHandle[Prop.Name] = *ValuePtr;
 			break;
 		}
 		// 다른 타입들도 필요시 추가...
