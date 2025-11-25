@@ -141,14 +141,12 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 			for (int32 i = 0; i < ParticleCount; ++i)
 			{
 				int32 SrcIndex = bHasIndices ? Indices[i] : i;
-				FBaseParticle* P = reinterpret_cast<FBaseParticle*>(BasePtr + SrcIndex * Stride);
-				if (!P) continue;
+				FBaseParticle* BaseParticle = reinterpret_cast<FBaseParticle*>(BasePtr + SrcIndex * Stride);
+				if (!BaseParticle) continue;
 
-				GpuParticles[i].Position = P->Location;
-				GpuParticles[i].Size = FVector2D(2, 2);
-				//GpuParticles[i].Size = FVector2D(P->Size.X, P->Size.Y);
-				GpuParticles[i].Color = FLinearColor(1, 1, 1, 1);
-				//GpuParticles[i].Color = P->Color;
+				GpuParticles[i].Position = BaseParticle->Location;
+				GpuParticles[i].Size = FVector2D(BaseParticle->Size.X, BaseParticle->Size.Y);
+				GpuParticles[i].Color = BaseParticle->Color;
 			}
 
 			// 카메라 기준 Z(depth)로 내림차순 정렬 (멀리 있는 것부터 가까운 것)
@@ -246,7 +244,7 @@ void FDynamicMeshEmitterData::Init(bool bInSelected, const FParticleMeshEmitterI
 
 void FDynamicMeshEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const
 {
-	const FDynamicSpriteEmitterReplayDataBase* Src = GetSourceData();
+	const FDynamicMeshEmitterReplayData* Src = static_cast<const FDynamicMeshEmitterReplayData*>(GetSourceData());
 	if (!Src) return;
 	const int32 ParticleCount = Src->ActiveParticleCount;
 	if (ParticleCount <= 0) return;
@@ -272,16 +270,13 @@ void FDynamicMeshEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchEle
 			for (int32 i = 0; i < ParticleCount; ++i)
 			{
 				int32 SrcIndex = bHasIndices ? Indices[i] : i;
-				FBaseParticle* P = reinterpret_cast<FBaseParticle*>(BasePtr + SrcIndex * Stride);
-				if (!P) continue;
+				FBaseParticle* BaseParticle = reinterpret_cast<FBaseParticle*>(BasePtr + SrcIndex * Stride);
+				FMeshRotationPayloadData* RotationPayload = reinterpret_cast<FMeshRotationPayloadData*>(BasePtr + SrcIndex * Stride + Src->MeshRotationOffset);
+				if (!BaseParticle) continue;
 
-				// NOTE: 크기 하드 코딩
-				P->Size = FVector::One();
-
-				FTransform Transform(P->Location, FQuat::MakeFromEulerZYX(FVector(P->Rotation, P->Rotation, P->Rotation)), P->Size);
+				FTransform Transform(BaseParticle->Location, FQuat::MakeFromEulerZYX(RotationPayload->Rotation), BaseParticle->Size);
 				GpuParticles[i].Transform = Transform.ToMatrix();
-				GpuParticles[i].Color = FLinearColor(1, 1, 1, 1);
-				//GpuParticles[i].Color = P->Color;
+				GpuParticles[i].Color = BaseParticle->Color;
 			}
 
 			// 카메라 기준 Z(depth)로 내림차순 정렬 (멀리 있는 것부터 가까운 것)

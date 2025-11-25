@@ -120,7 +120,8 @@
       <Message>[CodeGen] Generating Lua binding code...</Message>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*" xcopy "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*.dll" "$(OutDir)" /Y /D</Command>
+      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*" xcopy "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*.dll" "$(OutDir)" /Y /D
+"C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add /f "$(OutDir)$(TargetName).pdb" /s "\\172.21.11.91\symbols" /t "Mundi" /v "$(Configuration)" /c "Build $(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,7 +153,8 @@
       <Message>[CodeGen] Generating Lua binding code...</Message>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*" xcopy "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*.dll" "$(OutDir)" /Y /D</Command>
+      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*" xcopy "$(ProjectDir)ThirdParty\Bin\$(Configuration)\*.dll" "$(OutDir)" /Y /D
+"C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add /f "$(OutDir)$(TargetName).pdb" /s "\\172.21.11.91\symbols" /t "Mundi" /v "$(Configuration)" /c "Build $(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_StandAlone|x64'">
@@ -180,7 +182,8 @@
       <Message>[CodeGen] Generating Lua binding code...</Message>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\Debug\*" xcopy "$(ProjectDir)ThirdParty\Bin\Debug\*.dll" "$(OutDir)" /Y /D</Command>
+      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\Debug\*" xcopy "$(ProjectDir)ThirdParty\Bin\Debug\*.dll" "$(OutDir)" /Y /D
+"C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add /f "$(OutDir)$(TargetName).pdb" /s "\\172.21.11.91\symbols" /t "Mundi" /v "Debug_StandAlone" /c "Build Debug_StandAlone"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_StandAlone|x64'">
@@ -212,7 +215,8 @@
       <Message>[CodeGen] Generating Lua binding code...</Message>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\Release\*" xcopy "$(ProjectDir)ThirdParty\Bin\Release\*.dll" "$(OutDir)" /Y /D</Command>
+      <Command>IF EXIST "$(ProjectDir)ThirdParty\Bin\Release\*" xcopy "$(ProjectDir)ThirdParty\Bin\Release\*.dll" "$(OutDir)" /Y /D
+"C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add /f "$(OutDir)$(TargetName).pdb" /s "\\172.21.11.91\symbols" /t "Mundi" /v "Release_StandAlone" /c "Build Release_StandAlone"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

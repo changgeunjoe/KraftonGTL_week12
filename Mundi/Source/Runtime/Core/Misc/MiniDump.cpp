@@ -12,6 +12,18 @@
 // ============================================================================
 void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
 {
+    // 실행 파일 경로 가져오기
+    wchar_t ExePath[MAX_PATH];
+    GetModuleFileNameW(nullptr, ExePath, MAX_PATH);
+
+    // 실행 파일명 제거하고 디렉토리 경로만 추출
+    std::wstring ExeDir(ExePath);
+    size_t LastSlash = ExeDir.find_last_of(L"\\/");
+    if (LastSlash != std::wstring::npos)
+    {
+        ExeDir = ExeDir.substr(0, LastSlash + 1);
+    }
+
     auto Now = std::chrono::system_clock::now();
     auto InTimeT = std::chrono::system_clock::to_time_t(Now);
 
@@ -19,6 +31,8 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
     struct tm TimeInfo;
     errno_t err = localtime_s(&TimeInfo, &InTimeT);
 
+    // 실행 파일 경로 + 덤프 파일명
+    ss << ExeDir;
     if (err == 0)
     {
         ss << L"Mundi_CrashDump_";
@@ -51,6 +65,29 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
             hFile, DumpType, ExceptionInfo ? &ExInfo : nullptr, nullptr, nullptr);
 
         CloseHandle(hFile);
+
+        // 심볼 서버에 타임스탬프 폴더 생성 후 덤프 + PDB 복사
+        std::wstring SymbolServerBase = L"\\\\172.21.11.91\\symbols\\CrashDumps\\";
+        CreateDirectoryW(SymbolServerBase.c_str(), nullptr);
+
+        // 타임스탬프 폴더명 생성
+        std::wstringstream folderSS;
+        folderSS << L"Crash_";
+        folderSS << std::put_time(&TimeInfo, L"%Y-%m-%d_%H-%M-%S");
+        std::wstring CrashFolderName = folderSS.str();
+
+        // 크래시 폴더 경로
+        std::wstring CrashFolderPath = SymbolServerBase + CrashFolderName + L"\\";
+        CreateDirectoryW(CrashFolderPath.c_str(), nullptr);
+
+        // 덤프 파일 복사
+        std::wstring DumpDestPath = CrashFolderPath + L"Mundi_CrashDump.dmp";
+        CopyFileW(DumpFileName.c_str(), DumpDestPath.c_str(), FALSE);
+
+        // PDB 파일 복사 (exe 옆에 있는 PDB 사용)
+        std::wstring PdbSourcePath = ExeDir + L"Mundi.pdb";
+        std::wstring PdbDestPath = CrashFolderPath + L"Mundi.pdb";
+        CopyFileW(PdbSourcePath.c_str(), PdbDestPath.c_str(), FALSE);
     }
 }
 
