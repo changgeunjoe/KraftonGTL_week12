@@ -3,7 +3,7 @@
 
 #include "ParticleSpriteEmitter.h"
 
-constexpr uint32 MaxParticles = 4096u;
+constexpr uint32 InitMaxParticles = 128u;
 
 FDynamicEmitterDataBase::FDynamicEmitterDataBase()
 	: bSelected(false)
@@ -16,36 +16,51 @@ FDynamicSpriteEmitterDataBase::FDynamicSpriteEmitterDataBase() :
 {
 }
 
+void FDynamicSpriteEmitterDataBase::CreateParticleStructuredBuffer(uint32 Stride, uint32 NumElements)
+{
+	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
+	assert(Device);
+
+	// Release existing resources first
+	if (ParticleStructuredBuffer) ParticleStructuredBuffer->Release();
+	if (ParticleStructuredBufferSRV) ParticleStructuredBufferSRV->Release();
+
+	// Create the structured buffer
+	D3D11_BUFFER_DESC Sbd{};
+	Sbd.Usage = D3D11_USAGE_DYNAMIC;
+	Sbd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	Sbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	Sbd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	Sbd.StructureByteStride = Stride;
+	Sbd.ByteWidth = static_cast<UINT>(Stride * NumElements);
+
+	HRESULT Hr = Device->CreateBuffer(&Sbd, nullptr, &ParticleStructuredBuffer);
+	assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer");
+
+	// Create the shader resource view
+	D3D11_SHADER_RESOURCE_VIEW_DESC Srvd{};
+	Srvd.Format = DXGI_FORMAT_UNKNOWN;
+	Srvd.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	Srvd.Buffer.FirstElement = 0;
+	Srvd.Buffer.NumElements = NumElements;
+
+	Hr = Device->CreateShaderResourceView(ParticleStructuredBuffer, &Srvd, &ParticleStructuredBufferSRV);
+	assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer SRV");
+}
+
+
 FDynamicSpriteEmitterData::FDynamicSpriteEmitterData()
 {
+	// 초기 최대 파티클 수 설정 (런타임에 동적으로 2배씩 커짐)
+	ParticleStructuredBufferSize = InitMaxParticles;
+
+	// 파티클별 데이터를 위한 동적 구조화 버퍼
+	CreateParticleStructuredBuffer(sizeof(FParticleSpriteVertex), ParticleStructuredBufferSize);
+
 	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
 	if (!Device) return;
 
-	// 1. 파티클별 데이터를 위한 동적 구조화 버퍼
-	if (!ParticleStructuredBuffer)
-	{
-		D3D11_BUFFER_DESC Sbd{};
-		Sbd.Usage = D3D11_USAGE_DYNAMIC;
-		Sbd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		Sbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		Sbd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-		Sbd.StructureByteStride = sizeof(FParticleSpriteVertex);
-		Sbd.ByteWidth = static_cast<UINT>(sizeof(FParticleSpriteVertex) * MaxParticles);
-
-		HRESULT Hr = Device->CreateBuffer(&Sbd, nullptr, &ParticleStructuredBuffer);
-		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer");
-
-		D3D11_SHADER_RESOURCE_VIEW_DESC Srvd{};
-		Srvd.Format = DXGI_FORMAT_UNKNOWN;
-		Srvd.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-		Srvd.Buffer.FirstElement = 0;
-		Srvd.Buffer.NumElements = MaxParticles;
-
-		Hr = Device->CreateShaderResourceView(ParticleStructuredBuffer, &Srvd, &ParticleStructuredBufferSRV);
-		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer SRV");
-	}
-
-	// 2. 인스턴싱을 위한 정적 정점 버퍼 (단일 쿼드)
+	// 인스턴싱을 위한 정적 정점 버퍼 (단일 쿼드)
 	if (!VertexBuffer)
 	{
 		FParticleVertex QuadVertices[4];
@@ -66,7 +81,7 @@ FDynamicSpriteEmitterData::FDynamicSpriteEmitterData()
 		assert(SUCCEEDED(Hr) && "Failed to create particle instancing vertex buffer");
 	}
 
-	// 3. 인스턴싱을 위한 정적 인덱스 버퍼 (단일 쿼드)
+	// 인스턴싱을 위한 정적 인덱스 버퍼 (단일 쿼드)
 	if (!IndexBuffer)
 	{
 		uint32 Indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -113,11 +128,26 @@ void FDynamicSpriteEmitterData::Init(bool bInSelected)
 	bSelected = bInSelected;
 }
 
-void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const
+void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View)
 {
 	const FDynamicSpriteEmitterReplayDataBase* Src = GetSourceData();
 	if (!Src) return;
-	const int32 ParticleCount = Src->ActiveParticleCount;
+
+	const int32 ParticleCount = static_cast<uint32>(Src->ActiveParticleCount);
+
+	// 동적으로 ParticleStructuredBufferSize 크기를 2배씩 늘림
+	if (ParticleCount > ParticleStructuredBufferSize)
+	{
+		uint32 NewSize = ParticleStructuredBufferSize;
+		while (NewSize < ParticleCount)
+		{
+			NewSize = FMath::Max(NewSize * 2, InitMaxParticles);
+		}
+		ParticleStructuredBufferSize = NewSize;
+
+		CreateParticleStructuredBuffer(sizeof(FParticleSpriteVertex), NewSize);
+	}
+
 	if (ParticleCount <= 0) return;
 	if (!Src->DataContainer.ParticleData) return;
 	if (!ParticleStructuredBuffer || !VertexBuffer || !IndexBuffer) return;
@@ -180,9 +210,9 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	{
 		BatchElement.InstanceShaderResourceView = UResourceManager::GetInstance().Load<UTexture>("Data/Textures/FakeLight.png")->GetShaderResourceView();
 	}
-	
+
 	BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	
+
 	// 인스턴싱 설정
 	BatchElement.VertexBuffer = VertexBuffer;
 	BatchElement.IndexBuffer = IndexBuffer;
@@ -194,7 +224,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	// 파티클 데이터 설정
 	BatchElement.ParticleDataSRV = ParticleStructuredBufferSRV;
 	BatchElement.bIsParticle = true;
-	
+
 	BatchElement.WorldMatrix = FMatrix::Identity();
 	BatchElement.ObjectID = 0;
 
@@ -204,32 +234,11 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 FDynamicMeshEmitterData::FDynamicMeshEmitterData()
 	: StaticMesh(nullptr)
 {
-	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
-	if (!Device) return;
+	// 초기 최대 파티클 수 설정 (런타임에 동적으로 2배씩 커짐)
+	ParticleStructuredBufferSize = InitMaxParticles;
 
-	// 1. 파티클별 데이터를 위한 동적 구조화 버퍼
-	if (!ParticleStructuredBuffer)
-	{
-		D3D11_BUFFER_DESC Sbd{};
-		Sbd.Usage = D3D11_USAGE_DYNAMIC;
-		Sbd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		Sbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		Sbd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-		Sbd.StructureByteStride = sizeof(FMeshParticleInstanceVertex);
-		Sbd.ByteWidth = static_cast<UINT>(sizeof(FMeshParticleInstanceVertex) * MaxParticles);
-
-		HRESULT Hr = Device->CreateBuffer(&Sbd, nullptr, &ParticleStructuredBuffer);
-		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer");
-
-		D3D11_SHADER_RESOURCE_VIEW_DESC Srvd{};
-		Srvd.Format = DXGI_FORMAT_UNKNOWN;
-		Srvd.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-		Srvd.Buffer.FirstElement = 0;
-		Srvd.Buffer.NumElements = MaxParticles;
-
-		Hr = Device->CreateShaderResourceView(ParticleStructuredBuffer, &Srvd, &ParticleStructuredBufferSRV);
-		assert(SUCCEEDED(Hr) && "Failed to create particle structured buffer SRV");
-	}
+	// 파티클별 데이터를 위한 동적 구조화 버퍼
+	CreateParticleStructuredBuffer(sizeof(FMeshParticleInstanceVertex), ParticleStructuredBufferSize);
 }
 
 void FDynamicMeshEmitterData::Init(bool bInSelected, const FParticleMeshEmitterInstance* InEmitterInstance, UStaticMesh* InStaticMesh, bool InUseStaticMeshLODs, float InLODSizeScale)
@@ -242,11 +251,26 @@ void FDynamicMeshEmitterData::Init(bool bInSelected, const FParticleMeshEmitterI
 	// @todo
 }
 
-void FDynamicMeshEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const
+void FDynamicMeshEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View)
 {
 	const FDynamicMeshEmitterReplayData* Src = static_cast<const FDynamicMeshEmitterReplayData*>(GetSourceData());
 	if (!Src) return;
-	const int32 ParticleCount = Src->ActiveParticleCount;
+
+	const uint32 ParticleCount = static_cast<uint32>(Src->ActiveParticleCount);
+
+	// 동적으로 ParticleStructuredBufferSize 크기를 2배씩 늘림
+	if (ParticleCount > ParticleStructuredBufferSize)
+	{
+		uint32 NewSize = ParticleStructuredBufferSize;
+		while (NewSize < ParticleCount)
+		{
+			NewSize = FMath::Max(NewSize * 2, InitMaxParticles);
+		}
+		ParticleStructuredBufferSize = NewSize;
+		
+		CreateParticleStructuredBuffer(sizeof(FMeshParticleInstanceVertex), NewSize);
+	}
+
 	if (ParticleCount <= 0) return;
 	if (!Src->DataContainer.ParticleData) return;
 	if (!ParticleStructuredBuffer || !StaticMesh) return;

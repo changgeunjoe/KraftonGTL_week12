@@ -1,0 +1,71 @@
+{
+  "Emitters" : [{
+      "EmitterName" : "TestEmitter",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDuration" : 1.000000,
+              "EmitterDurationLow" : 1.000000,
+              "EmitterLoops" : 0,
+              "Material" : "texture",
+              "ScreenAlignment" : 1,
+              "Type" : "UParticleModuleRequired",
+              "bUseLocalSpace" : false
+            }, {
+              "Rate" : 10000.000000,
+              "RateScale" : 1.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "Type" : "UParticleModuleTypeDataMesh"
+            }, {
+              "Lifetime" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.000000,
+                "Min" : 0.100000
+              },
+              "Type" : "UParticleModuleLifetime"
+            }, {
+              "StartSize" : {
+                "DistributionType" : "Uniform",
+                "Max" : [2.000000, 2.000000, 2.000000],
+                "Min" : [1.000000, 1.000000, 1.000000]
+              },
+              "Type" : "UParticleModuleSize"
+            }, {
+              "StartAlpha" : {
+                "Constant" : 1.000000,
+                "DistributionType" : "Constant"
+              },
+              "StartColor" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : [0.000000, 0.800000, 0.000000],
+                "P1" : [1.400000, 0.400000, 0.000000],
+                "P2" : [0.000000, 0.000000, 0.800000],
+                "P3" : [0.700000, 0.200000, 0.300000]
+              },
+              "Type" : "UParticleModuleColor"
+            }, {
+              "StartVelocity" : {
+                "DistributionType" : "Uniform",
+                "Max" : [50.000000, 50.000000, 2000.000000],
+                "Min" : [-50.000000, -50.000000, 100.000000]
+              },
+              "StartVelocityRadial" : {
+                "Constant" : 0.000000,
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleVelocity",
+              "bApplyOwnerScale" : true,
+              "bInWorldSpace" : false
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 10320,
+      "Type" : "UParticleEmitter"
+    }],
+  "Type" : "UParticleSystem"
+}

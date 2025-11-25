@@ -276,7 +276,7 @@ struct FDynamicEmitterDataBase
 	/** 이 파티클 시스템의 소스 데이터를 반환한다. */
 	virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
 
-	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const {}
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) {}
 
 	uint32	bSelected:1;
 
@@ -312,6 +312,12 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 	// GPU 파티클 데이터를 저장할 구조화 버퍼입니다.
 	ID3D11Buffer* ParticleStructuredBuffer = nullptr;
 	ID3D11ShaderResourceView* ParticleStructuredBufferSRV = nullptr;
+
+	uint32 ParticleStructuredBufferSize = 0;
+
+protected:
+	/** 파티클 구조화 버퍼와 SRV를 생성합니다. */
+	void CreateParticleStructuredBuffer(uint32 Stride, uint32 NumElements);
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
@@ -337,7 +343,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 		return &Source;
 	}
 
-	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const override;
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) override;
 
 	FDynamicSpriteEmitterReplayData Source;
 
@@ -373,7 +379,7 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 		return &Source;
 	}
 
-	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) const override;
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) override;
 
 	FDynamicMeshEmitterReplayData Source;
 
