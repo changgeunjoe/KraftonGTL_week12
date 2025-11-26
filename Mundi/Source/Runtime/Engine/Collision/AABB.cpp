@@ -4,7 +4,7 @@
 FAABB::FAABB() : Min(FVector()), Max(FVector()) {}
 
 FAABB::FAABB(const FVector& InMin, const FVector& InMax) : Min(InMin), Max(InMax) {}
-FAABB::FAABB(const FVector* Vertices, uint32 Size) 
+FAABB::FAABB(const FVector* Vertices, uint32 Size)
 {
 	if (Size == 0)
 	{
@@ -93,7 +93,7 @@ FAABB FAABB::CreateOctant(int i) const
 	FVector NewMin, NewMax;
 
 	// X축 (i의 1비트)
-	// 0 왼쪽 1 오른쪽 
+	// 0 왼쪽 1 오른쪽
 	if (i & 1)
 	{
 		NewMin.X = Center.X;
@@ -106,7 +106,7 @@ FAABB FAABB::CreateOctant(int i) const
 	}
 
 	// Y축 (i의 2비트)
-	// 0 앞 2 뒤 
+	// 0 앞 2 뒤
 	if (i & 2)
 	{
 		NewMin.Y = Center.Y;
@@ -119,7 +119,7 @@ FAABB FAABB::CreateOctant(int i) const
 	}
 
 	// Z축 (i의 4비트)
-	// 0 아래 4 위 
+	// 0 아래 4 위
 	if (i & 4)
 	{
 		NewMin.Z = Center.Z;
@@ -160,7 +160,7 @@ bool FAABB::IntersectsRay(const FRay& InRay, float& OutEnterDistance, float& Out
 		{
 			const float InvDirection = 1.0f / RayDirectionAxis;
 
-			// 평면과의 교차 거리 
+			// 평면과의 교차 거리
 			// 레이가 AABB의 min 평면과 max 평면을 만나는 t 값 (거리)
 			float DistanceToMinPlane = (BoxMinAxis - RayOriginAxis) * InvDirection;
 			float DistanceToMaxPlane = (BoxMaxAxis - RayOriginAxis) * InvDirection;
@@ -174,17 +174,23 @@ bool FAABB::IntersectsRay(const FRay& InRay, float& OutEnterDistance, float& Out
 			if (DistanceToMinPlane > ClosestEnter)  ClosestEnter = DistanceToMinPlane;
 
 			// FarthestExit : AABB에서 나가는 시점
-			// 더 빨리 나가는 값으로 갱신 
+			// 더 빨리 나가는 값으로 갱신
 			if (DistanceToMaxPlane < FarthestExit) FarthestExit = DistanceToMaxPlane;
 
-			// 가장 늦게 들어오는 시점이 빠르게 나가는 시점보다 늦다는 것은 교차하지 않음을 의미한다. 
+			// 가장 늦게 들어오는 시점이 빠르게 나가는 시점보다 늦다는 것은 교차하지 않음을 의미한다.
 			if (ClosestEnter > FarthestExit)
 			{
 				return false; // 레이가 박스를 관통하지 않음
 			}
 		}
 	}
-	// 레이가 박스와 실제로 만나는 구간이다. 
+
+	if (FarthestExit < 0.0f)
+	{
+		return false;
+	}
+
+	// 레이가 박스와 실제로 만나는 구간이다.
 	OutEnterDistance = (ClosestEnter < 0.0f) ? 0.0f : ClosestEnter;
 	OutExitDistance = FarthestExit;
 	return true;

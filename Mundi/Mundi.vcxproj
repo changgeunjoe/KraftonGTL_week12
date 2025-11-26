@@ -488,6 +488,8 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleHelper.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModule.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleAccelerationConstant.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleCollision.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleColor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
@@ -700,6 +702,8 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Generated\UParticleModuleSubUV.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleRotation.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataMesh.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleCollision.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleAccelerationConstant.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -845,6 +849,8 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleHelper.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModule.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleLODLevel.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleAccelerationConstant.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleCollision.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleColor.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
@@ -1053,6 +1059,8 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Generated\UParticleModuleSubUV.generated.h" />
     <ClInclude Include="Generated\UParticleModuleRotation.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataMesh.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleCollision.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleAccelerationConstant.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

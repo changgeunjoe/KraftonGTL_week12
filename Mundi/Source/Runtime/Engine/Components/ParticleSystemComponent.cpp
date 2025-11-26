@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ParticleSystemComponent.h"
 
+#include "Collision.h"
 #include "ParticleModuleLifetime.h"
 #include "ParticleModuleVelocity.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
@@ -216,6 +217,76 @@ void UParticleSystemComponent::Deactivate()
 {
 	bSuppressSpawning = true;
 	bWasDeactivated = true;
+}
+
+bool UParticleSystemComponent::ParticleLineCheck(FHitResult& Hit, AActor* SourceActor, const FVector& End, const FVector& Start, const FVector& Extent)
+{
+	Hit.bBlockingHit = false;
+	Hit.Time = 1.0f;
+
+	FVector Direction = End - Start;
+	float TraceLength = Direction.Size();
+	if (TraceLength <= KINDA_SMALL_NUMBER)
+	{
+		return false;
+	}
+	FVector DirNormal = Direction / TraceLength;
+
+	FRay Ray(Start, DirNormal);
+
+	float MinDistance = TraceLength;
+	bool bFoundHit = false;
+
+	const TArray<AActor*>& Actors = GWorld->GetActors();
+	for (AActor* Actor : Actors)
+	{
+		// 자기 자신(파티클을 내뿜는 액터)과의 충돌은 무시
+		if (Actor == SourceActor)
+		{
+			continue;
+		}
+
+		for (USceneComponent* Component : Actor->GetSceneComponents())
+		{
+			UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Component);
+
+			// 충돌 가능한 프리미티브 컴포넌트인지 확인
+			if (PrimitiveComponent && PrimitiveComponent->bBlockComponent)
+			{
+				// 4. 충돌 검사 (AABB 기반)
+				FAABB Bounds = PrimitiveComponent->GetWorldAABB();
+
+				// [최적화] 파티클 크기(Extent) 처리 (Minkowski Sum 근사)
+				// 파티클 크기가 있다면, 상대방 박스를 파티클 크기만큼 확장해서 검사
+				// 이렇게 하면 '점(Ray)'을 쏘더라도 '박스'가 이동한 것과 동일한 결과를 얻음
+				if (!Extent.IsZero())
+				{
+					Bounds.Min -= Extent;
+					Bounds.Max += Extent;
+				}
+
+				float EnterDist, ExitDist;
+				if (Bounds.IntersectsRay(Ray, EnterDist, ExitDist))
+				{
+					if (EnterDist >= 0.0f && EnterDist < MinDistance)
+					{
+						MinDistance = EnterDist;
+						bFoundHit = true;
+
+						Hit.bBlockingHit = true;
+						Hit.Distance = EnterDist;
+						Hit.Time = EnterDist / TraceLength; // 0.0 ~ 1.0 비율
+						Hit.Location = Start + DirNormal * EnterDist;
+
+						Hit.Normal = Collision::GetAABBSurfaceNormal(Bounds, Hit.Location);
+						Hit.ImpactNormal = Hit.Normal;
+					}
+				}
+			}
+		}
+	}
+
+	return bFoundHit;
 }
 
 void UParticleSystemComponent::SetTemplate(UParticleSystem* NewTemplate, bool bAutoActivate)

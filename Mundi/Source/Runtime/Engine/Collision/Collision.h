@@ -23,7 +23,7 @@ namespace Collision
     bool Overlap_Sphere_OBB(const FVector& Center, float Radius, const FOBB& B);
 
     bool OverlapSphereAndSphere(const FShape& ShapeA, const FTransform& TransformA, const FShape& ShapeB, const FTransform& TransformB);
-    
+
     void BuildCapsule(const FShape& CapsuleShape, const FTransform& Xform, FVector& OutP0, FVector& OutP1, float& OutRadius);
     void BuildCapsuleCoreOBB(const FShape& CapsuleShape, const FTransform& Transform, FOBB& Out);
 
@@ -33,13 +33,13 @@ namespace Collision
 
     bool OverlapCapsuleAndCapsule(const FShape& CapsuleA, const FTransform& TransformCapsule, const FShape& CapsuleB, const FTransform& TransformB);
 
-
+	FVector GetAABBSurfaceNormal(const FAABB& Box, const FVector& HitPoint);
 
     using OverlapFunc = bool(*) (const FShape&, const FTransform&, const FShape&, const FTransform&);
 
     extern OverlapFunc OverlapLUT[3][3];
-    
-    
+
+
     bool CheckOverlap(const UShapeComponent* A, const UShapeComponent* B);
 
 }

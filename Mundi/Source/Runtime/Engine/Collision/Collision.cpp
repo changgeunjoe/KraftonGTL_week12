@@ -73,7 +73,7 @@ namespace Collision
         }
         return Dist2 <= (Sphere.Radius * Sphere.Radius);
 	}
-     
+
     bool OverlapSphereAndSphere(const FShape& ShapeA, const FTransform& TransformA, const FShape& ShapeB, const FTransform& TransformB)
     {
         FVector Dist = TransformA.Translation - TransformB.Translation;
@@ -81,7 +81,7 @@ namespace Collision
 
         return Dist.SizeSquared() <= SumRadius * SumRadius;
     }
-    
+
     FVector AbsVec(const FVector& v)
     {
         return FVector(std::fabs(v.X), std::fabs(v.Y), std::fabs(v.Z));
@@ -106,7 +106,7 @@ namespace Collision
         Out.HalfExtent[1] = HalfExtent.Y * S.Y;
         Out.HalfExtent[2] = HalfExtent.Z * S.Z;
     }
-    
+
     bool Overlap_OBB_OBB(const FOBB& A, const FOBB& B)
     {
         constexpr float EPS = 1e-6f;
@@ -159,15 +159,15 @@ namespace Collision
     {
         return FMath::Max(FMath::Max(std::fabs(S.X), std::fabs(S.Y)), std::fabs(S.Z));
     }
-     
-    // 캡슐 obb의 상단, 하단 중점을 반환 + 반지름 반환 
+
+    // 캡슐 obb의 상단, 하단 중점을 반환 + 반지름 반환
     void BuildCapsule(const FShape& CapsuleShape, const FTransform& TransformCapsule, FVector& OutP0, FVector& OutP1, float& OutRadius)
     {
         const float CapsuleRadius = CapsuleShape.Capsule.CapsuleRadius;
         const float CapsuleHalfHeight = CapsuleShape.Capsule.CapsuleHalfHeight;
 
         const FVector S = AbsVec(TransformCapsule.Scale3D);
-        const float HeightScale = std::fabs(S.Z); 
+        const float HeightScale = std::fabs(S.Z);
         const float RadiusScale = FMath::Max(std::fabs(S.X), std::fabs(S.Y));
 
         const float RadiusWorld = CapsuleRadius * RadiusScale;
@@ -181,7 +181,7 @@ namespace Collision
         OutRadius = RadiusWorld;
     }
 
-    // 캡슐의 가운데 OBB 반환 
+    // 캡슐의 가운데 OBB 반환
     void BuildCapsuleCoreOBB(const FShape& CapsuleShape, const FTransform& Transform, FOBB& Out)
     {
         const float CapsuleRadius = CapsuleShape.Capsule.CapsuleRadius;
@@ -205,7 +205,7 @@ namespace Collision
         Out.HalfExtent[1] = RadiusWorld;
         Out.HalfExtent[2] = HalfHeightWorld;
     }
-     
+
     // 캡슐 VS Sphere
     bool OverlapCapsuleAndSphere(const FShape& Capsule, const FTransform& TransformCapsule,
         const FShape& Sphere, const FTransform& TransformSphere)
@@ -216,7 +216,7 @@ namespace Collision
 
         // 캡슐 상하단 중점 + Radius 생성
         FVector TopCenter, BottomCenter; float rCapsule = 0.0f;
-        BuildCapsule(Capsule, TransformCapsule, BottomCenter, TopCenter, rCapsule);  
+        BuildCapsule(Capsule, TransformCapsule, BottomCenter, TopCenter, rCapsule);
 
         const float SphereRadius = Sphere.Sphere.SphereRadius * UniformScaleMax(AbsVec(TransformSphere.Scale3D));
         const FVector C = TransformSphere.Translation;
@@ -228,9 +228,9 @@ namespace Collision
         // 2) Sphere vs top/bottom Spheres
         auto SphereSphere = [](const FVector& Pos0, float Radius0, const FVector& Pos1, float Radius1) -> bool
         {
-            const FVector d = Pos0 - Pos1; 
-            const float rs = Radius0 + Radius1; 
-            
+            const FVector d = Pos0 - Pos1;
+            const float rs = Radius0 + Radius1;
+
             return d.SizeSquared() <= rs * rs;
         };
 
@@ -240,15 +240,15 @@ namespace Collision
         return false;
     }
 
-    // 캡슐 VS Box 
+    // 캡슐 VS Box
     bool OverlapCapsuleAndBox(const FShape& Capsule, const FTransform& TransformCapsule,
         const FShape& Box, const FTransform& TransformBox)
-    { 
+    {
         // 캡슐 몸통 부분
         FOBB Core{};
         BuildCapsuleCoreOBB(Capsule, TransformCapsule, Core);
 
-        // 비교 대상 OBB 
+        // 비교 대상 OBB
         FOBB B{};
         BuildOBB(Box, TransformBox, B);
 
@@ -256,7 +256,7 @@ namespace Collision
         if (Overlap_OBB_OBB(Core, B))
             return true;
 
-        // 2) Top/Bottom 반구 vs OBB 
+        // 2) Top/Bottom 반구 vs OBB
         FVector BottomCenter, TopCenter; float CapsuleRadius = 0.0f;
         BuildCapsule(Capsule, TransformCapsule, BottomCenter, TopCenter, CapsuleRadius);
         if (Overlap_Sphere_OBB(TopCenter, CapsuleRadius, B)) return true;
@@ -265,29 +265,29 @@ namespace Collision
         return false;
     }
 
-    // Capsuel - Box 
-    // 캡슐은 구 - OBB - 구로 구성되었다고 가정했다. 
+    // Capsuel - Box
+    // 캡슐은 구 - OBB - 구로 구성되었다고 가정했다.
     bool OverlapBoxAndCapsule(const FShape& Box, const FTransform& TransformBox,
         const FShape& Capsule, const FTransform& TransformCapsule)
     {
         return OverlapCapsuleAndBox(Capsule, TransformCapsule, Box, TransformBox);
     }
-    
+
     // Capsule - Capsule
-    // 캡슐은 구 - OBB - 구로 구성되었다고 가정했다. 
+    // 캡슐은 구 - OBB - 구로 구성되었다고 가정했다.
     bool OverlapCapsuleAndCapsule(const FShape& CapsuleA, const FTransform& TransformA,
         const FShape& CapsuleB, const FTransform& TransformB)
     {
-        FOBB CoreA{}, CoreB{}; 
+        FOBB CoreA{}, CoreB{};
         BuildCapsuleCoreOBB(CapsuleA, TransformA, CoreA);
         BuildCapsuleCoreOBB(CapsuleB, TransformB, CoreB);
-        
-        FVector ABottom, ATop; 
-        float RadiusA = 0.0f; 
+
+        FVector ABottom, ATop;
+        float RadiusA = 0.0f;
         BuildCapsule(CapsuleA, TransformA, ABottom, ATop, RadiusA);
-        
-        FVector BBottom, BTop; 
-        float RadiusB = 0.0f; 
+
+        FVector BBottom, BTop;
+        float RadiusB = 0.0f;
         BuildCapsule(CapsuleB, TransformB, BBottom, BTop, RadiusB);
 
         auto SphereSphere = [](const FVector& Pos0, float Radius0, const FVector& Pos1, float Radius1) -> bool
@@ -307,7 +307,7 @@ namespace Collision
         if (Overlap_Sphere_OBB(ATop, RadiusA, CoreB)) return true;
         if (Overlap_Sphere_OBB(ABottom, RadiusA, CoreB)) return true;
 
-        // 3) Sphere Sphere 
+        // 3) Sphere Sphere
         if (SphereSphere(ATop, RadiusA, BTop, RadiusB)) return true;
         if (SphereSphere(ATop, RadiusA, BBottom, RadiusB)) return true;
         if (SphereSphere(ABottom, RadiusA, BTop, RadiusB)) return true;
@@ -316,15 +316,43 @@ namespace Collision
         return false;
     }
 
+    FVector GetAABBSurfaceNormal(const FAABB& Box, const FVector& HitPoint)
+    {
+    	FVector Center = Box.GetCenter();
+    	FVector Extent = Box.GetHalfExtent();
+    	FVector Dir = HitPoint - Center;
+
+    	// 각 축에 대한 비율 계산 (-1 ~ 1)
+    	float Bias = 0.00001f;
+    	FVector P = FVector(
+			Dir.X / (Extent.X + Bias),
+			Dir.Y / (Extent.Y + Bias),
+			Dir.Z / (Extent.Z + Bias)
+		);
+
+    	// 가장 절댓값이 큰 축이 충돌한 면임
+    	if (std::abs(P.X) > std::abs(P.Y))
+    	{
+    		if (std::abs(P.X) > std::abs(P.Z))
+    			return (P.X > 0) ? FVector(1, 0, 0) : FVector(-1, 0, 0);
+    	}
+    	else
+    	{
+    		if (std::abs(P.Y) > std::abs(P.Z))
+    			return (P.Y > 0) ? FVector(0, 1, 0) : FVector(0, -1, 0);
+    	}
+    	return (P.Z > 0) ? FVector(0, 0, 1) : FVector(0, 0, -1);
+    }
+
     // Capsuel - Sphere
-    // 캡슐은 구 - OBB - 구로 구성되었다고 가정했다. 
+    // 캡슐은 구 - OBB - 구로 구성되었다고 가정했다.
     bool OverlapSphereAndCapsule(const FShape& Sphere, const FTransform& TransformSphere,
         const FShape& Capsule, const FTransform& TransformCapsule)
     {
         return OverlapCapsuleAndSphere(Capsule, TransformCapsule, Sphere, TransformSphere);
     }
 
-    // Spherer - OBB 충돌 처리 
+    // Spherer - OBB 충돌 처리
     bool Overlap_Sphere_OBB(const FVector& Center, float Radius, const FOBB& B)
     {
         const FVector Dist = Center - B.Center;
@@ -346,12 +374,12 @@ namespace Collision
     bool OverlapSphereAndBox(const FShape& ShapeA, const FTransform& TransformA,
         const FShape& ShapeB, const FTransform& TransformB)
     {
-     
+
         // 구 중심과 반지름(비등방 스케일 상계 적용)
         const FVector SphereCenter = TransformA.Translation;
         const float SphereRadius = ShapeA.Sphere.SphereRadius* UniformScaleMax(AbsVec(TransformA.Scale3D));
 
-        FOBB B{}; 
+        FOBB B{};
         BuildOBB(ShapeB, TransformB, B);
 
         return Overlap_Sphere_OBB(SphereCenter, SphereRadius, B);
@@ -359,8 +387,8 @@ namespace Collision
 
     bool OverlapBoxAndSphere(const FShape& ShapeA, const FTransform& TransformA,
         const FShape& ShapeB, const FTransform& TransformB)
-    { 
-        FOBB B{}; 
+    {
+        FOBB B{};
         BuildOBB(ShapeA, TransformA, B);
 
         // 구 중심과 반지름(비등방 스케일 상계 적용)

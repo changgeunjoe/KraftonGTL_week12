@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ParticleEmitterInstances.h"
 
+#include "Collision.h"
 #include "ParticleEmitter.h"
 #include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
@@ -140,7 +141,6 @@ void FParticleEmitterInstance::Init()
 	// 초기값 설정
 	SpawnFraction			= 0;
 	SecondsSinceCreation	= 0;
-	ParticleCounter			= 0;
 
 	UpdateTransforms();
 	Location				= Component->GetWorldLocation();
@@ -280,8 +280,24 @@ void FParticleEmitterInstance::UpdateBoundingBox(float DeltaTime)
 			WorldPosition = ComponentToWorld.TransformPosition(WorldPosition);
 		}
 
-		// @todo 바운딩 박스 업데이트
+		float MaxSize = FMath::Max(Particle.Size.X, Particle.Size.Y);
+
+		float WorldScaleMax = bUseLocalSpace ? 1.0f : Collision::UniformScaleMax(Scale);
+		float WorldExtent = MaxSize * WorldScaleMax;
+
+		FVector ParticleExtent(WorldExtent, WorldExtent, WorldExtent);
+
+		MinVal.X = FMath::Min(MinVal.X, WorldPosition.X - ParticleExtent.X);
+		MinVal.Y = FMath::Min(MinVal.Y, WorldPosition.Y - ParticleExtent.Y);
+		MinVal.Z = FMath::Min(MinVal.Z, WorldPosition.Z - ParticleExtent.Z);
+
+		MaxVal.X = FMath::Max(MaxVal.X, WorldPosition.X + ParticleExtent.X);
+		MaxVal.Y = FMath::Max(MaxVal.Y, WorldPosition.Y + ParticleExtent.Y);
+		MaxVal.Z = FMath::Max(MaxVal.Z, WorldPosition.Z + ParticleExtent.Z);
 	}
+
+	ParticleBoundingBox.Min = MinVal;
+	ParticleBoundingBox.Max = MaxVal;
 }
 
 float FParticleEmitterInstance::Tick_EmitterTimeSetup(float DeltaTime, UParticleLODLevel* InCurrentLODLevel)

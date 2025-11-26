@@ -17,6 +17,10 @@ const FBaseParticle& Name = *((const FBaseParticle*) (Address));
 #define DECLARE_PARTICLE_PTR(Name,Address)		\
 FBaseParticle* Name = (FBaseParticle*) (Address);
 
+#define PARTICLE_ELEMENT(Type,Name)																						\
+Type& Name = *((Type*)((uint8*)ParticleBase + CurrentOffset));																\
+CurrentOffset += sizeof(Type);
+
 #define SPAWN_INIT																									\
 const int32		ActiveParticles	= Context.Owner.ActiveParticles;													\
 const uint32	ParticleStride	= Context.Owner.ParticleStride;														\
@@ -129,6 +133,13 @@ struct FMeshRotationPayloadData
 	FVector CurContinuousRotation;
 	FVector RotationRate;
 	FVector RotationRateBase;
+};
+
+struct FParticleCollisionPayload
+{
+	int32 UsedCollisions;
+	FVector UsedDampingFactor;
+	float Delay;
 };
 
 struct FBaseParticle
