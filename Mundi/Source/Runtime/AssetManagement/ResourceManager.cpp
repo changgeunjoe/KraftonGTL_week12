@@ -542,6 +542,21 @@ void UResourceManager::InitShaderILMap()
     layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12,
                  D3D11_INPUT_PER_VERTEX_DATA, 0 });
     ShaderToInputLayoutMap["Shaders/Particles/ParticleBeam.hlsl"] = layout;
+    // Ribbon Particle도 동일한 입력 레이아웃 사용
+    ShaderToInputLayoutMap["Shaders/Particles/ParticleRibbon.hlsl"] = layout;
+    layout.clear();
+
+    // RibbonSimple은 SV_VertexID만 사용하므로 입력 레이아웃 없음
+    ShaderToInputLayoutMap["Shaders/Particles/ParticleRibbonSimple.hlsl"] = {};
+
+    // RibbonVB는 정점 버퍼 사용 (Position, UV, Color)
+    layout.Add({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12,
+                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    layout.Add({ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20,
+                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    ShaderToInputLayoutMap["Shaders/Particles/ParticleRibbonVB.hlsl"] = layout;
     layout.clear();
 
     ShaderToInputLayoutMap["Shaders/Utility/FullScreenTriangle_VS.hlsl"] = {};  // FullScreenTriangle 는 InputLayout을 사용하지 않는다

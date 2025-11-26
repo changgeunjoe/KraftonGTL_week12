@@ -11,6 +11,7 @@
 #include "ParticleModuleTypeDataBase.h"
 #include "ParticleModuleTypeDataMesh.h"
 #include "ParticleModuleTypeDataBeam.h"
+#include "ParticleModuleTypeDataRibbon.h"
 #include "ParticleSystemComponent.h"
 #include "ParticleModuleSubUV.h"
 
@@ -1344,4 +1345,245 @@ FDynamicEmitterReplayDataBase* FParticleBeamEmitterInstance::GetReplayData()
         return nullptr;
     }
     return ReplayData;
+}
+
+/*-----------------------------------------------------------------------------
+    FParticleRibbonEmitterInstance
+-----------------------------------------------------------------------------*/
+
+FParticleRibbonEmitterInstance::FParticleRibbonEmitterInstance(UParticleSystemComponent* InComponent)
+    : FParticleEmitterInstance(InComponent)
+    , RibbonTypeData(nullptr)
+    , RibbonPayloadOffset(0)
+    , LastSampleTime(0.0f)
+    , NewEmitterData(nullptr)
+{
+}
+
+FParticleRibbonEmitterInstance::~FParticleRibbonEmitterInstance()
+{
+    if (NewEmitterData)
+    {
+        delete NewEmitterData;
+        NewEmitterData = nullptr;
+    }
+}
+
+void FParticleRibbonEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
+{
+    FParticleEmitterInstance::InitParameters(InTemplate);
+
+    // TypeData 모듈 찾기
+    if (CurrentLODLevel && CurrentLODLevel->TypeDataModule)
+    {
+        RibbonTypeData = Cast<UParticleModuleTypeDataRibbon>(CurrentLODLevel->TypeDataModule);
+    }
+}
+
+void FParticleRibbonEmitterInstance::Init()
+{
+    FParticleEmitterInstance::Init();
+    LastSampleTime = 0.0f;
+}
+
+uint32 FParticleRibbonEmitterInstance::RequiredBytes()
+{
+    // 리본 페이로드 크기를 반환 (히스토리 데이터 포함)
+    RibbonPayloadOffset = PayloadOffset;
+    return sizeof(FRibbonParticlePayloadData);
+}
+
+void FParticleRibbonEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
+{
+    FParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
+
+    // 리본 페이로드 초기화
+    FRibbonParticlePayloadData* RibbonPayload = reinterpret_cast<FRibbonParticlePayloadData*>(
+        reinterpret_cast<uint8*>(Particle) + RibbonPayloadOffset);
+
+    // 로컬 스페이스 사용 여부 확인
+    bool bUseLocalSpace = CurrentLODLevel && CurrentLODLevel->RequiredModule && CurrentLODLevel->RequiredModule->bUseLocalSpace;
+
+    // 월드 위치 계산
+    FVector WorldPosition;
+    if (bUseLocalSpace)
+    {
+        WorldPosition = SimulationToWorld.TransformPosition(Particle->Location);
+    }
+    else
+    {
+        // 월드 스페이스: 이미터의 현재 월드 위치 사용
+        WorldPosition = Component->GetWorldTransform().Translation;
+    }
+
+    // 히스토리 초기화
+    RibbonPayload->HeadIndex = 0;
+    RibbonPayload->PointCount = 1;
+    RibbonPayload->TotalLength = 0.0f;
+    RibbonPayload->PositionHistory[0] = WorldPosition;
+    RibbonPayload->AgeHistory[0] = 0.0f;
+}
+
+void FParticleRibbonEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
+{
+    // 기본 파티클 틱 처리
+    FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
+
+    // 리본 히스토리 업데이트
+    float MinSpawnDistance = RibbonTypeData ? RibbonTypeData->MinSpawnDistance : 5.0f;
+    int32 MaxTrailCount = RibbonTypeData ? RibbonTypeData->MaxTrailCount : 32;
+
+    // 로컬 스페이스 사용 여부 확인
+    bool bUseLocalSpace = CurrentLODLevel && CurrentLODLevel->RequiredModule && CurrentLODLevel->RequiredModule->bUseLocalSpace;
+
+    // 모든 활성 파티클의 히스토리 업데이트
+    for (int32 i = 0; i < ActiveParticles; ++i)
+    {
+        int32 ParticleIndex = ParticleIndices ? ParticleIndices[i] : i;
+        FBaseParticle* Particle = reinterpret_cast<FBaseParticle*>(ParticleData + ParticleIndex * ParticleStride);
+        FRibbonParticlePayloadData* RibbonPayload = reinterpret_cast<FRibbonParticlePayloadData*>(
+            reinterpret_cast<uint8*>(Particle) + RibbonPayloadOffset);
+
+        // 월드 위치 계산
+        FVector WorldPosition;
+        if (bUseLocalSpace)
+        {
+            // 로컬 스페이스: 파티클 로컬 위치를 월드로 변환
+            WorldPosition = SimulationToWorld.TransformPosition(Particle->Location);
+        }
+        else
+        {
+            // 월드 스페이스: 이미터의 현재 월드 위치 사용
+            WorldPosition = Component->GetWorldTransform().Translation;
+        }
+
+        // 현재 위치와 마지막 히스토리 위치의 거리 계산
+        FVector LastPos = RibbonPayload->PositionHistory[RibbonPayload->HeadIndex];
+        float Distance = (WorldPosition - LastPos).Size();
+
+        // 최소 거리 이상 이동했으면 새 포인트 추가
+        if (Distance >= MinSpawnDistance)
+        {
+            AddTrailPoint(RibbonPayload, WorldPosition);
+        }
+
+        // 히스토리의 나이 업데이트
+        for (int32 j = 0; j < RibbonPayload->PointCount; ++j)
+        {
+            int32 Idx = (RibbonPayload->HeadIndex - j + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+            RibbonPayload->AgeHistory[Idx] += DeltaTime;
+        }
+
+        // TrailLifetime을 초과한 오래된 포인트 제거
+        float TrailLifetime = RibbonTypeData ? RibbonTypeData->TrailLifetime : 1.0f;
+        if (TrailLifetime > 0.0f)
+        {
+            while (RibbonPayload->PointCount > 1)
+            {
+                // 가장 오래된 포인트의 인덱스
+                int32 TailIdx = (RibbonPayload->HeadIndex - RibbonPayload->PointCount + 1 + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+                if (RibbonPayload->AgeHistory[TailIdx] > TrailLifetime)
+                {
+                    RibbonPayload->PointCount--;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        // MaxTrailCount 제한 적용
+        if (RibbonPayload->PointCount > MaxTrailCount)
+        {
+            RibbonPayload->PointCount = MaxTrailCount;
+        }
+    }
+
+    LastSampleTime += DeltaTime;
+}
+
+void FParticleRibbonEmitterInstance::AddTrailPoint(FRibbonParticlePayloadData* PayloadData, const FVector& Position)
+{
+    // 링 버퍼에 새 포인트 추가
+    PayloadData->HeadIndex = (PayloadData->HeadIndex + 1) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+    PayloadData->PositionHistory[PayloadData->HeadIndex] = Position;
+    PayloadData->AgeHistory[PayloadData->HeadIndex] = 0.0f;
+
+    // 포인트 수 증가 (최대값 제한)
+    if (PayloadData->PointCount < FRibbonParticlePayloadData::MAX_TRAIL_POINTS)
+    {
+        PayloadData->PointCount++;
+    }
+
+    // 전체 길이 재계산
+    PayloadData->TotalLength = 0.0f;
+    for (int32 i = 1; i < PayloadData->PointCount; ++i)
+    {
+        int32 CurrIdx = (PayloadData->HeadIndex - i + 1 + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+        int32 PrevIdx = (PayloadData->HeadIndex - i + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+        PayloadData->TotalLength += (PayloadData->PositionHistory[CurrIdx] - PayloadData->PositionHistory[PrevIdx]).Size();
+    }
+}
+
+FDynamicEmitterDataBase* FParticleRibbonEmitterInstance::GetDynamicData(bool bSelected)
+{
+    UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+    if (!LODLevel || !LODLevel->bEnabled || ActiveParticles <= 0)
+    {
+        return nullptr;
+    }
+
+    if (!NewEmitterData)
+    {
+        NewEmitterData = new FDynamicRibbonEmitterData();
+    }
+
+    NewEmitterData->Init(bSelected, this);
+
+    // 리플레이 데이터 채우기
+    if (!FillReplayData(NewEmitterData->Source))
+    {
+        return nullptr;
+    }
+
+    return NewEmitterData;
+}
+
+FDynamicEmitterReplayDataBase* FParticleRibbonEmitterInstance::GetReplayData()
+{
+    if (ActiveParticles <= 0 || !bEnabled) return nullptr;
+
+    FDynamicRibbonEmitterReplayData* ReplayData = new FDynamicRibbonEmitterReplayData();
+    if (!FillReplayData(*ReplayData))
+    {
+        delete ReplayData;
+        return nullptr;
+    }
+    return ReplayData;
+}
+
+bool FParticleRibbonEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+    if (!FParticleEmitterInstance::FillReplayData(OutData))
+    {
+        return false;
+    }
+
+    OutData.eEmitterType = DET_Ribbon;
+
+    FDynamicRibbonEmitterReplayData* RibbonReplayData = static_cast<FDynamicRibbonEmitterReplayData*>(&OutData);
+
+    // 머티리얼 설정
+    RibbonReplayData->MaterialInterface = CurrentMaterial;
+    RibbonReplayData->RibbonPayloadOffset = RibbonPayloadOffset;
+    RibbonReplayData->MaxTrailCount = RibbonTypeData ? RibbonTypeData->MaxTrailCount : 32;
+    RibbonReplayData->TextureTile = RibbonTypeData ? RibbonTypeData->TextureTile : 1.0f;
+    RibbonReplayData->TailWidthScale = RibbonTypeData ? RibbonTypeData->TailWidthScale : 0.0f;
+    RibbonReplayData->TailAlphaScale = RibbonTypeData ? RibbonTypeData->TailAlphaScale : 0.0f;
+    RibbonReplayData->TextureScrollSpeed = RibbonTypeData ? RibbonTypeData->TextureScrollSpeed : 0.0f;
+    RibbonReplayData->RibbonWidth = RibbonTypeData ? RibbonTypeData->RibbonWidth.GetValue(0.0f) : 10.0f;
+    RibbonReplayData->TrailLifetime = RibbonTypeData ? RibbonTypeData->TrailLifetime : 1.0f;
+
+    return true;
 }

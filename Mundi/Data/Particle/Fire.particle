@@ -89,7 +89,7 @@
             }],
           "bEnabled" : true
         }],
-      "PeakActiveParticles" : 383,
+      "PeakActiveParticles" : 154,
       "Type" : "UParticleEmitter"
     }],
   "Type" : "UParticleSystem"

@@ -1,0 +1,65 @@
+{
+  "Emitters" : [{
+      "EmitterName" : "TestEmitter",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDuration" : 1.000000,
+              "EmitterDurationLow" : 1.000000,
+              "EmitterLoops" : 0,
+              "Material" : "texture",
+              "ScreenAlignment" : 1,
+              "Type" : "UParticleModuleRequired",
+              "bUseLocalSpace" : false
+            }, {
+              "Rate" : 10.000000,
+              "RateScale" : 1.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "MaxTrailCount" : 32,
+              "MinSpawnDistance" : 0.100000,
+              "RibbonWidth" : {
+                "Constant" : 10.000000,
+                "DistributionType" : "Constant"
+              },
+              "SpawnInterval" : 0.000000,
+              "TailAlphaScale" : 0.000000,
+              "TailWidthScale" : 0.500000,
+              "TextureScrollSpeed" : 0.000000,
+              "TextureTile" : 1.000000,
+              "TrailLifetime" : 3.000000,
+              "Type" : "UParticleModuleTypeDataRibbon"
+            }, {
+              "Lifetime" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.000000,
+                "Min" : 0.100000
+              },
+              "Type" : "UParticleModuleLifetime"
+            }, {
+              "StartAlpha" : {
+                "Constant" : 1.000000,
+                "DistributionType" : "Constant"
+              },
+              "StartColor" : {
+                "Constant" : [1.000000, 0.000000, 0.000000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColor"
+            }, {
+              "StartSize" : {
+                "DistributionType" : "Uniform",
+                "Max" : [1.000000, 1.000000, 1.000000],
+                "Min" : [1.000000, 1.000000, 1.000000]
+              },
+              "Type" : "UParticleModuleSize"
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 12,
+      "Type" : "UParticleEmitter"
+    }],
+  "Type" : "UParticleSystem"
+}
