@@ -2592,22 +2592,60 @@ bool UPropertyRenderer::RenderParticleSystemProperty(const FProperty& Prop, void
 		}
 	}
 
-	// 콤보박스 렌더링
 	bool bChanged = false;
-	if (ImGui::Combo(Prop.Name, &CurrentIndex, ItemsGetterConstChar,
-		&CachedParticleSystemItems, static_cast<int>(CachedParticleSystemItems.size())))
+
+	if (ImGui::BeginCombo(Prop.Name, CachedParticleSystemItems[CurrentIndex]))
+	{
+		// 콤보박스 팝업이 '처음 열린 프레임'에만
+		if (ImGui::IsWindowAppearing())
+		{
+			// 스크립트 목록 다시 로드하기 위해서
+			CachedParticleSystemPaths.Empty();
+			CachedParticleSystemItems.Empty();
+		}
+		else
+		{
+			// "None" 옵션
+			bool bSelectedNone = (CurrentIndex == 0);
+			if (ImGui::Selectable(CachedParticleSystemItems[0], bSelectedNone))
+			{
+				CurrentIndex = 0;
+				bChanged = true;
+			}
+
+			// 일반 파티클 리스트
+			for (int i = 0; i < static_cast<int>(CachedParticleSystemPaths.size()); ++i)
+			{
+				int DisplayIndex = i + 1;
+				bool bSelected = (CurrentIndex == DisplayIndex);
+
+				if (ImGui::Selectable(CachedParticleSystemItems[DisplayIndex], bSelected))
+				{
+					CurrentIndex = DisplayIndex;
+					bChanged = true;
+				}
+
+				if (bSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+		}
+
+		ImGui::EndCombo();
+	}
+
+	if (bChanged)
 	{
 		UResourceManager& ResMgr = UResourceManager::GetInstance();
 		UParticleSystem* NewParticle = nullptr;
 
 		if (CurrentIndex == 0)
 		{
-			// "None" 선택
 			NewParticle = nullptr;
 		}
 		else
 		{
-			// 파티클 시스템 선택 (인덱스 조정: -1 for "None" offset)
 			FString SelectedPath = CachedParticleSystemPaths[CurrentIndex - 1];
 			NewParticle = ResMgr.Load<UParticleSystem>(SelectedPath);
 		}
@@ -2620,10 +2658,8 @@ bool UPropertyRenderer::RenderParticleSystemProperty(const FProperty& Prop, void
 		}
 		else
 		{
-			// 프로퍼티 포인터 업데이트
 			*ParticlePtr = NewParticle;
 		}
-		bChanged = true;
 	}
 
 	return bChanged;

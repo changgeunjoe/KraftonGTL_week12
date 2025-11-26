@@ -56,8 +56,6 @@ public:
 	int32 ParticleStride;
 	/** 이미터 내의 현재 활성화된 파티클의 수									*/
 	int32 ActiveParticles;
-	/** 단조 증가하는 카운터												*/
-	uint32 ParticleCounter;
 	/** 파티클 데이터 배열이 보유할 수 있는 최대 활성 파티클 수					*/
 	int32 MaxActiveParticles;
 	/** 스폰 이후 남은 시간												*/
@@ -70,6 +68,8 @@ public:
 	float LastDeltaTime;
 	/** 인스턴스의 이전 위치												*/
 	FVector OldLocation;
+	/** 파티클의 바운딩 박스												*/
+	FAABB ParticleBoundingBox;
 	/** 현재 루프에 적용된 지연 시간										*/
 	float CurrentDelay;
 	/** 이 인스턴스에 의해 완료된 루프의 수									*/

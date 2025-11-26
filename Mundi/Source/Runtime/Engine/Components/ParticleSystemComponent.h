@@ -6,6 +6,23 @@
 struct FDynamicEmitterDataBase;
 class UParticleSystem;
 
+struct FHitResult
+{
+	bool bBlockingHit;
+	float Time;
+	float Distance;
+	FVector Location;
+	FVector Normal;
+	FVector ImpactNormal;
+
+	FHitResult()
+		: bBlockingHit(false), Time(1.0f), Distance(0.0f)
+		, Location(FVector::Zero()), Normal(FVector::Zero())
+	{}
+
+	bool IsValidBlockingHit() const { return bBlockingHit; }
+};
+
 UCLASS(DisplayName = "파티클 컴포넌트", Description = "파티클을 렌더링하는 컴포넌트입니다")
 class UParticleSystemComponent : public UPrimitiveComponent
 {
@@ -51,6 +68,8 @@ public:
 	virtual void Activate(bool bReset=false);
 
 	virtual void Deactivate();
+
+	virtual bool ParticleLineCheck(FHitResult& Hit, AActor* SourceActor, const FVector& End, const FVector& Start, const FVector& Extent);
 
 	/**
 	 * 파티클 시스템 템플릿을 설정한다.
