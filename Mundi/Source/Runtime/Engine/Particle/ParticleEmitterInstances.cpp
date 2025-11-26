@@ -322,6 +322,9 @@ float FParticleEmitterInstance::Tick_EmitterTimeSetup(float DeltaTime, UParticle
 		EmitterTime -= EmitterDuration;
 	}
 
+	// @note EmitterTime이 음수일 경우 Spawn 등이 작동하지 않으므로 Delay효과가 발생함
+	EmitterTime -= EmitterDelay;
+
 	return EmitterDelay;
 }
 
