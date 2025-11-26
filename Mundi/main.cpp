@@ -18,7 +18,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     _CrtSetBreakAlloc(0);
 #endif
 
+#if !defined(_DEBUG)
 	InitializeMiniDump();
+#endif
     if (!GEngine.Startup(hInstance))
         return -1;
 
