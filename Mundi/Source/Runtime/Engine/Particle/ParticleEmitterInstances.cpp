@@ -713,7 +713,12 @@ void FParticleEmitterInstance::UpdateTransforms()
 	FMatrix ComponentToWorld = Component->GetWorldTransform().ToMatrix();
 	// @todo 현재는 RequiredModule에 EmitterOrigin, EmitterRotation과 같은 오프셋 정보가 없음
 	FMatrix EmitterToComponent = FMatrix::Identity();
-
+	if (!LODLevel) {
+		return;
+	}
+	if (!LODLevel->RequiredModule) {
+		return;
+	}
 	if (LODLevel->RequiredModule->bUseLocalSpace)
 	{
 		EmitterToSimulation = EmitterToComponent;
@@ -1427,14 +1432,11 @@ void FParticleRibbonEmitterInstance::PostSpawn(FBaseParticle* Particle, float In
 
 void FParticleRibbonEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
 {
-    // 기본 파티클 틱 처리
-    FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
+    // 리본은 파티클 1개만 사용 - 이미 파티클이 있으면 스폰 억제
+    bool bSuppressForRibbon = (ActiveParticles >= 1);
 
-    // 리본은 파티클 1개만 사용 (여러 개면 끊어져 보임)
-    if (ActiveParticles > 1)
-    {
-        ActiveParticles = 1;
-    }
+    // 기본 파티클 틱 처리
+    FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning || bSuppressForRibbon);
 
     // 리본 히스토리 업데이트
     float MinSpawnDistance = RibbonTypeData ? RibbonTypeData->MinSpawnDistance : 5.0f;

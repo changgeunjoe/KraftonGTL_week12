@@ -9,7 +9,20 @@
               "EmitterDuration" : 1.000000,
               "EmitterDurationLow" : 1.000000,
               "EmitterLoops" : 0,
-              "Material" : "texture",
+              "Material" : {
+                "Overrides" : {
+                  "Scalars" : {
+
+                  },
+                  "Textures" : {
+                    "0" : "Data/Textures/40054171-bright-explosion-fire-burst-backgrounds-body-of-flame-texture.jpg"
+                  },
+                  "Vectors" : {
+
+                  }
+                },
+                "ParentPath" : "texture"
+              },
               "ScreenAlignment" : 1,
               "Type" : "UParticleModuleRequired",
               "bUseLocalSpace" : false
@@ -29,7 +42,7 @@
               "TailWidthScale" : 0.400000,
               "TextureScrollSpeed" : 0.000000,
               "TextureTile" : 1.000000,
-              "TrailLifetime" : 0.800000,
+              "TrailLifetime" : 9.800000,
               "Type" : "UParticleModuleTypeDataRibbon"
             }, {
               "Lifetime" : {
@@ -44,7 +57,7 @@
                 "DistributionType" : "Constant"
               },
               "StartColor" : {
-                "Constant" : [1.000000, 0.000000, 0.000000],
+                "Constant" : [1.000000, 1.000000, 1.000000],
                 "DistributionType" : "Constant"
               },
               "Type" : "UParticleModuleColor"

@@ -751,6 +751,16 @@ FDynamicRibbonEmitterData::~FDynamicRibbonEmitterData()
 		IndexBuffer->Release();
 		IndexBuffer = nullptr;
 	}
+	if (DynamicVertexBuffer)
+	{
+		DynamicVertexBuffer->Release();
+		DynamicVertexBuffer = nullptr;
+	}
+	if (DynamicIndexBuffer)
+	{
+		DynamicIndexBuffer->Release();
+		DynamicIndexBuffer = nullptr;
+	}
 }
 
 void FDynamicRibbonEmitterData::Init(bool bInSelected, const FParticleRibbonEmitterInstance* InEmitterInstance)
@@ -864,8 +874,9 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 		int32 HeadIdx = RibbonPayload->HeadIndex;
 		uint32 RibbonStartVertex = Vertices.Num();
 
-		// 이전 Right 벡터 저장 (일관성 유지용)
+		// 이전 벡터 저장 (일관성 유지용)
 		FVector PrevRight = FVector(0, 0, 0);
+		FVector PrevDir = FVector(1, 0, 0);
 
 		// 보간된 총 포인트 수 계산
 		int32 InterpolatedPointCount = (PointCount - 1) * SubdivisionCount + 1;
@@ -909,7 +920,18 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 			float t_next = FMath::Min(localT + epsilon, 1.0f);
 			FVector PosPrev = CatmullRom(P0, P1, P2, P3, t_prev);
 			FVector PosNext = CatmullRom(P0, P1, P2, P3, t_next);
-			Dir = (PosPrev - PosNext).GetSafeNormal();
+			FVector DirRaw = PosPrev - PosNext;
+			float DirLen = DirRaw.Size();
+			if (DirLen > 0.001f)
+			{
+				Dir = DirRaw / DirLen;
+				PrevDir = Dir;
+			}
+			else
+			{
+				// 180도 전환 등으로 방향이 0이면 이전 방향 사용
+				Dir = PrevDir;
+			}
 
 			// 카메라를 향하는 right 벡터 계산
 			FVector ToCamera = (CameraPos - Pos).GetSafeNormal();
@@ -981,13 +1003,7 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 
 	if (Vertices.Num() == 0 || IndexData.Num() == 0) return;
 
-	UE_LOG("Ribbon: Vertices=%d, Indices=%d, Points=%d, Segments=%d, ParticleCount=%d",
-		Vertices.Num(), IndexData.Num(), TotalPointCount, TotalSegmentCount, ParticleCount);
-
-	// 동적 정점 버퍼 생성/업데이트
-	static ID3D11Buffer* DynamicVertexBuffer = nullptr;
-	static uint32 DynamicVertexBufferSize = 0;
-
+	// 동적 정점 버퍼 생성/업데이트 (멤버 변수 사용)
 	if (Vertices.Num() > (int32)DynamicVertexBufferSize || !DynamicVertexBuffer)
 	{
 		if (DynamicVertexBuffer)
@@ -1018,10 +1034,7 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 		}
 	}
 
-	// 동적 인덱스 버퍼 생성/업데이트
-	static ID3D11Buffer* DynamicIndexBuffer = nullptr;
-	static uint32 DynamicIndexBufferSize = 0;
-
+	// 동적 인덱스 버퍼 생성/업데이트 (멤버 변수 사용)
 	if (IndexData.Num() > (int32)DynamicIndexBufferSize || !DynamicIndexBuffer)
 	{
 		if (DynamicIndexBuffer)

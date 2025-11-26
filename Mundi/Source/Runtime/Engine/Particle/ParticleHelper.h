@@ -690,4 +690,10 @@ struct FDynamicRibbonEmitterData : public FDynamicSpriteEmitterDataBase
 
 	/** 현재 인덱스 카운트 */
 	int32 CurrentIndexCount = 0;
+
+	// 동적 정점/인덱스 버퍼 (static 변수 대신 멤버로 이동)
+	ID3D11Buffer* DynamicVertexBuffer = nullptr;
+	uint32 DynamicVertexBufferSize = 0;
+	ID3D11Buffer* DynamicIndexBuffer = nullptr;
+	uint32 DynamicIndexBufferSize = 0;
 };
