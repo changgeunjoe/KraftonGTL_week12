@@ -9,12 +9,25 @@
               "EmitterDuration" : 1.000000,
               "EmitterDurationLow" : 1.000000,
               "EmitterLoops" : 0,
-              "Material" : "Shaders/UI/Billboard.hlsl",
+              "Material" : {
+                "Overrides" : {
+                  "Scalars" : {
+
+                  },
+                  "Textures" : {
+                    "0" : "Data/Textures/Boom.png"
+                  },
+                  "Vectors" : {
+
+                  }
+                },
+                "ParentPath" : "STONE"
+              },
               "ScreenAlignment" : 1,
               "Type" : "UParticleModuleRequired",
               "bUseLocalSpace" : false
             }, {
-              "Rate" : 10000.000000,
+              "Rate" : 100.000000,
               "RateScale" : 1.000000,
               "Type" : "UParticleModuleSpawn"
             }, {
