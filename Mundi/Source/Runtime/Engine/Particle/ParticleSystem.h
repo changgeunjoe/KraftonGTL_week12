@@ -1,9 +1,10 @@
 #pragma once
 
-
 #include "Source/Runtime/Core/Misc/JsonSerializer.h"
 #include "Source/Runtime/AssetManagement/ResourceBase.h"
 #include "UParticleSystem.generated.h"
+#include "Delegates.h"
+
 class UParticleEmitter;
 class UParticleSystemComponent;
 
@@ -11,6 +12,8 @@ UCLASS()
 class UParticleSystem : public UResourceBase
 {
 	GENERATED_REFLECTION_BODY()
+
+	DECLARE_DELEGATE(OnParticleChanged);
 
 public:
 	/** 시스템 내에 존재하는 이미터들의 배열 */

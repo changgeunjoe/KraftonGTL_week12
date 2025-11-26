@@ -38,6 +38,7 @@ FParticleEmitterInstance::FParticleEmitterInstance(UParticleSystemComponent* InC
 	, SecondsSinceCreation(0.0f)
 	, EmitterTime(0.0f)
 	, bEnabled(1)
+	, CurrentDelay(0.0f)
 {
 }
 

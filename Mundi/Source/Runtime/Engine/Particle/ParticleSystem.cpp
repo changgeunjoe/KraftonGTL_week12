@@ -118,6 +118,7 @@ void UParticleSystem::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		// 시스템 업데이트
 		UpdateAllModuleLists();
 		CalculateMaxActiveParticleCounts();
+		OnParticleChanged.Broadcast();
 	}
 	else
 	{

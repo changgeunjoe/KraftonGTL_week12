@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 void UObject::DeleteObjectDirty()
 {
@@ -223,6 +223,35 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				if (*Value)
 				{
 					InOutHandle[Prop.Name] = (*Value)->GetPathFileName().c_str();
+				}
+				else
+				{
+					InOutHandle[Prop.Name] = "";
+				}
+			}
+			break;
+		}
+		case EPropertyType::ParticleSystem:
+		{
+			UParticleSystem** Value = Prop.GetValuePtr<UParticleSystem*>(this);
+			if (bInIsLoading)
+			{
+				FString ParticlePath;
+				FJsonSerializer::ReadString(InOutHandle, Prop.Name, ParticlePath);
+				if (!ParticlePath.empty())
+				{
+					*Value = UResourceManager::GetInstance().Load<UParticleSystem>(ParticlePath);
+				}
+				else
+				{
+					*Value = nullptr;
+				}
+			}
+			else
+			{
+				if (*Value)
+				{
+					InOutHandle[Prop.Name] = (*Value)->GetFilePath().c_str();
 				}
 				else
 				{

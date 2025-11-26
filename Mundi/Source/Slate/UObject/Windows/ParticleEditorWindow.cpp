@@ -1729,6 +1729,15 @@ void SParticleEditorWindow::LoadParticleSystemFromFile()
 		// 기존 파티클 시스템 삭제
 		if (EditingParticleSystem)
 		{
+			if (PreviewActor)
+			{
+				UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PreviewActor->GetRootComponent());
+				if (ParticleComp)
+				{
+					ParticleComp->SetTemplate(nullptr);
+				}
+			}
+
 			DeleteObject(EditingParticleSystem);
 			EditingParticleSystem = nullptr;
 		}
