@@ -27,14 +27,14 @@
               "Type" : "UParticleModuleRequired",
               "bUseLocalSpace" : false
             }, {
-              "Rate" : 50.000000,
+              "Rate" : 30.000000,
               "RateScale" : 2.000000,
               "Type" : "UParticleModuleSpawn"
             }, {
               "Lifetime" : {
                 "DistributionType" : "Uniform",
-                "Max" : 1.100000,
-                "Min" : 1.000000
+                "Max" : 0.500000,
+                "Min" : 0.500000
               },
               "Type" : "UParticleModuleLifetime"
             }, {
@@ -43,15 +43,15 @@
                 "DistributionType" : "Constant"
               },
               "StartColor" : {
-                "Constant" : [1.000000, 1.000000, 1.000000],
+                "Constant" : [0.700000, 4.800000, 0.800000],
                 "DistributionType" : "Constant"
               },
               "Type" : "UParticleModuleColor"
             }, {
               "StartVelocity" : {
                 "DistributionType" : "Uniform",
-                "Max" : [1.000000, 1.000000, 7.000000],
-                "Min" : [-1.000000, -1.000000, 5.000000]
+                "Max" : [3.000000, 3.000000, 3.000000],
+                "Min" : [-3.000000, -3.000000, -3.000000]
               },
               "StartVelocityRadial" : {
                 "Constant" : 0.000000,
@@ -62,8 +62,9 @@
               "bInWorldSpace" : false
             }, {
               "StartSize" : {
-                "Constant" : [5.000000, 5.000000, 5.000000],
-                "DistributionType" : "Constant"
+                "DistributionType" : "Uniform",
+                "Max" : [5.000000, 5.000000, 5.000000],
+                "Min" : [3.000000, 3.000000, 3.000000]
               },
               "Type" : "UParticleModuleSize"
             }, {
@@ -89,7 +90,7 @@
             }],
           "bEnabled" : true
         }],
-      "PeakActiveParticles" : 154,
+      "PeakActiveParticles" : 114,
       "Type" : "UParticleEmitter"
     }],
   "Type" : "UParticleSystem"

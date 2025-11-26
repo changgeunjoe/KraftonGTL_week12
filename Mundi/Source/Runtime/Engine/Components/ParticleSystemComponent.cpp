@@ -14,6 +14,7 @@
 #include "Source/Runtime/Engine/Particle/ParticleSpriteEmitter.h"
 #include "Source/Runtime/Engine/Particle/ParticleModuleTypeDataMesh.h"
 #include "SceneView.h"
+#include "BillboardComponent.h"
 
 class UParticleModuleVelocity;
 
@@ -184,20 +185,36 @@ void UParticleSystemComponent::DuplicateSubObjects()
 
 void UParticleSystemComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
-	SetTemplate(nullptr);
+	if (bInIsLoading)
+	{
+		SetTemplate(nullptr);
+	}
 
 	Super::Serialize(bInIsLoading, InOutHandle);
 
-	if (Template)
+	if (bInIsLoading)
 	{
-		TemplateChangedHandle = Template->OnParticleChanged.AddDynamic(this, &UParticleSystemComponent::InitializeSystem);
+		if (Template)
+		{
+			TemplateChangedHandle = Template->OnParticleChanged.AddDynamic(this, &UParticleSystemComponent::InitializeSystem);
+		}
+
+		InitializeSystem();
+
+		if (Template)
+		{
+			Activate(true);
+		}
 	}
+}
 
-	InitializeSystem();
-
-	if (Template)
+void UParticleSystemComponent::OnRegister(UWorld* InWorld)
+{
+	Super::OnRegister(InWorld);
+	if (!SpriteComponent && !InWorld->bPie)
 	{
-		Activate(true);
+		CREATE_EDITOR_COMPONENT(SpriteComponent, UBillboardComponent);
+		SpriteComponent->SetTexture(GDataDir + "/UI/Icons/Particle.png");
 	}
 }
 

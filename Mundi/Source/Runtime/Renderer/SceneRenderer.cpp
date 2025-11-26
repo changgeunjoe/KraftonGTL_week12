@@ -127,7 +127,6 @@ void FSceneRenderer::Render()
 	if (!World->bPie)
 	{
 		//그리드와 디버그용 Primitive는 Post Processing 적용하지 않음.
-		RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
 		RenderDebugPass();	//  그리드, 선택한 물체의 경계 출력 (상호작용, 피킹 X)
 	}
 
@@ -136,6 +135,7 @@ void FSceneRenderer::Render()
 
 	if (!World->bPie)
 	{
+		RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
 		// 오버레이(Overlay) Primitive 렌더링
 		RenderOverayEditorPrimitivesPass();	// 기즈모 출력
 	}

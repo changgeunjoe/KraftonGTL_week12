@@ -43,6 +43,8 @@ public:
 
 	virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
+	virtual void OnRegister(UWorld* InWorld) override;
+
 	/**
 	 * 파티클 시스템을 초기화하고 이미터 인스턴스를 생성한다.
 	 * 템플릿 데이터가 유효해야 수행된다.

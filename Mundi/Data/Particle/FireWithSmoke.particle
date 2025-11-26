@@ -1,0 +1,327 @@
+{
+  "Emitters" : [{
+      "EmitterName" : "TestEmitter",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDuration" : 1.000000,
+              "EmitterDurationLow" : 1.000000,
+              "EmitterLoops" : 0,
+              "Material" : {
+                "Overrides" : {
+                  "Scalars" : {
+
+                  },
+                  "Textures" : {
+                    "0" : "Data/Textures/T_Smoke_A.PNG"
+                  },
+                  "Vectors" : {
+
+                  }
+                },
+                "ParentPath" : "Shaders/Materials/UberLit.hlsl"
+              },
+              "ScreenAlignment" : 1,
+              "Type" : "UParticleModuleRequired",
+              "bUseLocalSpace" : false
+            }, {
+              "Rate" : 50.000000,
+              "RateScale" : 2.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "Lifetime" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.100000,
+                "Min" : 1.000000
+              },
+              "Type" : "UParticleModuleLifetime"
+            }, {
+              "StartAlpha" : {
+                "Constant" : 0.900000,
+                "DistributionType" : "Constant"
+              },
+              "StartColor" : {
+                "Constant" : [0.030000, 0.030000, 0.030000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColor"
+            }, {
+              "StartVelocity" : {
+                "DistributionType" : "Uniform",
+                "Max" : [2.000000, 2.000000, 10.000000],
+                "Min" : [-2.000000, -2.000000, 5.000000]
+              },
+              "StartVelocityRadial" : {
+                "Constant" : 0.000000,
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleVelocity",
+              "bApplyOwnerScale" : true,
+              "bInWorldSpace" : false
+            }, {
+              "StartSize" : {
+                "Constant" : [5.000000, 5.000000, 5.000000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleSize"
+            }, {
+              "SubImageIndex" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : 0.000000,
+                "P1" : 0.330000,
+                "P2" : 0.660000,
+                "P3" : 1.000000
+              },
+              "SubImages_Horizontal" : 8,
+              "SubImages_Vertical" : 8,
+              "Type" : "UParticleModuleSubUV"
+            }, {
+              "StartRotation" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.000000,
+                "Min" : 0.000000
+              },
+              "Type" : "UParticleModuleRotation"
+            }, {
+              "AlphaOverLife" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : 0.000000,
+                "P1" : 1.630000,
+                "P2" : 1.670000,
+                "P3" : 0.000000
+              },
+              "ColorOverLife" : {
+                "Constant" : [1.000000, 1.000000, 1.000000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColorOverLife"
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 114,
+      "Type" : "UParticleEmitter"
+    }, {
+      "EmitterName" : "Emitter_1",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDuration" : 1.000000,
+              "EmitterDurationLow" : 0.000000,
+              "EmitterLoops" : 0,
+              "Material" : {
+                "Overrides" : {
+                  "Scalars" : {
+
+                  },
+                  "Textures" : {
+                    "0" : "Data/Textures/T_Fire_E.PNG"
+                  },
+                  "Vectors" : {
+
+                  }
+                },
+                "ParentPath" : "Shaders/Materials/UberLit.hlsl"
+              },
+              "ScreenAlignment" : 1,
+              "Type" : "UParticleModuleRequired",
+              "bUseLocalSpace" : false
+            }, {
+              "Rate" : 170.000000,
+              "RateScale" : 1.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "StartAlpha" : {
+                "Constant" : 1.000000,
+                "DistributionType" : "Constant"
+              },
+              "StartColor" : {
+                "Constant" : [1.000000, 0.600000, 0.300000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColor"
+            }, {
+              "StartSize" : {
+                "DistributionType" : "Uniform",
+                "Max" : [4.200000, 7.700000, 1.000000],
+                "Min" : [3.900000, 6.700000, 1.000000]
+              },
+              "Type" : "UParticleModuleSize"
+            }, {
+              "SubImageIndex" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : 0.000000,
+                "P1" : 0.160000,
+                "P2" : 0.673333,
+                "P3" : 1.000000
+              },
+              "SubImages_Horizontal" : 7,
+              "SubImages_Vertical" : 8,
+              "Type" : "UParticleModuleSubUV"
+            }, {
+              "StartVelocity" : {
+                "DistributionType" : "Uniform",
+                "Max" : [1.500000, 1.500000, 8.000000],
+                "Min" : [-1.500000, -1.500000, 6.500000]
+              },
+              "StartVelocityRadial" : {
+                "Constant" : 0.000000,
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleVelocity",
+              "bApplyOwnerScale" : true,
+              "bInWorldSpace" : false
+            }, {
+              "Lifetime" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.000000,
+                "Min" : 0.100000
+              },
+              "Type" : "UParticleModuleLifetime"
+            }, {
+              "StartRotation" : {
+                "DistributionType" : "Uniform",
+                "Max" : 0.100000,
+                "Min" : -0.100000
+              },
+              "Type" : "UParticleModuleRotation"
+            }, {
+              "AlphaOverLife" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : 1.000000,
+                "P1" : 1.000000,
+                "P2" : 1.000000,
+                "P3" : 0.000000
+              },
+              "ColorOverLife" : {
+                "Constant" : [1.000000, 1.000000, 1.000000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColorOverLife"
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 176,
+      "Type" : "UParticleEmitter"
+    }, {
+      "EmitterName" : "Emitter_2",
+      "InitialAllocationCount" : 0,
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDuration" : 1.000000,
+              "EmitterDurationLow" : 0.000000,
+              "EmitterLoops" : 0,
+              "Material" : {
+                "Overrides" : {
+                  "Scalars" : {
+
+                  },
+                  "Textures" : {
+                    "0" : "Data/Textures/T_Fire_E.PNG"
+                  },
+                  "Vectors" : {
+
+                  }
+                },
+                "ParentPath" : "Shaders/Materials/UberLit.hlsl"
+              },
+              "ScreenAlignment" : 1,
+              "Type" : "UParticleModuleRequired",
+              "bUseLocalSpace" : false
+            }, {
+              "Rate" : 38.000000,
+              "RateScale" : 1.000000,
+              "Type" : "UParticleModuleSpawn"
+            }, {
+              "StartAlpha" : {
+                "Constant" : 1.000000,
+                "DistributionType" : "Constant"
+              },
+              "StartColor" : {
+                "Constant" : [0.500000, 1.000000, 5.200000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColor"
+            }, {
+              "StartSize" : {
+                "DistributionType" : "Uniform",
+                "Max" : [2.300000, 6.800000, 1.000000],
+                "Min" : [1.800000, 6.400000, 1.000000]
+              },
+              "Type" : "UParticleModuleSize"
+            }, {
+              "SubImageIndex" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : 0.000000,
+                "P1" : 0.000000,
+                "P2" : 0.000000,
+                "P3" : 1.000000
+              },
+              "SubImages_Horizontal" : 7,
+              "SubImages_Vertical" : 8,
+              "Type" : "UParticleModuleSubUV"
+            }, {
+              "StartRotation" : {
+                "DistributionType" : "Uniform",
+                "Max" : 0.200000,
+                "Min" : -0.200000
+              },
+              "Type" : "UParticleModuleRotation"
+            }, {
+              "StartVelocity" : {
+                "DistributionType" : "Uniform",
+                "Max" : [0.200000, 0.200000, 7.800000],
+                "Min" : [-0.200000, -0.200000, 6.800000]
+              },
+              "StartVelocityRadial" : {
+                "Constant" : 0.000000,
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleVelocity",
+              "bApplyOwnerScale" : true,
+              "bInWorldSpace" : false
+            }, {
+              "Lifetime" : {
+                "DistributionType" : "Uniform",
+                "Max" : 0.300000,
+                "Min" : 0.200000
+              },
+              "Type" : "UParticleModuleLifetime"
+            }, {
+              "AlphaOverLife" : {
+                "DistributionType" : "Bezier",
+                "MaxInput" : 1.000000,
+                "MinInput" : 0.000000,
+                "P0" : 0.120000,
+                "P1" : 1.000000,
+                "P2" : 1.000000,
+                "P3" : 0.000000
+              },
+              "ColorOverLife" : {
+                "Constant" : [1.000000, 1.000000, 1.000000],
+                "DistributionType" : "Constant"
+              },
+              "Type" : "UParticleModuleColorOverLife"
+            }],
+          "bEnabled" : true
+        }],
+      "PeakActiveParticles" : 14,
+      "Type" : "UParticleEmitter"
+    }],
+  "Type" : "UParticleSystem"
+}

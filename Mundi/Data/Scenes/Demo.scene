@@ -1,0 +1,518 @@
+{
+  "Actors" : {
+    "1094" : {
+      "ObjectName" : "APlayerCameraManager_2",
+      "OwnedComponents" : [{
+          "Id" : 1095,
+          "ObjectName" : "USceneComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [5.350535, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1095,
+      "Tag" : "",
+      "Type" : "APlayerCameraManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1096" : {
+      "ObjectName" : "스태틱 메시_0",
+      "OwnedComponents" : [{
+          "BoxExtent" : [100.000000, 100.000000, 0.000000],
+          "Id" : 1098,
+          "ObjectName" : "UBoxComponent_2",
+          "ParentId" : 1099,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1099,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Model/diffuso.tif"
+                },
+                "Vectors" : {
+
+                }
+              },
+              "ParentPath" : "Shaders/Materials/UberLit.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_1",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.100000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "StaticMesh" : "Data/Model/Plane.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1099,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1101" : {
+      "ObjectName" : "방향성 라이트_0",
+      "OwnedComponents" : [{
+          "CascadedAreaColorDebugValue" : 0.000000,
+          "CascadedAreaShadowDebugValue" : -1,
+          "CascadedCount" : 4,
+          "CascadedLinearBlendingValue" : 0.500000,
+          "CascadedOverlapValue" : 0.200000,
+          "Id" : 1103,
+          "Intensity" : 1.000000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "ObjectName" : "UDirectionalLightComponent_2",
+          "ParentId" : 0,
+          "RelativeLocation" : [1.409060, -0.485474, 1.662980],
+          "RelativeRotationEuler" : [-14.072935, 38.393116, -133.965561],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000010,
+          "ShadowResolutionScale" : 2048,
+          "ShadowSharpen" : 0.500000,
+          "ShadowSlopeBias" : 0.000010,
+          "Temperature" : 6500.000000,
+          "Type" : "UDirectionalLightComponent",
+          "bCascaded" : true,
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1103,
+      "Tag" : "",
+      "Type" : "ADirectionalLightActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1104" : {
+      "ObjectName" : "파티클 액터_0",
+      "OwnedComponents" : [{
+          "Id" : 1106,
+          "ObjectName" : "UParticleSystemComponent_5",
+          "ParentId" : 0,
+          "RelativeLocation" : [21.414295, 74.804001, 4.162640],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Template" : "Data/Particle/Electricity.particle",
+          "Type" : "UParticleSystemComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1106,
+      "Tag" : "",
+      "Type" : "AParticleSystemActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1107" : {
+      "ObjectName" : "스태틱 메시_0",
+      "OwnedComponents" : [{
+          "Id" : 1109,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [25.000000, -75.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1109,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1110" : {
+      "ObjectName" : "AStaticMeshActor_0",
+      "OwnedComponents" : [{
+          "Id" : 1112,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [25.000000, -25.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1112,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1113" : {
+      "ObjectName" : "AStaticMeshActor_1",
+      "OwnedComponents" : [{
+          "Id" : 1115,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [25.000000, 25.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1115,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1116" : {
+      "ObjectName" : "AStaticMeshActor_2",
+      "OwnedComponents" : [{
+          "Id" : 1118,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [25.000000, 75.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1118,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1119" : {
+      "ObjectName" : "AStaticMeshActor_3",
+      "OwnedComponents" : [{
+          "Id" : 1121,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [-40.000000, 75.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1121,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1122" : {
+      "ObjectName" : "AStaticMeshActor_4",
+      "OwnedComponents" : [{
+          "Id" : 1124,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [-40.000000, 25.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1124,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1125" : {
+      "ObjectName" : "AStaticMeshActor_5",
+      "OwnedComponents" : [{
+          "Id" : 1127,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [-40.000000, -25.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1127,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1128" : {
+      "ObjectName" : "AStaticMeshActor_6",
+      "OwnedComponents" : [{
+          "Id" : 1130,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Fbx Default Material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "MID_M_DemoWall_Inst_BaseFloor_Inst_0",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "M_DemoWall_Inst_NamePlate",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [-40.000000, -75.000000, 0.070148],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "StaticMesh" : "Data/Model/Overview.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1130,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1131" : {
+      "ObjectName" : "파티클 액터_0",
+      "OwnedComponents" : [{
+          "Id" : 1133,
+          "ObjectName" : "UParticleSystemComponent_7",
+          "ParentId" : 0,
+          "RelativeLocation" : [23.014011, -23.979584, 10.794269],
+          "RelativeRotationEuler" : [178.772964, -0.000000, -0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Template" : "Data/Particle/CollisionTest.particle",
+          "Type" : "UParticleSystemComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1133,
+      "Tag" : "",
+      "Type" : "AParticleSystemActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1134" : {
+      "ObjectName" : "파티클 액터_1",
+      "OwnedComponents" : [{
+          "Id" : 1136,
+          "ObjectName" : "UParticleSystemComponent_10",
+          "ParentId" : 0,
+          "RelativeLocation" : [20.000000, 25.000000, 5.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Template" : "Data/Particle/Smoke.particle",
+          "Type" : "UParticleSystemComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1136,
+      "Tag" : "",
+      "Type" : "AParticleSystemActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1137" : {
+      "ObjectName" : "파티클 액터_0",
+      "OwnedComponents" : [{
+          "Id" : 1139,
+          "ObjectName" : "UParticleSystemComponent_11",
+          "ParentId" : 0,
+          "RelativeLocation" : [-43.958939, 76.412964, 3.544425],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Template" : "Data/Particle/FireWithSmoke.particle",
+          "Type" : "UParticleSystemComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1139,
+      "Tag" : "",
+      "Type" : "AParticleSystemActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    }
+  },
+  "NextUUID" : 1685,
+  "PerspectiveCamera" : {
+    "FOV" : [60.000000],
+    "FarClip" : [2000.000000],
+    "Location" : [70.111610, 76.239807, 24.243641],
+    "NearClip" : [0.100000],
+    "Rotation" : [0.000000, 11.999791, -160.303101]
+  },
+  "Version" : 1
+}
