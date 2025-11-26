@@ -1,6 +1,11 @@
 #pragma once
 
 class UParticleModuleTypeDataMesh;
+class UParticleModuleTypeDataBeam;
+class UParticleModuleTypeDataRibbon;
+struct FBeamSegment;
+struct FBeamParticlePayloadData;
+struct FRibbonParticlePayloadData;
 struct FDynamicEmitterReplayDataBase;
 struct FDynamicEmitterDataBase;
 class UParticleModule;
@@ -305,4 +310,101 @@ protected:
 	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
 
 	class FDynamicMeshEmitterData* NewEmitterData;
+};
+
+/*-----------------------------------------------------------------------------
+	ParticleBeamEmitterInstance
+-----------------------------------------------------------------------------*/
+
+struct FParticleBeamEmitterInstance : public FParticleEmitterInstance
+{
+	UParticleModuleTypeDataBeam* BeamTypeData;
+
+	/** 빔 페이로드 오프셋 */
+	int32 BeamPayloadOffset;
+
+	/** 세그먼트 데이터 저장소 (렌더링에 사용) */
+	TArray<FBeamSegment> SegmentData;
+
+	FParticleBeamEmitterInstance(UParticleSystemComponent* InComponent);
+
+	virtual ~FParticleBeamEmitterInstance();
+
+	//~ FParticleEmitterInstance 인터페이스 구현
+	virtual void InitParameters(UParticleEmitter* InTemplate) override;
+	virtual void Init() override;
+
+	/** 빔 페이로드 크기 반환 */
+	virtual uint32 RequiredBytes() override;
+
+	/** 빔 초기화 (Source/Target 계산) */
+	virtual void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
+
+	/** 빔 업데이트 (노이즈, 세그먼트 재계산) */
+	virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
+
+	/** 렌더링 데이터 생성 */
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
+	virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
+
+protected:
+	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
+
+	/** Source 위치 계산 */
+	FVector CalculateSourcePoint(FBaseParticle* Particle);
+
+	/** Target 위치 계산 */
+	FVector CalculateTargetPoint(FBaseParticle* Particle);
+
+	/** 세그먼트 생성 (Source → Target 사이 분할) */
+	void BuildSegments(FBaseParticle* Particle, FBeamParticlePayloadData* PayloadData);
+
+	/** 노이즈 적용 */
+	void ApplyNoise(FBeamParticlePayloadData* PayloadData, float DeltaTime);
+
+	class FDynamicBeamEmitterData* NewEmitterData;
+};
+
+/*-----------------------------------------------------------------------------
+	ParticleRibbonEmitterInstance
+-----------------------------------------------------------------------------*/
+
+struct FParticleRibbonEmitterInstance : public FParticleEmitterInstance
+{
+	UParticleModuleTypeDataRibbon* RibbonTypeData;
+
+	/** 리본 페이로드 오프셋 */
+	int32 RibbonPayloadOffset;
+
+	/** 마지막 샘플링 시간 (SpawnInterval용) */
+	float LastSampleTime;
+
+	FParticleRibbonEmitterInstance(UParticleSystemComponent* InComponent);
+
+	virtual ~FParticleRibbonEmitterInstance();
+
+	//~ FParticleEmitterInstance 인터페이스 구현
+	virtual void InitParameters(UParticleEmitter* InTemplate) override;
+	virtual void Init() override;
+
+	/** 리본 페이로드 크기 반환 */
+	virtual uint32 RequiredBytes() override;
+
+	/** 리본 초기화 (히스토리 초기화) */
+	virtual void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
+
+	/** 리본 업데이트 (히스토리에 위치 추가) */
+	virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
+
+	/** 렌더링 데이터 생성 */
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
+	virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
+
+protected:
+	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
+
+	/** 히스토리에 새 포인트 추가 */
+	void AddTrailPoint(FRibbonParticlePayloadData* PayloadData, const FVector& Position);
+
+	class FDynamicRibbonEmitterData* NewEmitterData;
 };

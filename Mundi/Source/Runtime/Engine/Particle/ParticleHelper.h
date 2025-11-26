@@ -135,6 +135,125 @@ struct FMeshRotationPayloadData
 	FVector RotationRateBase;
 };
 
+/*-----------------------------------------------------------------------------
+	Beam Particle Data
+-----------------------------------------------------------------------------*/
+
+/** 빔 세그먼트 데이터 */
+struct FBeamSegment
+{
+	FVector Position;    // 세그먼트 위치
+	FVector Tangent;     // 방향 벡터
+	float Width;         // 해당 위치에서의 너비
+	float TexCoord;      // UV 좌표 (0~1 또는 타일링)
+};
+
+/** 빔 파티클 페이로드 */
+struct FBeamParticlePayloadData
+{
+	FVector SourcePoint;           // 시작점
+	FVector TargetPoint;           // 끝점
+	FVector SourceTangent;         // 시작 방향
+	FVector TargetTangent;         // 끝 방향
+
+	int32 SegmentCount;            // 세그먼트 수
+	float BeamLength;              // 빔 전체 길이
+
+	// 노이즈 관련
+	float NoiseSeed;               // 노이즈 시드 (일관된 노이즈를 위해)
+	float NoiseTime;               // 노이즈 애니메이션 시간
+};
+
+/** GPU에 전달되는 빔 파티클 데이터 (셰이더의 FBeamParticleData와 일치) */
+struct alignas(16) FBeamParticleVertex
+{
+	/** 시작점 */
+	FVector SourcePoint;
+	/** 너비 */
+	float Width;
+
+	/** 끝점 */
+	FVector TargetPoint;
+	/** 텍스처 타일링 횟수 */
+	float TextureTile;
+
+	/** 색상 */
+	FLinearColor Color;
+
+	/** Source 굵기 배율 */
+	float SourceTaper;
+	/** Target 굵기 배율 */
+	float TargetTaper;
+	/** 노이즈 강도 */
+	float NoiseStrength;
+	/** 노이즈 시간 (애니메이션용) */
+	float NoiseTime;
+
+	/** 텍스처 스크롤 속도 */
+	float TextureScrollSpeed;
+	/** 두께 펄스 속도 */
+	float PulseSpeed;
+	/** 두께 펄스 스케일 (0이면 비활성화) */
+	float PulseScale;
+	/** 노이즈 옥타브 수 (1~4) */
+	float NoiseOctaves;
+};
+
+/*-----------------------------------------------------------------------------
+	Ribbon Particle Data
+-----------------------------------------------------------------------------*/
+
+/** 리본 트레일 포인트 */
+struct FRibbonTrailPoint
+{
+	FVector Position;    // 월드 위치
+	float Width;         // 해당 위치에서의 너비
+	float Age;           // 이 포인트의 나이 (초)
+	float TexCoord;      // UV 좌표
+};
+
+/** 리본 파티클 페이로드 - 각 파티클이 갖는 히스토리 */
+struct FRibbonParticlePayloadData
+{
+	static const int32 MAX_TRAIL_POINTS = 64;
+
+	FVector PositionHistory[MAX_TRAIL_POINTS];  // 위치 히스토리 (링 버퍼)
+	float AgeHistory[MAX_TRAIL_POINTS];         // 각 포인트의 나이
+	int32 HeadIndex;                            // 가장 최근 포인트 인덱스
+	int32 PointCount;                           // 현재 포인트 수
+	float TotalLength;                          // 리본 전체 길이
+};
+
+/** GPU에 전달되는 리본 세그먼트 데이터 */
+struct alignas(16) FRibbonSegmentVertex
+{
+	/** 세그먼트 시작 위치 */
+	FVector Position0;
+	float Width0;
+
+	/** 세그먼트 끝 위치 */
+	FVector Position1;
+	float Width1;
+
+	/** 색상 */
+	FLinearColor Color;
+
+	/** UV 좌표 */
+	float TexCoord0;
+	float TexCoord1;
+	/** 알파 페이드 (0: 꼬리, 1: 머리) */
+	float Alpha0;
+	float Alpha1;
+};
+
+/** 리본 정점 (CPU에서 빌보드 계산 완료) */
+struct FRibbonVertex
+{
+	FVector Position;    // 월드 위치 (빌보드 오프셋 적용됨)
+	FVector2D UV;        // 텍스처 좌표
+	FLinearColor Color;  // 색상 (알파 포함)
+};
+
 struct FParticleCollisionPayload
 {
 	int32 UsedCollisions;
@@ -282,6 +401,97 @@ struct FDynamicMeshEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 	}
 };
 
+struct FDynamicBeamEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
+{
+	/** 빔 페이로드 오프셋 */
+	int32 BeamPayloadOffset;
+
+	/** 세그먼트 수 */
+	int32 MaxSegments;
+
+	/** 텍스처 타일링 횟수 */
+	float TextureTile;
+
+	/** Source 굵기 배율 */
+	float SourceTaperScale;
+
+	/** Target 굵기 배율 */
+	float TargetTaperScale;
+
+	/** 노이즈 강도 */
+	float NoiseStrength;
+
+	/** 텍스처 스크롤 속도 */
+	float TextureScrollSpeed;
+
+	/** 두께 펄스 속도 */
+	float PulseSpeed;
+
+	/** 두께 펄스 스케일 (0이면 비활성화) */
+	float PulseScale;
+
+	/** 노이즈 옥타브 수 (1~4) */
+	float NoiseOctaves;
+
+	/** 세그먼트 데이터 배열 */
+	TArray<FBeamSegment> SegmentData;
+
+	FDynamicBeamEmitterReplayData()
+		: BeamPayloadOffset(0)
+		, MaxSegments(0)
+		, TextureTile(1.0f)
+		, SourceTaperScale(1.0f)
+		, TargetTaperScale(1.0f)
+		, NoiseStrength(0.0f)
+		, TextureScrollSpeed(0.0f)
+		, PulseSpeed(5.0f)
+		, PulseScale(0.0f)
+		, NoiseOctaves(1.0f)
+	{
+		eEmitterType = DET_Beam2;
+	}
+};
+
+struct FDynamicRibbonEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
+{
+	/** 리본 페이로드 오프셋 */
+	int32 RibbonPayloadOffset;
+
+	/** 트레일당 최대 파티클 수 */
+	int32 MaxTrailCount;
+
+	/** 텍스처 타일링 횟수 */
+	float TextureTile;
+
+	/** 꼬리 쪽 너비 배율 */
+	float TailWidthScale;
+
+	/** 꼬리 쪽 알파 배율 */
+	float TailAlphaScale;
+
+	/** 텍스처 스크롤 속도 */
+	float TextureScrollSpeed;
+
+	/** 리본 너비 */
+	float RibbonWidth;
+
+	/** 트레일 포인트 수명 */
+	float TrailLifetime;
+
+	FDynamicRibbonEmitterReplayData()
+		: RibbonPayloadOffset(0)
+		, MaxTrailCount(32)
+		, TextureTile(1.0f)
+		, TailWidthScale(0.0f)
+		, TailAlphaScale(0.0f)
+		, TextureScrollSpeed(0.0f)
+		, RibbonWidth(10.0f)
+		, TrailLifetime(1.0f)
+	{
+		eEmitterType = DET_Ribbon;
+	}
+};
+
 // ===== Dynamic Emitter Data =====
 
 /** 모든 이미터 타입에 대한 베이스 클래스 */
@@ -402,4 +612,88 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 	FDynamicMeshEmitterReplayData Source;
 
 	UStaticMesh* StaticMesh;
+};
+
+struct FParticleBeamEmitterInstance;
+
+struct FDynamicBeamEmitterData : public FDynamicSpriteEmitterDataBase
+{
+	FDynamicBeamEmitterData();
+
+	virtual ~FDynamicBeamEmitterData();
+
+	void Init(bool bInSelected, const FParticleBeamEmitterInstance* InEmitterInstance);
+
+	virtual int32 GetDynamicParameterVertexStride() const override
+	{
+		return sizeof(FBeamParticleVertex);
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase* GetSourceData() const override
+	{
+		return &Source;
+	}
+
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) override;
+
+	FDynamicBeamEmitterReplayData Source;
+
+	/** 빔 정점 버퍼 (현재 미사용) */
+	ID3D11Buffer* BeamVertexBuffer = nullptr;
+
+	/** 빔 인덱스 버퍼 (현재 미사용) */
+	ID3D11Buffer* BeamIndexBuffer = nullptr;
+
+	/** 캐시된 세그먼트 수 (현재 미사용) */
+	int32 CachedSegmentCount = 0;
+
+	// 스프라이트와 동일한 방식을 위한 버퍼
+	ID3D11Buffer* VertexBuffer = nullptr;
+	ID3D11Buffer* IndexBuffer = nullptr;
+};
+
+struct FDynamicRibbonEmitterData : public FDynamicSpriteEmitterDataBase
+{
+	FDynamicRibbonEmitterData();
+
+	virtual ~FDynamicRibbonEmitterData();
+
+	void Init(bool bInSelected, const FParticleRibbonEmitterInstance* InEmitterInstance);
+
+	virtual int32 GetDynamicParameterVertexStride() const override
+	{
+		return sizeof(FRibbonSegmentVertex);
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase* GetSourceData() const override
+	{
+		return &Source;
+	}
+
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) override;
+
+	FDynamicRibbonEmitterReplayData Source;
+
+	// 리본 메시용 버퍼
+	ID3D11Buffer* VertexBuffer = nullptr;
+	ID3D11Buffer* IndexBuffer = nullptr;
+
+	/** 현재 인덱스 카운트 */
+	int32 CurrentIndexCount = 0;
+
+	// 동적 정점/인덱스 버퍼 (static 변수 대신 멤버로 이동)
+	ID3D11Buffer* DynamicVertexBuffer = nullptr;
+	uint32 DynamicVertexBufferSize = 0;
+	ID3D11Buffer* DynamicIndexBuffer = nullptr;
+	uint32 DynamicIndexBufferSize = 0;
 };

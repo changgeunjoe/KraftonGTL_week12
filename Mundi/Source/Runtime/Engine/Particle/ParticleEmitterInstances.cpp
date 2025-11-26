@@ -10,6 +10,8 @@
 #include "ParticleModuleSpawn.h"
 #include "ParticleModuleTypeDataBase.h"
 #include "ParticleModuleTypeDataMesh.h"
+#include "ParticleModuleTypeDataBeam.h"
+#include "ParticleModuleTypeDataRibbon.h"
 #include "ParticleSystemComponent.h"
 #include "ParticleModuleSubUV.h"
 
@@ -714,7 +716,12 @@ void FParticleEmitterInstance::UpdateTransforms()
 	FMatrix ComponentToWorld = Component->GetWorldTransform().ToMatrix();
 	// @todo 현재는 RequiredModule에 EmitterOrigin, EmitterRotation과 같은 오프셋 정보가 없음
 	FMatrix EmitterToComponent = FMatrix::Identity();
-
+	if (!LODLevel) {
+		return;
+	}
+	if (!LODLevel->RequiredModule) {
+		return;
+	}
 	if (LODLevel->RequiredModule->bUseLocalSpace)
 	{
 		EmitterToSimulation = EmitterToComponent;
@@ -1014,4 +1021,580 @@ FDynamicEmitterReplayDataBase* FParticleMeshEmitterInstance::GetReplayData()
         return nullptr;
     }
     return ReplayData;
+}
+
+/*-----------------------------------------------------------------------------
+	FParticleBeamEmitterInstance
+-----------------------------------------------------------------------------*/
+
+FParticleBeamEmitterInstance::FParticleBeamEmitterInstance(UParticleSystemComponent* InComponent)
+    : FParticleEmitterInstance(InComponent)
+    , BeamTypeData(nullptr)
+    , BeamPayloadOffset(0)
+    , NewEmitterData(nullptr)
+{
+    NewEmitterData = new FDynamicBeamEmitterData();
+}
+
+FParticleBeamEmitterInstance::~FParticleBeamEmitterInstance()
+{
+    if (NewEmitterData)
+    {
+        delete NewEmitterData;
+        NewEmitterData = nullptr;
+    }
+}
+
+void FParticleBeamEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
+{
+    FParticleEmitterInstance::InitParameters(InTemplate);
+
+    UParticleLODLevel* LODLevel = InTemplate->GetLODLevel(0);
+    assert(LODLevel);
+    BeamTypeData = Cast<UParticleModuleTypeDataBeam>(LODLevel->TypeDataModule);
+    assert(BeamTypeData);
+}
+
+void FParticleBeamEmitterInstance::Init()
+{
+    FParticleEmitterInstance::Init();
+
+    // 세그먼트 배열 초기화
+    int32 MaxSegments = BeamTypeData ? BeamTypeData->MaxBeamCount + 1 : 11;
+    SegmentData.Reserve(MaxSegments);
+}
+
+uint32 FParticleBeamEmitterInstance::RequiredBytes()
+{
+    uint32 Bytes = FParticleEmitterInstance::RequiredBytes();
+
+    BeamPayloadOffset = PayloadOffset + Bytes;
+    Bytes += sizeof(FBeamParticlePayloadData);
+
+    return Bytes;
+}
+
+FVector FParticleBeamEmitterInstance::CalculateSourcePoint(FBaseParticle* Particle)
+{
+    FVector SourcePoint = FVector::Zero();
+
+    switch (BeamTypeData->BeamSourceMethod)
+    {
+    case PEB2M_Emitter:
+        // 이미터 위치 사용
+        SourcePoint = Location;
+        break;
+
+    case PEB2M_Distance:
+    case PEB2M_Target:
+    default:
+        SourcePoint = Location;
+        break;
+    }
+
+    // Source 오프셋 적용
+    FVector Offset = BeamTypeData->SourceOffset.GetValue(Particle->RelativeTime);
+    SourcePoint += Offset;
+
+    return SourcePoint;
+}
+
+FVector FParticleBeamEmitterInstance::CalculateTargetPoint(FBaseParticle* Particle)
+{
+    FVector TargetPoint = FVector::Zero();
+    FVector SourcePoint = CalculateSourcePoint(Particle);
+
+    switch (BeamTypeData->BeamTargetMethod)
+    {
+    case PEB2M_Distance:
+    {
+        // 지정된 거리만큼 떨어진 위치
+        float Distance = BeamTypeData->TargetDistance.GetValue(Particle->RelativeTime);
+        FVector Direction = BeamTypeData->TargetDirection.GetSafeNormal();
+        if (Direction.IsZero())
+        {
+            Direction = FVector(1.0f, 0.0f, 0.0f);
+        }
+        TargetPoint = SourcePoint + Direction * Distance;
+        break;
+    }
+
+    case PEB2M_Emitter:
+    case PEB2M_Target:
+    default:
+    {
+        // 기본값: Distance 모드와 동일
+        float Distance = BeamTypeData->TargetDistance.GetValue(Particle->RelativeTime);
+        FVector Direction = BeamTypeData->TargetDirection.GetSafeNormal();
+        if (Direction.IsZero())
+        {
+            Direction = FVector(1.0f, 0.0f, 0.0f);
+        }
+        TargetPoint = SourcePoint + Direction * Distance;
+        break;
+    }
+    }
+
+    // Target 오프셋 적용
+    FVector Offset = BeamTypeData->TargetOffset.GetValue(Particle->RelativeTime);
+    TargetPoint += Offset;
+
+    return TargetPoint;
+}
+
+void FParticleBeamEmitterInstance::BuildSegments(FBaseParticle* Particle, FBeamParticlePayloadData* PayloadData)
+{
+    FVector Source = PayloadData->SourcePoint;
+    FVector Target = PayloadData->TargetPoint;
+    FVector Direction = Target - Source;
+    float Length = Direction.Size();
+
+    if (Length < KINDA_SMALL_NUMBER)
+    {
+        Length = 1.0f;
+        Direction = FVector(1.0f, 0.0f, 0.0f);
+    }
+    else
+    {
+        Direction /= Length;
+    }
+
+    int32 NumSegments = BeamTypeData->MaxBeamCount;
+    if (NumSegments < 1) NumSegments = 1;
+
+    SegmentData.SetNum(NumSegments + 1);  // +1 for end point
+
+    for (int32 i = 0; i <= NumSegments; i++)
+    {
+        float T = (float)i / NumSegments;  // 0.0 ~ 1.0
+
+        FBeamSegment& Seg = SegmentData[i];
+        Seg.Position = FMath::Lerp(Source, Target, T);
+        Seg.Tangent = Direction;
+
+        // 너비 계산
+        float Width = BeamTypeData->BeamWidth.GetValue(Particle->RelativeTime);
+
+        // Taper (굵기 변화) 적용
+        switch (BeamTypeData->TaperMethod)
+        {
+        case PEBTM_Full:
+        {
+            float TaperScale = FMath::Lerp(BeamTypeData->SourceTaperScale, BeamTypeData->TargetTaperScale, T);
+            Width *= TaperScale;
+            break;
+        }
+        case PEBTM_Partial:
+        {
+            // 중간이 가장 굵음
+            float TaperScale = std::sin(T * PI);
+            Width *= TaperScale;
+            break;
+        }
+        case PEBTM_None:
+        default:
+            break;
+        }
+
+        Seg.Width = Width;
+
+        // UV 계산
+        if (BeamTypeData->TextureTile > 0)
+        {
+            Seg.TexCoord = T * BeamTypeData->TextureTile;
+        }
+        else
+        {
+            Seg.TexCoord = T;
+        }
+    }
+
+    PayloadData->SegmentCount = NumSegments;
+    PayloadData->BeamLength = Length;
+}
+
+void FParticleBeamEmitterInstance::ApplyNoise(FBeamParticlePayloadData* PayloadData, float DeltaTime)
+{
+    if (!BeamTypeData->bUseNoise) return;
+    if (SegmentData.Num() < 3) return;  // 최소 3개 (시작, 중간, 끝) 필요
+
+    PayloadData->NoiseTime += DeltaTime * BeamTypeData->NoiseSpeed;
+
+    float Strength = BeamTypeData->NoiseStrength.GetValue(0);
+
+    // 시작점과 끝점은 노이즈 적용 안함
+    for (int32 i = 1; i < SegmentData.Num() - 1; i++)
+    {
+        float T = (float)i / (SegmentData.Num() - 1);
+
+        // 중앙으로 갈수록 노이즈 강해짐 (0 → 1 → 0)
+        float NoiseScale = sin(T * PI) * Strength;
+
+        // 간단한 사인 기반 노이즈 (Perlin 대신)
+        float Phase = PayloadData->NoiseSeed + PayloadData->NoiseTime;
+        float NoiseX = sin(Phase + i * 1.7f) * cos(Phase * 0.7f + i * 0.5f);
+        float NoiseY = cos(Phase + i * 2.3f) * sin(Phase * 0.5f + i * 0.3f);
+
+        // 빔 방향에 수직인 방향으로 오프셋
+        FVector Right = FVector::Cross(SegmentData[i].Tangent, FVector(0.0f, 0.0f, 1.0f));
+        if (Right.IsZero())
+        {
+            Right = FVector::Cross(SegmentData[i].Tangent, FVector(0.0f, 1.0f, 0.0f));
+        }
+        Right.Normalize();
+
+        FVector Up = FVector::Cross(Right, SegmentData[i].Tangent);
+        Up.Normalize();
+
+        SegmentData[i].Position += Right * NoiseX * NoiseScale;
+        SegmentData[i].Position += Up * NoiseY * NoiseScale;
+    }
+}
+
+void FParticleBeamEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
+{
+    FParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
+
+    FBeamParticlePayloadData* PayloadData = (FBeamParticlePayloadData*)((uint8*)Particle + BeamPayloadOffset);
+
+    // Source/Target 계산
+    PayloadData->SourcePoint = CalculateSourcePoint(Particle);
+    PayloadData->TargetPoint = CalculateTargetPoint(Particle);
+
+    // 방향 벡터 계산
+    FVector Dir = (PayloadData->TargetPoint - PayloadData->SourcePoint).GetSafeNormal();
+    PayloadData->SourceTangent = Dir;
+    PayloadData->TargetTangent = Dir;
+
+    // 노이즈 초기화
+    PayloadData->NoiseSeed = rand() * 1000.0f;
+    PayloadData->NoiseTime = 0.0f;
+
+    // 세그먼트 생성
+    BuildSegments(Particle, PayloadData);
+}
+
+void FParticleBeamEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
+{
+    FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
+
+    if (bEnabled && ActiveParticles > 0)
+    {
+        for (int32 i = 0; i < ActiveParticles; i++)
+        {
+            DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+            FBeamParticlePayloadData* PayloadData = (FBeamParticlePayloadData*)((uint8*)&Particle + BeamPayloadOffset);
+
+            // Source/Target 업데이트 (이미터가 움직였을 수 있음)
+            PayloadData->SourcePoint = CalculateSourcePoint(&Particle);
+            PayloadData->TargetPoint = CalculateTargetPoint(&Particle);
+
+            // 세그먼트 재생성
+            BuildSegments(&Particle, PayloadData);
+
+            // 노이즈 적용
+            ApplyNoise(PayloadData, DeltaTime);
+        }
+    }
+}
+
+FDynamicEmitterDataBase* FParticleBeamEmitterInstance::GetDynamicData(bool bSelected)
+{
+    if (ActiveParticles <= 0)
+    {
+        return nullptr;
+    }
+
+    if (!FillReplayData(NewEmitterData->Source))
+    {
+        return nullptr;
+    }
+
+    NewEmitterData->Init(bSelected, this);
+
+    return NewEmitterData;
+}
+
+bool FParticleBeamEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+    if (!FParticleEmitterInstance::FillReplayData(OutData))
+    {
+        return false;
+    }
+
+    OutData.eEmitterType = DET_Beam2;
+
+    FDynamicBeamEmitterReplayData* BeamReplayData = static_cast<FDynamicBeamEmitterReplayData*>(&OutData);
+
+    // 머티리얼 설정 (스프라이트와 동일하게 머티리얼에서 텍스처를 가져옴)
+    BeamReplayData->MaterialInterface = CurrentMaterial;
+    BeamReplayData->BeamPayloadOffset = BeamPayloadOffset;
+    BeamReplayData->MaxSegments = BeamTypeData ? BeamTypeData->MaxBeamCount : 10;
+    BeamReplayData->TextureTile = BeamTypeData ? BeamTypeData->TextureTile : 1.0f;
+    BeamReplayData->SourceTaperScale = BeamTypeData ? BeamTypeData->SourceTaperScale : 1.0f;
+    BeamReplayData->TargetTaperScale = BeamTypeData ? BeamTypeData->TargetTaperScale : 1.0f;
+    BeamReplayData->NoiseStrength = BeamTypeData ? BeamTypeData->NoiseStrength.GetValue(0.0f) : 0.0f;
+    BeamReplayData->TextureScrollSpeed = BeamTypeData ? BeamTypeData->TextureScrollSpeed : 0.0f;
+    BeamReplayData->PulseSpeed = BeamTypeData ? BeamTypeData->PulseSpeed : 5.0f;
+    BeamReplayData->PulseScale = BeamTypeData ? BeamTypeData->PulseScale : 0.0f;
+    BeamReplayData->NoiseOctaves = BeamTypeData ? BeamTypeData->NoiseOctaves : 1.0f;
+
+    // 세그먼트 데이터 복사
+    BeamReplayData->SegmentData = SegmentData;
+
+    return true;
+}
+
+FDynamicEmitterReplayDataBase* FParticleBeamEmitterInstance::GetReplayData()
+{
+    if (ActiveParticles <= 0 || !bEnabled) return nullptr;
+
+    FDynamicBeamEmitterReplayData* ReplayData = new FDynamicBeamEmitterReplayData();
+    if (!FillReplayData(*ReplayData))
+    {
+        delete ReplayData;
+        return nullptr;
+    }
+    return ReplayData;
+}
+
+/*-----------------------------------------------------------------------------
+    FParticleRibbonEmitterInstance
+-----------------------------------------------------------------------------*/
+
+FParticleRibbonEmitterInstance::FParticleRibbonEmitterInstance(UParticleSystemComponent* InComponent)
+    : FParticleEmitterInstance(InComponent)
+    , RibbonTypeData(nullptr)
+    , RibbonPayloadOffset(0)
+    , LastSampleTime(0.0f)
+    , NewEmitterData(nullptr)
+{
+}
+
+FParticleRibbonEmitterInstance::~FParticleRibbonEmitterInstance()
+{
+    if (NewEmitterData)
+    {
+        delete NewEmitterData;
+        NewEmitterData = nullptr;
+    }
+}
+
+void FParticleRibbonEmitterInstance::InitParameters(UParticleEmitter* InTemplate)
+{
+    FParticleEmitterInstance::InitParameters(InTemplate);
+
+    // TypeData 모듈 찾기
+    if (CurrentLODLevel && CurrentLODLevel->TypeDataModule)
+    {
+        RibbonTypeData = Cast<UParticleModuleTypeDataRibbon>(CurrentLODLevel->TypeDataModule);
+    }
+}
+
+void FParticleRibbonEmitterInstance::Init()
+{
+    FParticleEmitterInstance::Init();
+    LastSampleTime = 0.0f;
+}
+
+uint32 FParticleRibbonEmitterInstance::RequiredBytes()
+{
+    // 리본 페이로드 크기를 반환 (히스토리 데이터 포함)
+    RibbonPayloadOffset = PayloadOffset;
+    return sizeof(FRibbonParticlePayloadData);
+}
+
+void FParticleRibbonEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
+{
+    FParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
+
+    // 리본 페이로드 초기화
+    FRibbonParticlePayloadData* RibbonPayload = reinterpret_cast<FRibbonParticlePayloadData*>(
+        reinterpret_cast<uint8*>(Particle) + RibbonPayloadOffset);
+
+    // 로컬 스페이스 사용 여부 확인
+    bool bUseLocalSpace = CurrentLODLevel && CurrentLODLevel->RequiredModule && CurrentLODLevel->RequiredModule->bUseLocalSpace;
+
+    // 월드 위치 계산
+    FVector WorldPosition;
+    if (bUseLocalSpace)
+    {
+        WorldPosition = SimulationToWorld.TransformPosition(Particle->Location);
+    }
+    else
+    {
+        // 월드 스페이스: 이미터의 현재 월드 위치 사용
+        WorldPosition = Component->GetWorldTransform().Translation;
+    }
+
+    // 히스토리 초기화
+    RibbonPayload->HeadIndex = 0;
+    RibbonPayload->PointCount = 1;
+    RibbonPayload->TotalLength = 0.0f;
+    RibbonPayload->PositionHistory[0] = WorldPosition;
+    RibbonPayload->AgeHistory[0] = 0.0f;
+}
+
+void FParticleRibbonEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
+{
+    // 리본은 파티클 1개만 사용 - 이미 파티클이 있으면 스폰 억제
+    bool bSuppressForRibbon = (ActiveParticles >= 1);
+
+    // 기본 파티클 틱 처리
+    FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning || bSuppressForRibbon);
+
+    // 리본 히스토리 업데이트
+    float MinSpawnDistance = RibbonTypeData ? RibbonTypeData->MinSpawnDistance : 5.0f;
+    int32 MaxTrailCount = RibbonTypeData ? RibbonTypeData->MaxTrailCount : 32;
+
+    // 로컬 스페이스 사용 여부 확인
+    bool bUseLocalSpace = CurrentLODLevel && CurrentLODLevel->RequiredModule && CurrentLODLevel->RequiredModule->bUseLocalSpace;
+
+    // 모든 활성 파티클의 히스토리 업데이트
+    for (int32 i = 0; i < ActiveParticles; ++i)
+    {
+        int32 ParticleIndex = ParticleIndices ? ParticleIndices[i] : i;
+        FBaseParticle* Particle = reinterpret_cast<FBaseParticle*>(ParticleData + ParticleIndex * ParticleStride);
+        FRibbonParticlePayloadData* RibbonPayload = reinterpret_cast<FRibbonParticlePayloadData*>(
+            reinterpret_cast<uint8*>(Particle) + RibbonPayloadOffset);
+
+        // 리본 파티클은 수명 무한 (RelativeTime이 1을 넘지 않도록)
+        // 리본의 사라짐은 TrailLifetime으로 제어
+        Particle->RelativeTime = 0.0f;
+
+        // 월드 위치 계산
+        FVector WorldPosition;
+        if (bUseLocalSpace)
+        {
+            // 로컬 스페이스: 파티클 로컬 위치를 월드로 변환
+            WorldPosition = SimulationToWorld.TransformPosition(Particle->Location);
+        }
+        else
+        {
+            // 월드 스페이스: 이미터의 현재 월드 위치 사용
+            WorldPosition = Component->GetWorldTransform().Translation;
+        }
+
+        // 현재 위치와 마지막 히스토리 위치의 거리 계산
+        FVector LastPos = RibbonPayload->PositionHistory[RibbonPayload->HeadIndex];
+        float Distance = (WorldPosition - LastPos).Size();
+
+        // 최소 거리 이상 이동했으면 새 포인트 추가
+        if (Distance >= MinSpawnDistance)
+        {
+            AddTrailPoint(RibbonPayload, WorldPosition);
+        }
+
+        // 히스토리의 나이 업데이트
+        for (int32 j = 0; j < RibbonPayload->PointCount; ++j)
+        {
+            int32 Idx = (RibbonPayload->HeadIndex - j + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+            RibbonPayload->AgeHistory[Idx] += DeltaTime;
+        }
+
+        // MaxTrailCount 제한 적용 (포인트 수 기반으로 꼬리가 바로 따라옴)
+        if (RibbonPayload->PointCount > MaxTrailCount)
+        {
+            RibbonPayload->PointCount = MaxTrailCount;
+        }
+
+        // 멈춰있을 때도 꼬리가 따라오도록: 매 프레임 오래된 포인트 하나씩 제거
+        // (새 포인트가 추가되지 않아도 꼬리가 줄어듦)
+        float TrailLifetime = RibbonTypeData ? RibbonTypeData->TrailLifetime : 1.0f;
+        if (RibbonPayload->PointCount > 1)
+        {
+            int32 TailIdx = (RibbonPayload->HeadIndex - RibbonPayload->PointCount + 1 + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+            if (RibbonPayload->AgeHistory[TailIdx] > TrailLifetime)
+            {
+                RibbonPayload->PointCount--;
+            }
+        }
+    }
+
+    LastSampleTime += DeltaTime;
+}
+
+void FParticleRibbonEmitterInstance::AddTrailPoint(FRibbonParticlePayloadData* PayloadData, const FVector& Position)
+{
+    // 링 버퍼에 새 포인트 추가
+    PayloadData->HeadIndex = (PayloadData->HeadIndex + 1) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+    PayloadData->PositionHistory[PayloadData->HeadIndex] = Position;
+    PayloadData->AgeHistory[PayloadData->HeadIndex] = 0.0f;
+
+    // 포인트 수 증가 (최대값 제한)
+    if (PayloadData->PointCount < FRibbonParticlePayloadData::MAX_TRAIL_POINTS)
+    {
+        PayloadData->PointCount++;
+    }
+
+    // 전체 길이 재계산
+    PayloadData->TotalLength = 0.0f;
+    for (int32 i = 1; i < PayloadData->PointCount; ++i)
+    {
+        int32 CurrIdx = (PayloadData->HeadIndex - i + 1 + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+        int32 PrevIdx = (PayloadData->HeadIndex - i + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+        PayloadData->TotalLength += (PayloadData->PositionHistory[CurrIdx] - PayloadData->PositionHistory[PrevIdx]).Size();
+    }
+}
+
+FDynamicEmitterDataBase* FParticleRibbonEmitterInstance::GetDynamicData(bool bSelected)
+{
+    UParticleLODLevel* LODLevel = GetCurrentLODLevelChecked();
+    if (!LODLevel || !LODLevel->bEnabled || ActiveParticles <= 0)
+    {
+        return nullptr;
+    }
+
+    if (!NewEmitterData)
+    {
+        NewEmitterData = new FDynamicRibbonEmitterData();
+    }
+
+    NewEmitterData->Init(bSelected, this);
+
+    // 리플레이 데이터 채우기
+    if (!FillReplayData(NewEmitterData->Source))
+    {
+        return nullptr;
+    }
+
+    return NewEmitterData;
+}
+
+FDynamicEmitterReplayDataBase* FParticleRibbonEmitterInstance::GetReplayData()
+{
+    if (ActiveParticles <= 0 || !bEnabled) return nullptr;
+
+    FDynamicRibbonEmitterReplayData* ReplayData = new FDynamicRibbonEmitterReplayData();
+    if (!FillReplayData(*ReplayData))
+    {
+        delete ReplayData;
+        return nullptr;
+    }
+    return ReplayData;
+}
+
+bool FParticleRibbonEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+    if (!FParticleEmitterInstance::FillReplayData(OutData))
+    {
+        return false;
+    }
+
+    OutData.eEmitterType = DET_Ribbon;
+
+    FDynamicRibbonEmitterReplayData* RibbonReplayData = static_cast<FDynamicRibbonEmitterReplayData*>(&OutData);
+
+    // 머티리얼 설정
+    RibbonReplayData->MaterialInterface = CurrentMaterial;
+    RibbonReplayData->RibbonPayloadOffset = RibbonPayloadOffset;
+    RibbonReplayData->MaxTrailCount = RibbonTypeData ? RibbonTypeData->MaxTrailCount : 32;
+    RibbonReplayData->TextureTile = RibbonTypeData ? RibbonTypeData->TextureTile : 1.0f;
+    RibbonReplayData->TailWidthScale = RibbonTypeData ? RibbonTypeData->TailWidthScale : 0.0f;
+    RibbonReplayData->TailAlphaScale = RibbonTypeData ? RibbonTypeData->TailAlphaScale : 0.0f;
+    RibbonReplayData->TextureScrollSpeed = RibbonTypeData ? RibbonTypeData->TextureScrollSpeed : 0.0f;
+    RibbonReplayData->RibbonWidth = RibbonTypeData ? RibbonTypeData->RibbonWidth.GetValue(0.0f) : 10.0f;
+    RibbonReplayData->TrailLifetime = RibbonTypeData ? RibbonTypeData->TrailLifetime : 1.0f;
+
+    return true;
 }

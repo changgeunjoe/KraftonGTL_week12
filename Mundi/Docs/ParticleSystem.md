@@ -8,8 +8,11 @@
 5. [파티클 모듈](#5-파티클-모듈)
 6. [파티클 타입](#6-파티클-타입)
 7. [메모리 구조](#7-메모리-구조)
-8. [렌더링 파이프라인](#8-렌더링-파이프라인)
-9. [사용 예시](#9-사용-예시)
+8. [페이로드 시스템](#8-페이로드-시스템)
+9. [ParticleHelper 역할](#9-particlehelper-역할)
+10. [CPU → GPU 데이터 전달](#10-cpu--gpu-데이터-전달)
+11. [렌더링 파이프라인](#11-렌더링-파이프라인)
+12. [사용 예시](#12-사용-예시)
 
 ---
 
@@ -351,6 +354,34 @@ class UParticleModuleVelocity : public UParticleModule
 };
 ```
 
+### 5.9 모듈 호출 구조
+
+모듈의 `Spawn()`, `Update()`, `FinalUpdate()` 함수가 언제 호출되는지 보여줍니다.
+
+```
+FParticleEmitterInstance::Tick()
+    ├→ Tick_ModuleUpdate()           // bUpdateModule=true인 모듈
+    │   └→ Module->Update()
+    │
+    ├→ Tick_SpawnParticles()
+    │   └→ SpawnParticles()
+    │       └→ for(SpawnModules)
+    │           └→ Module->Spawn()   // bSpawnModule=true인 모듈
+    │
+    └→ Tick_ModuleFinalUpdate()      // bFinalUpdateModule=true인 모듈
+        └→ Module->FinalUpdate()
+```
+
+### 5.10 모듈별 영향 범위
+
+| 모듈 | 호출 시점 | 영향 대상 |
+|------|----------|----------|
+| **Velocity** | Spawn | Particle.Velocity, BaseVelocity |
+| **Color** | Spawn | Particle.Color, BaseColor |
+| **Size** | Spawn | Particle.Size, BaseSize |
+| **Lifetime** | Spawn | OneOverMaxLifetime, RelativeTime |
+| **SubUV** | Spawn/Update | SubImageIndex |
+
 ---
 
 ## 6. 파티클 타입
@@ -440,9 +471,289 @@ ParticleIndices (활성 파티클):
 
 ---
 
-## 8. 렌더링 파이프라인
+## 8. 페이로드 시스템
 
-### 8.1 스프라이트 렌더링
+### 8.1 페이로드란?
+
+페이로드(Payload)는 **기본 파티클 데이터(`FBaseParticle`) 외에 모듈이 필요로 하는 추가 데이터**입니다.
+
+### 8.2 파티클 메모리 레이아웃
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    파티클 메모리 구조                         │
+├─────────────────────────────────────────────────────────────┤
+│  FBaseParticle (기본 데이터) - 144 bytes                     │
+│  ├── OldLocation, Location (위치)                           │
+│  ├── Velocity, BaseVelocity (속도)                          │
+│  ├── Size, BaseSize (크기)                                  │
+│  ├── Color, BaseColor (색상)                                │
+│  ├── Rotation, RotationRate (회전)                          │
+│  └── RelativeTime, OneOverMaxLifetime, SubImageIndex        │
+├─────────────────────────────────────────────────────────────┤
+│  PayloadOffset ← 여기서부터 페이로드 시작                     │
+├─────────────────────────────────────────────────────────────┤
+│  모듈 페이로드 데이터 (모듈마다 다름)                          │
+│  예: FMeshRotationPayloadData - 메시 파티클용 3D 회전 데이터   │
+│      ├── InitialOrientation (초기 방향)                      │
+│      ├── Rotation (현재 회전)                                │
+│      ├── RotationRate (회전 속도)                            │
+│      └── CurContinuousRotation (누적 회전)                   │
+├─────────────────────────────────────────────────────────────┤
+│  다른 모듈의 추가 페이로드...                                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 8.3 페이로드가 필요한 이유
+
+1. **기본 파티클 구조는 고정됨**: `FBaseParticle`은 모든 파티클이 공유하는 기본 속성만 가짐
+2. **모듈마다 추가 데이터 필요**:
+   - 메시 파티클: 3D 회전 데이터 (`FMeshRotationPayloadData`)
+   - 리본/트레일: 연결 정보, 히스토리 데이터
+   - 커스텀 모듈: 사용자 정의 데이터
+
+### 8.4 모듈 추가 시 버퍼 관리
+
+모듈이 추가될 때 `ParticleEmitter.cpp`의 `CacheEmitterModuleInfo()`에서 버퍼 크기를 계산합니다.
+
+```cpp
+void UParticleEmitter::CacheEmitterModuleInfo()
+{
+    ParticleSize = sizeof(FBaseParticle);  // 기본 크기로 시작
+    ReqInstanceBytes = 0;
+
+    for (각 모듈)
+    {
+        // 1. 파티클당 페이로드 계산
+        int32 ReqBytes = ParticleModule->RequiredBytes(HighTypeData);
+        if (ReqBytes)
+        {
+            ModuleOffsetMap.Add(ParticleModule, ParticleSize);  // 오프셋 저장
+            ParticleSize += ReqBytes;                           // 크기 누적
+        }
+
+        // 2. 인스턴스당 데이터 계산
+        int32 TempInstanceBytes = ParticleModule->RequiredBytesPerInstance();
+        if (TempInstanceBytes > 0)
+        {
+            ModuleInstanceOffsetMap.Add(ParticleModule, ReqInstanceBytes);
+            ReqInstanceBytes += TempInstanceBytes;
+        }
+    }
+}
+```
+
+### 8.5 페이로드 접근 예시
+
+```cpp
+// 메시 파티클에서 회전 페이로드 접근
+FMeshRotationPayloadData* PayloadData =
+    (FMeshRotationPayloadData*)((uint8*)&Particle + MeshRotationOffset);
+
+PayloadData->Rotation = PayloadData->InitialOrientation +
+                        PayloadData->CurContinuousRotation;
+```
+
+### 8.6 요약 테이블
+
+| 구분 | 설명 |
+|------|------|
+| **FBaseParticle** | 모든 파티클이 가지는 기본 데이터 (위치, 속도, 크기, 색상 등) |
+| **Payload** | 특정 모듈/타입이 필요로 하는 **추가 데이터** |
+| **PayloadOffset** | 기본 데이터 끝나고 페이로드가 시작하는 위치 |
+| **RequiredBytes()** | 모듈이 필요한 페이로드 크기 반환 |
+| **ModuleOffsetMap** | 모듈 → 페이로드 오프셋 매핑 |
+
+---
+
+## 9. ParticleHelper 역할
+
+### 9.1 개요
+
+`ParticleHelper`는 **파티클 시스템과 렌더러 사이의 다리** 역할을 합니다. CPU에서 계산된 파티클 데이터를 GPU가 이해할 수 있는 형태로 변환합니다.
+
+### 9.2 헬퍼 매크로
+
+모듈에서 파티클 데이터에 접근할 때 사용하는 매크로들입니다.
+
+```cpp
+// 파티클 데이터 접근
+DECLARE_PARTICLE(Name, Address)  // 주소에서 FBaseParticle 참조
+
+// 스폰 시 파티클 접근 준비
+SPAWN_INIT
+
+// 모든 활성 파티클 순회 (Update에서 사용)
+BEGIN_UPDATE_LOOP
+    // Particle 변수로 각 파티클 접근
+END_UPDATE_LOOP
+```
+
+### 9.3 GPU 정점 구조체
+
+| 구조체 | 용도 | 주요 데이터 |
+|--------|------|------------|
+| **FParticleSpriteVertex** | 스프라이트 파티클 | Position, Size, Rotation, Color, UV |
+| **FMeshParticleInstanceVertex** | 메시 파티클 | Transform(행렬), Color, SubUV |
+
+### 9.4 동적 이미터 데이터
+
+`FDynamicSpriteEmitterData`와 `FDynamicMeshEmitterData`가 실제 렌더링을 담당합니다.
+
+**주요 기능**:
+- CPU 파티클 데이터 → GPU 구조화 버퍼로 복사
+- 카메라 거리 기준 정렬 (Back-to-Front, 투명도 처리용)
+- 인스턴싱으로 렌더링 (1 Draw Call)
+
+### 9.5 GPU 버퍼 동적 크기 조절
+
+파티클 수가 증가하면 버퍼 크기를 **2배씩** 늘립니다.
+
+```cpp
+// ParticleHelper.cpp:138-149
+if (ParticleCount > ParticleStructuredBufferSize)
+{
+    uint32 NewSize = ParticleStructuredBufferSize;
+    while (NewSize < ParticleCount)
+    {
+        NewSize = FMath::Max(NewSize * 2, InitMaxParticles);  // 2배씩 증가
+    }
+    ParticleStructuredBufferSize = NewSize;
+    CreateParticleStructuredBuffer(sizeof(FParticleSpriteVertex), NewSize);
+}
+```
+
+**크기 변화 예시**:
+```
+초기: 128 → 파티클 200개 필요 → 256
+     256 → 파티클 300개 필요 → 512
+     ...
+```
+
+---
+
+## 10. CPU → GPU 데이터 전달
+
+### 10.1 핵심 개념
+
+**페이로드 자체는 GPU로 넘기지 않습니다.** CPU에서 필요한 계산을 한 뒤 **결과값만** GPU 버퍼에 담아서 넘깁니다.
+
+### 10.2 데이터 흐름
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  CPU 파티클 메모리                                               │
+│  ┌────────────────────────────────────────────┐                 │
+│  │ FBaseParticle (144 bytes)                  │                 │
+│  │ ├── Location, Velocity, Size, Color...    │ ← GPU로 전달     │
+│  ├────────────────────────────────────────────┤                 │
+│  │ Module Payload (페이로드)                   │                 │
+│  │ ├── FMeshRotationPayloadData              │ ← CPU에서 처리   │
+│  │ └── 기타 모듈 데이터                        │   후 결과만 전달 │
+│  └────────────────────────────────────────────┘                 │
+└─────────────────────────────────────────────────────────────────┘
+                          ↓
+              ParticleHelper에서 변환
+                          ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  GPU 구조화 버퍼                                                 │
+│  ├── Position      ← BaseParticle->Location                    │
+│  ├── Size          ← BaseParticle->Size                         │
+│  ├── Color         ← BaseParticle->Color                        │
+│  ├── Transform     ← 페이로드에서 계산한 결과                     │
+│  └── UV            ← SubImageIndex에서 계산                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 10.3 스프라이트 파티클 전달
+
+```cpp
+// ParticleHelper.cpp:172-189
+for (int32 i = 0; i < ParticleCount; ++i)
+{
+    FBaseParticle* BaseParticle = ...;
+
+    GpuParticles[i].Position = BaseParticle->Location;
+    GpuParticles[i].Size = FVector2D(BaseParticle->Size.X, BaseParticle->Size.Y);
+    GpuParticles[i].Color = BaseParticle->Color;
+
+    // SubUV 계산
+    GpuParticles[i].UVScale = UVScale;
+    GpuParticles[i].UVOffset = ...;
+}
+```
+
+### 10.4 메시 파티클 전달
+
+```cpp
+// ParticleHelper.cpp:303-312
+for (int32 i = 0; i < ParticleCount; ++i)
+{
+    FBaseParticle* BaseParticle = ...;
+
+    // 페이로드에서 회전 데이터 읽기
+    FMeshRotationPayloadData* RotationPayload =
+        (FMeshRotationPayloadData*)(BasePtr + SrcIndex * Stride + Src->MeshRotationOffset);
+
+    // CPU에서 Transform 행렬 계산 후 GPU로 전달
+    FTransform Transform(
+        BaseParticle->Location,                            // 위치
+        FQuat::MakeFromEulerZYX(RotationPayload->Rotation), // 페이로드의 회전
+        BaseParticle->Size                                 // 크기
+    );
+
+    GpuParticles[i].Transform = Transform.ToMatrix();  // 결과만 GPU로
+    GpuParticles[i].Color = BaseParticle->Color;
+}
+```
+
+### 10.5 셰이더에서 데이터 접근
+
+```hlsl
+// ParticleSprite.hlsl
+StructuredBuffer<FParticleSpriteVertex> ParticleBuffer : register(t10);
+
+VS_OUTPUT VS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
+{
+    FParticleSpriteVertex Particle = ParticleBuffer[InstanceID];
+
+    // 각 인스턴스(파티클)마다 다른 데이터 사용
+    float3 WorldPos = Particle.Position + Input.LocalPos * Particle.Size;
+    ...
+}
+```
+
+### 10.6 바인딩 흐름
+
+```
+CPU (ParticleHelper.cpp)
+    ↓
+memcpy(Mapped.pData, GpuParticles.GetData(), ...)
+    ↓
+ParticleStructuredBuffer (ID3D11Buffer)
+    ↓
+ParticleStructuredBufferSRV (ID3D11ShaderResourceView)
+    ↓
+BatchElement.ParticleDataSRV = ParticleStructuredBufferSRV
+    ↓
+렌더러에서 t10 슬롯에 바인딩
+    ↓
+GPU (셰이더에서 ParticleBuffer[InstanceID]로 접근)
+```
+
+### 10.7 데이터 전달 요약
+
+| 데이터 | 처리 위치 | GPU 전달 방식 |
+|--------|----------|--------------|
+| Location, Size, Color | FBaseParticle | 직접 전달 |
+| Rotation (페이로드) | CPU에서 계산 | Transform 행렬로 변환 후 전달 |
+| SubImageIndex | FBaseParticle | UV 좌표로 변환 후 전달 |
+
+---
+
+## 11. 렌더링 파이프라인
+
+### 11.1 스프라이트 렌더링
 
 스프라이트 파티클은 **GPU 인스턴싱**을 사용합니다.
 
@@ -458,7 +769,7 @@ ParticleIndices (활성 파티클):
    └── DrawIndexedInstanced(6 indices, ActiveParticleCount instances)
 ```
 
-### 8.2 메시 렌더링
+### 11.2 메시 렌더링
 
 메시 파티클은 **개별 메시 인스턴스**로 렌더링됩니다.
 
@@ -474,9 +785,9 @@ struct FMeshParticleInstanceVertex
 
 ---
 
-## 9. 사용 예시
+## 12. 사용 예시
 
-### 9.1 코드에서 파티클 생성
+### 12.1 코드에서 파티클 생성
 
 ```cpp
 // 1. 파티클 시스템 자산 생성
@@ -506,7 +817,7 @@ PSC->SetTemplate(ParticleSystem);
 PSC->Activate(true);
 ```
 
-### 9.2 JSON 파일에서 로드
+### 12.2 JSON 파일에서 로드
 
 ```cpp
 // 파티클 파일 로드
@@ -519,7 +830,7 @@ Actor->ParticleSystemComponent->SetTemplate(ParticleSystem);
 Actor->ParticleSystemComponent->Activate(true);
 ```
 
-### 9.3 파티클 파일 구조 (.particle)
+### 12.3 파티클 파일 구조 (.particle)
 
 ```json
 {
