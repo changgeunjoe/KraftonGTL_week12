@@ -1468,7 +1468,11 @@ void SParticleEditorWindow::OnRestartSimClicked()
 {
 	StatusMessage = "Simulation Restarted";
 	UE_LOG("Restart Sim clicked");
-	// TODO: Implement simulation restart logic
+	UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PreviewActor->GetRootComponent());
+	if (ParticleComp)
+	{
+		ParticleComp->InitializeSystem();
+	}
 }
 
 void SParticleEditorWindow::OnRestartLevelClicked()
