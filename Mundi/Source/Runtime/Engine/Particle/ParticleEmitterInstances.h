@@ -227,6 +227,8 @@ protected:
 	 * @return          성공 여부
 	 */
 	virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
+
+	UMaterialInterface* GetCurrentMaterial();
 };
 
 /*-----------------------------------------------------------------------------
@@ -261,8 +263,6 @@ protected:
 	 * @return          성공 여부
 	 */
 	virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData ) override;
-
-	UMaterialInterface* GetCurrentMaterial();
 
 	class FDynamicSpriteEmitterData* NewEmitterData;
 };

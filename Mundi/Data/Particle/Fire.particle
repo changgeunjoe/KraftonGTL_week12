@@ -43,7 +43,7 @@
                 "DistributionType" : "Constant"
               },
               "StartColor" : {
-                "Constant" : [0.000000, 0.300000, 4.100000],
+                "Constant" : [0.700000, 3.100000, 4.100000],
                 "DistributionType" : "Constant"
               },
               "Type" : "UParticleModuleColor"
@@ -89,7 +89,7 @@
             }],
           "bEnabled" : true
         }],
-      "PeakActiveParticles" : 383,
+      "PeakActiveParticles" : 154,
       "Type" : "UParticleEmitter"
     }],
   "Type" : "UParticleSystem"

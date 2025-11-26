@@ -182,6 +182,25 @@ void UParticleSystemComponent::DuplicateSubObjects()
 	InitializeSystem();
 }
 
+void UParticleSystemComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	SetTemplate(nullptr);
+
+	Super::Serialize(bInIsLoading, InOutHandle);
+
+	if (Template)
+	{
+		TemplateChangedHandle = Template->OnParticleChanged.AddDynamic(this, &UParticleSystemComponent::InitializeSystem);
+	}
+
+	InitializeSystem();
+
+	if (Template)
+	{
+		Activate(true);
+	}
+}
+
 void UParticleSystemComponent::ClearDynamicData()
 {
 	EmitterRenderData.Empty();
