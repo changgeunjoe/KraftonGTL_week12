@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "ParticleSystemComponent.h"
 
+#include "BoxComponent.h"
 #include "Collision.h"
+#include "OBB.h"
 #include "ParticleModuleLifetime.h"
 #include "ParticleModuleVelocity.h"
 #include "Source/Runtime/Engine/Particle/ParticleEmitter.h"
@@ -248,41 +250,61 @@ bool UParticleSystemComponent::ParticleLineCheck(FHitResult& Hit, AActor* Source
 
 		for (USceneComponent* Component : Actor->GetSceneComponents())
 		{
-			UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Component);
+            UShapeComponent* ShapeComp = Cast<UShapeComponent>(Component);
 
-			// 충돌 가능한 프리미티브 컴포넌트인지 확인
-			if (PrimitiveComponent && PrimitiveComponent->bBlockComponent)
-			{
-				// 4. 충돌 검사 (AABB 기반)
-				FAABB Bounds = PrimitiveComponent->GetWorldAABB();
+            if (ShapeComp && ShapeComp->bBlockComponent)
+            {
+                FShape Shape;
+                ShapeComp->GetShape(Shape);
 
-				// [최적화] 파티클 크기(Extent) 처리 (Minkowski Sum 근사)
-				// 파티클 크기가 있다면, 상대방 박스를 파티클 크기만큼 확장해서 검사
-				// 이렇게 하면 '점(Ray)'을 쏘더라도 '박스'가 이동한 것과 동일한 결과를 얻음
-				if (!Extent.IsZero())
-				{
-					Bounds.Min -= Extent;
-					Bounds.Max += Extent;
-				}
+                float Dist = FLT_MAX;
+                FVector Normal;
+                bool bHitShape = false;
 
-				float EnterDist, ExitDist;
-				if (Bounds.IntersectsRay(Ray, EnterDist, ExitDist))
-				{
-					if (EnterDist >= 0.0f && EnterDist < MinDistance)
-					{
-						MinDistance = EnterDist;
-						bFoundHit = true;
+                switch (Shape.Kind)
+                {
+                case EShapeKind::Box:
+                    {
+                        FOBB Obb;
+                        Collision::BuildOBB(Shape, ShapeComp->GetWorldTransform(), Obb);
 
-						Hit.bBlockingHit = true;
-						Hit.Distance = EnterDist;
-						Hit.Time = EnterDist / TraceLength; // 0.0 ~ 1.0 비율
-						Hit.Location = Start + DirNormal * EnterDist;
+                        if (!Extent.IsZero())
+                        {
+                            float ParticleRadius = FMath::Max(Extent.X, FMath::Max(Extent.Y, Extent.Z));
+                            Obb.HalfExtent[0] += ParticleRadius;
+                            Obb.HalfExtent[1] += ParticleRadius;
+                            Obb.HalfExtent[2] += ParticleRadius;
+                        }
 
-						Hit.Normal = Collision::GetAABBSurfaceNormal(Bounds, Hit.Location);
-						Hit.ImpactNormal = Hit.Normal;
-					}
-				}
-			}
+                        bHitShape = Collision::IntersectRayOBB(Ray, Obb, Dist, Normal);
+                    }
+                    break;
+
+                case EShapeKind::Sphere:
+                    // TODO: 나중에 IntersectRaySphere 구현 후 추가
+                    break;
+
+                case EShapeKind::Capsule:
+                    // TODO: 나중에 IntersectRayCapsule 구현 후 추가
+                    break;
+                }
+
+                if (bHitShape)
+                {
+                    if (Dist >= 0.0f && Dist < MinDistance)
+                    {
+                        MinDistance = Dist;
+                        bFoundHit = true;
+
+                        Hit.bBlockingHit = true;
+                        Hit.Distance = Dist;
+                        Hit.Time = Dist / TraceLength;
+                        Hit.Location = Start + DirNormal * Dist;
+                        Hit.Normal = Normal;
+                        Hit.ImpactNormal = Normal;
+                    }
+                }
+            }
 		}
 	}
 

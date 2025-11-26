@@ -316,6 +316,70 @@ namespace Collision
         return false;
     }
 
+    bool IntersectRayOBB(const FRay& Ray, const FOBB& Obb, float& OutDist, FVector& OutNormal)
+    {
+        FVector Delta = Obb.Center - Ray.Origin;
+
+        float tMin = -FLT_MAX;
+        float tMax = FLT_MAX;
+
+        int32 HitAxisIndex = -1;
+        float HitAxisSign = 0.0f;
+
+        for (int32 i = 0; i < 3; ++i)
+        {
+            float e = FVector::Dot(Delta, Obb.Axes[i]);
+            float f = FVector::Dot(Ray.Direction, Obb.Axes[i]);
+
+            if (std::abs(f) > 1e-6f)
+            {
+                float t1 = (e + Obb.HalfExtent[i]) / f;
+                float t2 = (e - Obb.HalfExtent[i]) / f;
+
+                if (t1 > t2) std::swap(t1, t2);
+
+                if (t1 > tMin)
+                {
+                    tMin = t1;
+                    HitAxisIndex = i;
+                    HitAxisSign = (f > 0) ? -1.0f : 1.0f;
+                }
+
+                if (t2 < tMax) tMax = t2;
+
+                if (tMin > tMax) return false;
+                if (tMax < 0.0f) return false;
+            }
+            else
+            {
+                if (-e - Obb.HalfExtent[i] > 0.0f || -e + Obb.HalfExtent[i] < 0.0f)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (tMin < 0.0f)
+        {
+             OutDist = 0.0f;
+             OutNormal = -Ray.Direction;
+        }
+        else
+        {
+            OutDist = tMin;
+            if (HitAxisIndex != -1)
+            {
+                OutNormal = Obb.Axes[HitAxisIndex] * HitAxisSign;
+            }
+            else
+            {
+                OutNormal = FVector::Zero();
+            }
+        }
+
+        return true;
+    }
+
     FVector GetAABBSurfaceNormal(const FAABB& Box, const FVector& HitPoint)
     {
     	FVector Center = Box.GetCenter();

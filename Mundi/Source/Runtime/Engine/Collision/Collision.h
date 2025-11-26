@@ -33,6 +33,8 @@ namespace Collision
 
     bool OverlapCapsuleAndCapsule(const FShape& CapsuleA, const FTransform& TransformCapsule, const FShape& CapsuleB, const FTransform& TransformB);
 
+	bool IntersectRayOBB(const FRay& Ray, const FOBB& Obb, float& OutDist, FVector& OutNormal);
+
 	FVector GetAABBSurfaceNormal(const FAABB& Box, const FVector& HitPoint);
 
     using OverlapFunc = bool(*) (const FShape&, const FTransform&, const FShape&, const FTransform&);
