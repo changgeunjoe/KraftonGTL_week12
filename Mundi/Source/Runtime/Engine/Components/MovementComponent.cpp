@@ -1,9 +1,7 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "MovementComponent.h"
 #include "SceneComponent.h"
 #include "ObjectFactory.h"
-
-IMPLEMENT_CLASS(UMovementComponent)
 
 UMovementComponent::UMovementComponent()
     : UpdatedComponent(nullptr)

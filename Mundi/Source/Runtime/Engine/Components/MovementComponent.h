@@ -1,6 +1,7 @@
-﻿#pragma once
+#pragma once
 #include "ActorComponent.h"
 #include "Vector.h"
+#include "UMovementComponent.generated.h"
 
 class USceneComponent;
 
@@ -12,8 +13,7 @@ class USceneComponent;
 class UMovementComponent : public UActorComponent
 {
 public:
-    DECLARE_CLASS(UMovementComponent, UActorComponent)
-    DECLARE_DUPLICATE(UMovementComponent)
+	GENERATED_REFLECTION_BODY()
     
     UMovementComponent();
 

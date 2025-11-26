@@ -710,6 +710,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Generated\UParticleModuleColorOverLife.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataBeam.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataRibbon.generated.cpp" />
+    <ClCompile Include="Generated\UMovementComponent.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1073,6 +1074,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Generated\UParticleModuleTypeDataBeam.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataRibbon.generated.h" />
     <ClInclude Include="Generated\UParticleModuleColorOverLife.generated.h" />
+    <ClInclude Include="Generated\UMovementComponent.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />
