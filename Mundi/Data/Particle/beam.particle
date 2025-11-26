@@ -14,7 +14,7 @@
               "Type" : "UParticleModuleRequired",
               "bUseLocalSpace" : false
             }, {
-              "Rate" : 10.000000,
+              "Rate" : 7.000000,
               "RateScale" : 1.000000,
               "Type" : "UParticleModuleSpawn"
             }, {
@@ -22,30 +22,25 @@
                 "Constant" : 10.000000,
                 "DistributionType" : "Constant"
               },
-              "MaxBeamCount" : 10,
+              "MaxBeamCount" : 16,
               "NoiseOctaves" : 1.000000,
               "NoisePoints" : 5,
               "NoiseSpeed" : 7.000000,
               "NoiseStrength" : {
-                "Constant" : 20.000000,
+                "Constant" : 14.600000,
                 "DistributionType" : "Constant"
               },
-              "PulseScale" : 16.000000,
-              "PulseSpeed" : 2.000000,
+              "PulseScale" : 1.000000,
+              "PulseSpeed" : 1.000000,
               "SourceOffset" : {
                 "Constant" : [0.000000, 0.000000, 0.000000],
                 "DistributionType" : "Constant"
               },
-              "SourceTaperScale" : 3.000000,
+              "SourceTaperScale" : 1.000000,
               "TargetDirection" : [1.000000, 0.000000, 0.000000],
               "TargetDistance" : {
-                "DistributionType" : "Bezier",
-                "MaxInput" : 1.000000,
-                "MinInput" : 0.000000,
-                "P0" : 0.000000,
-                "P1" : 0.633333,
-                "P2" : 0.353333,
-                "P3" : 75.900002
+                "Constant" : 30.000000,
+                "DistributionType" : "Constant"
               },
               "TargetOffset" : {
                 "Constant" : [0.000000, 0.000000, 0.000000],
