@@ -491,6 +491,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleAccelerationConstant.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleCollision.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleColor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleColorOverLife.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRotation.cpp" />
@@ -706,6 +707,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Generated\UParticleModuleTypeDataMesh.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleCollision.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleAccelerationConstant.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleColorOverLife.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataBeam.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataRibbon.generated.cpp" />
   </ItemGroup>
@@ -856,6 +858,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleAccelerationConstant.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleCollision.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleColor.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleColorOverLife.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRotation.h" />
@@ -1069,6 +1072,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Generated\UParticleModuleAccelerationConstant.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataBeam.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataRibbon.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleColorOverLife.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

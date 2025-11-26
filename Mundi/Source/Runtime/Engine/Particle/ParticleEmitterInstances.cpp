@@ -324,6 +324,9 @@ float FParticleEmitterInstance::Tick_EmitterTimeSetup(float DeltaTime, UParticle
 		EmitterTime -= EmitterDuration;
 	}
 
+	// @note EmitterTime이 음수일 경우 Spawn 등이 작동하지 않으므로 Delay효과가 발생함
+	EmitterTime -= EmitterDelay;
+
 	return EmitterDelay;
 }
 
@@ -883,7 +886,7 @@ bool FParticleSpriteEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBas
 	return true;
 }
 
-UMaterialInterface* FParticleSpriteEmitterInstance::GetCurrentMaterial()
+UMaterialInterface* FParticleEmitterInstance::GetCurrentMaterial()
 {
 	return CurrentMaterial;
 }
@@ -1001,6 +1004,8 @@ bool FParticleMeshEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase&
     // 2. 메시 정보 복사
     FDynamicMeshEmitterReplayData* MeshReplayData = static_cast<FDynamicMeshEmitterReplayData*>(&OutData);
     MeshReplayData->MeshRotationOffset = MeshRotationOffset;
+
+	MeshReplayData->MaterialInterface = GetCurrentMaterial();
 
     return true;
 }
