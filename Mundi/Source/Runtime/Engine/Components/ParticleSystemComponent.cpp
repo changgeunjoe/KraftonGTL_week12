@@ -78,12 +78,12 @@ void UParticleSystemComponent::InitParticles()
 
 void UParticleSystemComponent::InitializeSystem()
 {
+	ResetParticles(true);
+
 	if (Template == nullptr)
 	{
 		return;
 	}
-
-	ResetParticles(true);
 
 	ClearDynamicData();
 

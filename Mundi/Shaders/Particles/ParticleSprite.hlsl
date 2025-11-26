@@ -96,9 +96,13 @@ PS_INPUT mainVS(VS_INPUT input)
 	// 정점의 월드 위치 계산
 	// 파티클 위치를 기준으로, 카메라의 Right/Up 벡터와 파티클 크기를 사용하여 오프셋 적용
 	float3 worldPosition = particle.Position;
-	worldPosition += (camRight * input.Position.x * particle.Size.x);
-	worldPosition += (camUp * input.Position.y * particle.Size.y);
 
+	float RotX = input.Position.x * cos(particle.Rotation) - input.Position.y * sin(particle.Rotation);
+	float RotY = input.Position.x * sin(particle.Rotation) + input.Position.y * cos(particle.Rotation);
+	
+	worldPosition += (camRight * RotX * particle.Size.x);
+	worldPosition += (camUp * RotY * particle.Size.y);
+	
 	// 최종 화면 좌표로 변환
 	output.Position = mul(float4(worldPosition, 1.0f), mul(ViewMatrix, ProjectionMatrix));
 	
