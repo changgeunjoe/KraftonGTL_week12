@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -727,6 +727,9 @@
     <ClCompile Include="ThirdParty\Include\ImGui\imgui_node_editor_api.cpp" />
     <ClCompile Include="ThirdParty\Include\ImGui\utilities\drawing.cpp" />
     <ClCompile Include="ThirdParty\Include\ImGui\utilities\widgets.cpp" />
+    <ClCompile Include="Generated\UParticleModuleRotation.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1524,6 +1527,9 @@
     <ClInclude Include="Source\Slate\UObject\Windows\SceneWindow.h" />
     <ClInclude Include="Source\Slate\UObject\Windows\SlateTestWindow.h" />
     <ClInclude Include="Source\Slate\UObject\Windows\UIWindow.h" />
+    <ClInclude Include="Generated\UParticleModuleRotation.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
