@@ -960,6 +960,11 @@ void USlateManager::Shutdown()
         delete BlendSpace2DEditorWindow;
         BlendSpace2DEditorWindow = nullptr;
     }
+	if (ParticleEditorWindow)
+	{
+		delete ParticleEditorWindow;
+		ParticleEditorWindow = nullptr;
+	}
 	CloseSkeletalMeshViewer();
 	CloseAnimStateMachineWindow();
 }
