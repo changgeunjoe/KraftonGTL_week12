@@ -63,7 +63,7 @@ struct FParticleVertex
 /**
  * GPU에 전달되는 파티클 당 데이터
  */
-struct FParticleSpriteVertex
+struct alignas(16) FParticleSpriteVertex
 {
 	/** 파티클의 위치 */
 	FVector Position;
@@ -77,16 +77,20 @@ struct FParticleSpriteVertex
 	FVector2D Size;
 	/** 파티클의 회전 */
 	float Rotation;
-	/** 파티클의 서브 이미지 인덱스 */
-	float SubImageIndex;
+
+	float Pad;
+
 	/** 파티클의 색 */
 	FLinearColor Color;
+	// Sub UV
+	FVector2D UVOffset;
+	FVector2D UVScale;
 };
 
 /**
  * GPU에 전달되는 파티클 당 데이터
  */
-struct FMeshParticleInstanceVertex
+struct alignas(16) FMeshParticleInstanceVertex
 {
 	/** 파티클의 색 */
 	FLinearColor Color;
@@ -241,6 +245,9 @@ struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBas
 	UParticleModuleRequired*		RequiredModule;
 	bool							bUseLocalSpace;
 	uint8							ScreenAlignment;
+
+	uint32 SubImages_Horizontal = 1;
+	uint32 SubImages_Vertical = 1;
 
 	FDynamicSpriteEmitterReplayDataBase();
 

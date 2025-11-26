@@ -10,6 +10,7 @@
 #include "ParticleModuleTypeDataBase.h"
 #include "ParticleModuleTypeDataMesh.h"
 #include "ParticleSystemComponent.h"
+#include "ParticleModuleSubUV.h"
 
 /*-----------------------------------------------------------------------------
 	FParticleEmitterInstance
@@ -74,6 +75,22 @@ void FParticleEmitterInstance::Init()
 	// 현재 머티리얼을 설정한다.
 	assert(HighLODLevel->RequiredModule);
 	CurrentMaterial = HighLODLevel->RequiredModule->Material;
+
+	// SubUV 모듈 포인터 캐싱 로직
+	this->SubUVModule = nullptr;
+
+	// HighLODLevel에 포함된 모듈 목록을 순회하며 SubUV 모듈을 찾습니다.
+	if (HighLODLevel->Modules.Num() > 0)
+	{
+		for (UParticleModule* Module : HighLODLevel->Modules)
+		{
+			if (Module && Module->IsA(UParticleModuleSubUV::StaticClass()))
+			{
+				this->SubUVModule = Cast<UParticleModuleSubUV>(Module);
+				break; // 찾았으면 순회 중단
+			}
+		}
+	}
 
 	// non-zero 파티클 크기를 이미 가지고 있다면, 대부분의 할당 작업을 다시 할 필요 없음
 	bool bNeedsInit = (ParticleSize == 0);
@@ -743,6 +760,23 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
 		NewReplayData->RequiredModule = LODLevel->RequiredModule;
 		NewReplayData->ScreenAlignment = LODLevel->RequiredModule->ScreenAlignment;
 		NewReplayData->bUseLocalSpace = LODLevel->RequiredModule->bUseLocalSpace;
+
+		// SubUV 모듈의 그리드 정보 복사 (캐싱된 SubUVModule 사용)
+		if (this->SubUVModule)
+		{
+			NewReplayData->SubImages_Horizontal = this->SubUVModule->SubImages_Horizontal;
+			NewReplayData->SubImages_Vertical = this->SubUVModule->SubImages_Vertical;
+
+			// 안전 장치: 나눗셈 오류 방지를 위해 최소 1로 설정
+			if (NewReplayData->SubImages_Horizontal <= 0) NewReplayData->SubImages_Horizontal = 1;
+			if (NewReplayData->SubImages_Vertical <= 0) NewReplayData->SubImages_Vertical = 1;
+		}
+		else
+		{
+			// SubUV 모듈이 없으면 기본값 1x1 유지
+			NewReplayData->SubImages_Horizontal = 1;
+			NewReplayData->SubImages_Vertical = 1;
+		}
 	}
 
 	return true;

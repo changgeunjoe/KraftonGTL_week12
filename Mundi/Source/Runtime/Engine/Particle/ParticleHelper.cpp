@@ -167,6 +167,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 
 			TArray<FParticleSpriteVertex> GpuParticles;
 			GpuParticles.SetNum(ParticleCount);
+			FVector2D UVScale = FVector2D(1.0f / Src->SubImages_Horizontal, 1.0f / Src->SubImages_Vertical);
 
 			for (int32 i = 0; i < ParticleCount; ++i)
 			{
@@ -177,6 +178,14 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 				GpuParticles[i].Position = BaseParticle->Location;
 				GpuParticles[i].Size = FVector2D(BaseParticle->Size.X, BaseParticle->Size.Y);
 				GpuParticles[i].Color = BaseParticle->Color;
+
+				uint32 TotalCount = Src->SubImages_Horizontal * Src->SubImages_Vertical;
+
+				uint32 Horizontal = (int)((float)TotalCount * BaseParticle->SubImageIndex) % Src->SubImages_Horizontal;
+				uint32 Vertical = (TotalCount * BaseParticle->SubImageIndex) / Src->SubImages_Vertical;
+
+				GpuParticles[i].UVScale = UVScale;
+				GpuParticles[i].UVOffset = FVector2D(Horizontal * UVScale.X, Vertical * UVScale.Y);
 			}
 
 			// 카메라 기준 Z(depth)로 내림차순 정렬 (멀리 있는 것부터 가까운 것)

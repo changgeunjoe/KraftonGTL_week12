@@ -79,6 +79,9 @@ public:
 	/** 이 인스턴스를 렌더링할 때 사용할 머티리얼								*/
 	UMaterialInterface* CurrentMaterial;
 
+	// SubUV 모듈 캐싱
+	class UParticleModuleSubUV* SubUVModule;
+
 public:
 	FParticleEmitterInstance(UParticleSystemComponent* InComponent);
 

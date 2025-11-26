@@ -33,13 +33,18 @@ struct FParticleSpriteVertex
 	
 	// C++: FVector2D Size; (8바이트)
 	// C++: float Rotation; (4바이트)
-	// C++: float SubImageIndex; (4바이트) -> 합: float4 16바이트
+	// C++: float Pad; (4바이트) -> 합: float4 16바이트
 	float2 Size;
 	float Rotation;
-	float SubImageIndex;
+	
+	float Pad;
 
 	// C++: FLinearColor Color; (16바이트) -> float4 16바이트
 	float4 Color;
+	
+	// Sub UV (16바이트)
+	float2 UVOffset;
+	float2 UVScale;
 };
 
 // 파티클 데이터를 담는 구조화 버퍼 (VS에서만 사용)
@@ -98,7 +103,7 @@ PS_INPUT mainVS(VS_INPUT input)
 	output.Position = mul(float4(worldPosition, 1.0f), mul(ViewMatrix, ProjectionMatrix));
 	
 	// UV와 색상 정보를 픽셀 셰이더로 전달
-	output.UV = input.UV;
+	output.UV = (input.UV * particle.UVScale) + particle.UVOffset;
 	output.Color = particle.Color;
 
 	return output;

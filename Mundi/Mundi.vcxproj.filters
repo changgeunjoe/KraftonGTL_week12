@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -134,9 +134,6 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Renderer\TileLightCuller.cpp">
       <Filter>Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\PropertyRenderer.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
     </ClCompile>
     <ClCompile Include="Source\Slate\UObject\Widgets\ParticleModuleDetailWidget.cpp">
       <Filter>Source\Slate\Widgets</Filter>
@@ -381,63 +378,6 @@
     <ClCompile Include="Source\Slate\USlateManager.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\ConsoleWidget.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\InputInformationWidget.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\MainToolbarWidget.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\SceneManagerWidget.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\TargetActorTransformWidget.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Widgets\Widget.cpp">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\ConsoleWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\ControlPanelWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\ExperimentalFeatureWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\PropertyWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SceneWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SControlPanel.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SDetailsWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SSplitter.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SSplitterH.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SSplitterV.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SViewportWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\SWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\Windows\UIWindow.cpp">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_LetterBox.cpp">
       <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
     </ClCompile>
@@ -588,7 +528,6 @@
     <ClCompile Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
-    <ClCompile Include="Source\Slate\Windows\ContentBrowserWindow.cpp" />
     <ClCompile Include="Source\Slate\ThumbnailManager.cpp" />
     <ClCompile Include="Generated\APawn.generated.cpp">
       <Filter>Generated</Filter>
@@ -657,8 +596,6 @@
       <Filter>Generated</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Misc\MiniDump.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SkeletalMeshViewerWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SkeletalMeshViewerWindow_Timeline.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimNode_StateMachine.cpp">
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClCompile>
@@ -719,6 +656,77 @@
     <ClCompile Include="Generated\UParticleModuleSubUV.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Animation\MixamoChainMapper.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\SingleAnimationPlayData.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\ParticleSystemComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Distribution\Distributions.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitter.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleHelper.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModule.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleColor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSize.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSubUV.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataMesh.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleVelocity.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleLODLevel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SGridPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SHorizontalBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SScrollBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SVerticalBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Panels\SViewportPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SButton.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SCheckBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SColorPicker.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SComboBox.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SEditableText.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SImage.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SListView.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SSeparator.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\SSlider.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\STreeView.cpp" />
+    <ClCompile Include="Source\Slate\Core\Widgets\STextBlock.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SControlPanel.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SDetailsWindow.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SSplitter.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SSplitterH.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SSplitterV.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SViewportWindow.cpp" />
+    <ClCompile Include="Source\Slate\Core\Windows\SWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\ConsoleWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\InputInformationWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\MainToolbarWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\PropertyRenderer.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\SceneManagerWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\TargetActorTransformWidget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Widgets\Widget.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\AnimStateMachineWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\BlendSpace2DEditorWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ConsoleWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ContentBrowserWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ControlPanelWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ExperimentalFeatureWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\PreviewWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\PreviewWindow_Timeline.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\ParticleEditorWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\PropertyWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\SceneWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\SlateTestWindow.cpp" />
+    <ClCompile Include="Source\Slate\UObject\Windows\UIWindow.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\crude_json.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_canvas.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_node_editor.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\imgui_node_editor_api.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\utilities\drawing.cpp" />
+    <ClCompile Include="ThirdParty\Include\ImGui\utilities\widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -874,9 +882,6 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\RHI\ConstantBufferType.h">
       <Filter>Source\Runtime\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\PropertyRenderer.h">
-      <Filter>Source\Slate\Widgets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Slate\UObject\Widgets\ParticleModuleDetailWidget.h">
       <Filter>Source\Slate\Widgets</Filter>
@@ -1145,63 +1150,6 @@
     <ClInclude Include="Source\Slate\USlateManager.h">
       <Filter>Source\Slate</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\ConsoleWidget.h">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\InputInformationWidget.h">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\MainToolbarWidget.h">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\SceneManagerWidget.h">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\TargetActorTransformWidget.h">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Widgets\Widget.h">
-      <Filter>Source\Slate\Widgets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\ConsoleWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\ControlPanelWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\ExperimentalFeatureWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\PropertyWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SceneWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SControlPanel.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SDetailsWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SSplitter.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SSplitterH.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SSplitterV.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SViewportWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\SWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\Windows\UIWindow.h">
-      <Filter>Source\Slate\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_LetterBox.h">
       <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
     </ClInclude>
@@ -1352,7 +1300,6 @@
     <ClInclude Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.h" />
-    <ClInclude Include="Source\Slate\Windows\ContentBrowserWindow.h" />
     <ClInclude Include="Source\Slate\ThumbnailManager.h" />
     <ClInclude Include="Generated\APawn.generated.h">
       <Filter>Generated</Filter>
@@ -1452,7 +1399,6 @@
       <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Core\Misc\MiniDump.h" />
-    <ClInclude Include="Source\Slate\Windows\SkeletalMeshViewerWindow.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimNode_StateMachine.h">
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClInclude>
@@ -1513,6 +1459,71 @@
     <ClInclude Include="Generated\UParticleModuleSubUV.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Animation\MixamoChainMapper.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\SingleAnimationPlayData.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\ParticleSystemComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Distribution\Distributions.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\ParticleSystemActor.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitter.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleEmitterInstances.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleHelper.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModule.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleLODLevel.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleColor.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleLifetime.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleRequired.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSize.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSpawn.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSubUV.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataMesh.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleVelocity.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSystem.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SGridPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SHorizontalBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SScrollBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SVerticalBox.h" />
+    <ClInclude Include="Source\Slate\Core\Panels\SViewportPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SButton.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SCheckBox.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SColorPicker.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SComboBox.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SCompoundWidget.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SEditableText.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SImage.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SListView.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SSeparator.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\SSlider.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\STreeView.h" />
+    <ClInclude Include="Source\Slate\Core\Widgets\STextBlock.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SControlPanel.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SDetailsWindow.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SSplitter.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SSplitterH.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SSplitterV.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SViewportWindow.h" />
+    <ClInclude Include="Source\Slate\Core\Windows\SWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\ConsoleWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\InputInformationWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\MainToolbarWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\PropertyRenderer.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\SceneManagerWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\TargetActorTransformWidget.h" />
+    <ClInclude Include="Source\Slate\UObject\Widgets\Widget.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\AnimStateMachineWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\BlendSpace2DEditorWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ConsoleWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ContentBrowserWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ControlPanelWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ExperimentalFeatureWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\ParticleEditorWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\PreviewWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\PropertyWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\SceneWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\SlateTestWindow.h" />
+    <ClInclude Include="Source\Slate\UObject\Windows\UIWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
@@ -1659,6 +1670,9 @@
     <Filter Include="Source\Runtime\Engine\Animation">
       <UniqueIdentifier>{9312b707-891e-4398-94d4-907ef6e53ef2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Particles">
+      <UniqueIdentifier>{3ab248ca-f802-4ddf-a1b3-511eb44a2799}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Tools\CodeGenerator\generate.py">
@@ -1678,5 +1692,13 @@
     <Text Include="Tools\CodeGenerator\requirements.txt">
       <Filter>Tools</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Particles\ParticleMesh.hlsl">
+      <Filter>Shaders\Particles</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particles\ParticleSprite.hlsl">
+      <Filter>Shaders\Particles</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
