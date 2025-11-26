@@ -1305,6 +1305,11 @@ bool FParticleBeamEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase&
     BeamReplayData->TextureTile = BeamTypeData ? BeamTypeData->TextureTile : 1.0f;
     BeamReplayData->SourceTaperScale = BeamTypeData ? BeamTypeData->SourceTaperScale : 1.0f;
     BeamReplayData->TargetTaperScale = BeamTypeData ? BeamTypeData->TargetTaperScale : 1.0f;
+    BeamReplayData->NoiseStrength = BeamTypeData ? BeamTypeData->NoiseStrength.GetValue(0.0f) : 0.0f;
+    BeamReplayData->TextureScrollSpeed = BeamTypeData ? BeamTypeData->TextureScrollSpeed : 0.0f;
+    BeamReplayData->PulseSpeed = BeamTypeData ? BeamTypeData->PulseSpeed : 5.0f;
+    BeamReplayData->PulseScale = BeamTypeData ? BeamTypeData->PulseScale : 0.0f;
+    BeamReplayData->NoiseOctaves = BeamTypeData ? BeamTypeData->NoiseOctaves : 1.0f;
 
     // 세그먼트 데이터 복사
     BeamReplayData->SegmentData = SegmentData;

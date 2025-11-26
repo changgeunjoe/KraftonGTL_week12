@@ -96,6 +96,26 @@ public:
 	UPROPERTY(EditAnywhere, Category="Noise")
 	float NoiseSpeed;
 
+	/** 노이즈 옥타브 수 (1~4, 높을수록 디테일한 노이즈) */
+	UPROPERTY(EditAnywhere, Category="Noise")
+	float NoiseOctaves;
+
+	//========== 텍스처 스크롤 설정 ==========
+
+	/** 텍스처 스크롤 속도 (0이면 스크롤 없음) */
+	UPROPERTY(EditAnywhere, Category="TextureScroll")
+	float TextureScrollSpeed;
+
+	//========== 두께 펄스 설정 ==========
+
+	/** 두께 펄스 속도 */
+	UPROPERTY(EditAnywhere, Category="Pulse")
+	float PulseSpeed;
+
+	/** 두께 펄스 스케일 (0이면 펄스 없음) */
+	UPROPERTY(EditAnywhere, Category="Pulse")
+	float PulseScale;
+
 	//========== Taper 설정 ==========
 
 	/** 굵기 변화 방식 */

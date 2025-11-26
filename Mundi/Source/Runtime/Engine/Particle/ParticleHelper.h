@@ -180,9 +180,19 @@ struct alignas(16) FBeamParticleVertex
 	float SourceTaper;
 	/** Target 굵기 배율 */
 	float TargetTaper;
-	/** 패딩 */
-	float Pad1;
-	float Pad2;
+	/** 노이즈 강도 */
+	float NoiseStrength;
+	/** 노이즈 시간 (애니메이션용) */
+	float NoiseTime;
+
+	/** 텍스처 스크롤 속도 */
+	float TextureScrollSpeed;
+	/** 두께 펄스 속도 */
+	float PulseSpeed;
+	/** 두께 펄스 스케일 (0이면 비활성화) */
+	float PulseScale;
+	/** 노이즈 옥타브 수 (1~4) */
+	float NoiseOctaves;
 };
 
 struct FBaseParticle
@@ -342,6 +352,21 @@ struct FDynamicBeamEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 	/** Target 굵기 배율 */
 	float TargetTaperScale;
 
+	/** 노이즈 강도 */
+	float NoiseStrength;
+
+	/** 텍스처 스크롤 속도 */
+	float TextureScrollSpeed;
+
+	/** 두께 펄스 속도 */
+	float PulseSpeed;
+
+	/** 두께 펄스 스케일 (0이면 비활성화) */
+	float PulseScale;
+
+	/** 노이즈 옥타브 수 (1~4) */
+	float NoiseOctaves;
+
 	/** 세그먼트 데이터 배열 */
 	TArray<FBeamSegment> SegmentData;
 
@@ -351,6 +376,11 @@ struct FDynamicBeamEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 		, TextureTile(1.0f)
 		, SourceTaperScale(1.0f)
 		, TargetTaperScale(1.0f)
+		, NoiseStrength(0.0f)
+		, TextureScrollSpeed(0.0f)
+		, PulseSpeed(5.0f)
+		, PulseScale(0.0f)
+		, NoiseOctaves(1.0f)
 	{
 		eEmitterType = DET_Beam2;
 	}

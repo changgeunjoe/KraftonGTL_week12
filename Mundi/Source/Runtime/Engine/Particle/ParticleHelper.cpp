@@ -419,43 +419,77 @@ FDynamicBeamEmitterData::FDynamicBeamEmitterData()
 	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
 	if (!Device) return;
 
-	// 인스턴싱을 위한 정적 정점 버퍼 (단일 쿼드)
+	// 세그먼트 분할된 빔 메시 생성
+	// NumSegments개의 세그먼트 = (NumSegments+1)개의 정점 라인
+	const int32 NumSegments = 10;
+	const int32 NumVertices = (NumSegments + 1) * 2;  // 각 라인당 상/하 2개
+	const int32 NumIndices = NumSegments * 6;  // 각 세그먼트당 2개 삼각형
+
 	if (!VertexBuffer)
 	{
-		FParticleVertex QuadVertices[4];
-		QuadVertices[0] = { FVector(-0.5f, -0.5f, 0.0f), FVector2D(0.0f, 1.0f) }; // LB
-		QuadVertices[1] = { FVector(-0.5f,  0.5f, 0.0f), FVector2D(0.0f, 0.0f) }; // LT
-		QuadVertices[2] = { FVector(0.5f,  0.5f, 0.0f), FVector2D(1.0f, 0.0f) }; // RT
-		QuadVertices[3] = { FVector(0.5f, -0.5f, 0.0f), FVector2D(1.0f, 1.0f) }; // RB
+		TArray<FParticleVertex> Vertices;
+		Vertices.SetNum(NumVertices);
+
+		for (int32 i = 0; i <= NumSegments; i++)
+		{
+			float t = (float)i / (float)NumSegments;  // 0 ~ 1
+			float x = t - 0.5f;  // -0.5 ~ 0.5
+
+			// 상단 정점
+			Vertices[i * 2 + 0] = { FVector(x, 0.5f, 0.0f), FVector2D(t, 0.0f) };
+			// 하단 정점
+			Vertices[i * 2 + 1] = { FVector(x, -0.5f, 0.0f), FVector2D(t, 1.0f) };
+		}
 
 		D3D11_BUFFER_DESC Vbd{};
 		Vbd.Usage = D3D11_USAGE_DEFAULT;
 		Vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		Vbd.ByteWidth = sizeof(FParticleVertex) * 4;
+		Vbd.ByteWidth = sizeof(FParticleVertex) * NumVertices;
 
 		D3D11_SUBRESOURCE_DATA Srd{};
-		Srd.pSysMem = QuadVertices;
+		Srd.pSysMem = Vertices.GetData();
 
 		HRESULT Hr = Device->CreateBuffer(&Vbd, &Srd, &VertexBuffer);
-		assert(SUCCEEDED(Hr) && "Failed to create particle instancing vertex buffer");
+		assert(SUCCEEDED(Hr) && "Failed to create beam vertex buffer");
 	}
 
-	// 인스턴싱을 위한 정적 인덱스 버퍼 (단일 쿼드)
 	if (!IndexBuffer)
 	{
-		uint32 Indices[] = { 0, 1, 2, 0, 2, 3 };
+		TArray<uint32> Indices;
+		Indices.SetNum(NumIndices);
+
+		for (int32 i = 0; i < NumSegments; i++)
+		{
+			int32 topLeft = i * 2;
+			int32 bottomLeft = i * 2 + 1;
+			int32 topRight = (i + 1) * 2;
+			int32 bottomRight = (i + 1) * 2 + 1;
+
+			int32 idx = i * 6;
+			// 첫 번째 삼각형 (시계 방향 CW)
+			Indices[idx + 0] = topLeft;
+			Indices[idx + 1] = topRight;
+			Indices[idx + 2] = bottomLeft;
+			// 두 번째 삼각형 (시계 방향 CW)
+			Indices[idx + 3] = bottomLeft;
+			Indices[idx + 4] = topRight;
+			Indices[idx + 5] = bottomRight;
+		}
 
 		D3D11_BUFFER_DESC Ibd{};
 		Ibd.Usage = D3D11_USAGE_DEFAULT;
 		Ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		Ibd.ByteWidth = sizeof(uint32) * 6;
+		Ibd.ByteWidth = sizeof(uint32) * NumIndices;
 
 		D3D11_SUBRESOURCE_DATA Srd{};
-		Srd.pSysMem = Indices;
+		Srd.pSysMem = Indices.GetData();
 
 		HRESULT Hr = Device->CreateBuffer(&Ibd, &Srd, &IndexBuffer);
-		assert(SUCCEEDED(Hr) && "Failed to create particle instancing index buffer");
+		assert(SUCCEEDED(Hr) && "Failed to create beam index buffer");
 	}
+
+	// 인덱스 카운트 저장
+	CachedSegmentCount = NumIndices;
 }
 
 FDynamicBeamEmitterData::~FDynamicBeamEmitterData()
@@ -499,6 +533,10 @@ void FDynamicBeamEmitterData::Init(bool bInSelected, const FParticleBeamEmitterI
 
 void FDynamicBeamEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View)
 {
+	// 노이즈 애니메이션용 시간 (정적 변수로 누적)
+	static float NoiseTime = 0.0f;
+	NoiseTime += 0.016f;  // 약 60fps 기준
+
 	const FDynamicBeamEmitterReplayData* Src = static_cast<const FDynamicBeamEmitterReplayData*>(GetSourceData());
 	if (!Src) return;
 
@@ -553,6 +591,12 @@ void FDynamicBeamEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchEle
 				GpuBeams[i].Color = BaseParticle->Color;
 				GpuBeams[i].SourceTaper = Src->SourceTaperScale;
 				GpuBeams[i].TargetTaper = Src->TargetTaperScale;
+				GpuBeams[i].NoiseStrength = Src->NoiseStrength;
+				GpuBeams[i].NoiseTime = NoiseTime;
+				GpuBeams[i].TextureScrollSpeed = Src->TextureScrollSpeed;
+				GpuBeams[i].PulseSpeed = Src->PulseSpeed;
+				GpuBeams[i].PulseScale = Src->PulseScale;
+				GpuBeams[i].NoiseOctaves = Src->NoiseOctaves;
 			}
 
 			memcpy(Mapped.pData, GpuBeams.GetData(), sizeof(FBeamParticleVertex) * ParticleCount);
@@ -581,11 +625,11 @@ void FDynamicBeamEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchEle
 
 	BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	// 인스턴싱 설정
+	// 인스턴싱 설정 (세그먼트 분할된 메시)
 	BatchElement.VertexBuffer = VertexBuffer;
 	BatchElement.IndexBuffer = IndexBuffer;
 	BatchElement.VertexStride = sizeof(FParticleVertex);
-	BatchElement.IndexCount = 6;
+	BatchElement.IndexCount = CachedSegmentCount;  // 10세그먼트 = 60 인덱스
 	BatchElement.bIsInstanced = true;
 	BatchElement.InstanceCount = ParticleCount;
 
