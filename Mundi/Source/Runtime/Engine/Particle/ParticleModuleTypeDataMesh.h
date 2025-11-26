@@ -39,6 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Rotation")
 	FRawDistributionVector RollPitchYawRange;
 
+	UPROPERTY(EditAnywhere, Category="Rotation")
+	FRawDistributionVector RotationRate;
+
 public:
 	UParticleModuleTypeDataMesh();
 

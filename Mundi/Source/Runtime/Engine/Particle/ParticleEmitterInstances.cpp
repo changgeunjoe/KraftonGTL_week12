@@ -944,7 +944,7 @@ void FParticleMeshEmitterInstance::PostSpawn(FBaseParticle* Particle, float Inte
     FMeshRotationPayloadData* PayloadData = (FMeshRotationPayloadData*)((uint8*)Particle + MeshRotationOffset);
     PayloadData->InitialOrientation = MeshTypeData->RollPitchYawRange.GetValue(SpawnTime);
     PayloadData->Rotation = PayloadData->InitialOrientation;
-    PayloadData->RotationRate = FVector::Zero();
+    PayloadData->RotationRate = MeshTypeData->RotationRate.GetValue(SpawnTime);
     PayloadData->CurContinuousRotation = FVector::Zero();
 }
 

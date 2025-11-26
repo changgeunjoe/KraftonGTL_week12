@@ -23,6 +23,14 @@ void UParticleModuleTypeDataMesh::InitializeDefaults()
 		Dist->Max = FVector(90, 90, 90);
 		RollPitchYawRange.Distribution = Dist;
 	}
+
+	if (!RotationRate.IsCreated())
+	{
+		UDistributionVectorUniform* Dist = NewObject<UDistributionVectorUniform>();
+		Dist->Min = FVector(0, 0, 0);
+		Dist->Max = FVector(90, 90, 90);
+		RotationRate.Distribution = Dist;
+	}
 }
 
 FParticleEmitterInstance* UParticleModuleTypeDataMesh::CreateInstance(UParticleEmitter* InEmitterParent, UParticleSystemComponent* InComponent)
