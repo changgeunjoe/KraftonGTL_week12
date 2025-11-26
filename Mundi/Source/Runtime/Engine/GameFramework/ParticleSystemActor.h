@@ -19,6 +19,9 @@ public:
 		return ParticleSystemComponent;
 	}
 
+	void DuplicateSubObjects() override;
+	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+
 private:
 	UParticleSystemComponent* ParticleSystemComponent = nullptr;
 };

@@ -178,8 +178,11 @@ void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& Out
 
 void UParticleSystemComponent::DuplicateSubObjects()
 {
+	Super::DuplicateSubObjects();
+
 	EmitterInstances.Empty();
 	EmitterRenderData.Empty();
+	SpriteComponent = nullptr;
 	InitializeSystem();
 }
 
