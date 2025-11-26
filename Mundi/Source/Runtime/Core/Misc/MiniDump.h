@@ -31,3 +31,12 @@ void InitializeMiniDump();
 void CauseCrash();
 
 void CrashLoop();
+
+/**
+ * @brief 크래시 다이얼로그를 표시합니다.
+ * 사용자에게 크래시 정보를 보여주고 덤프 파일 위치를 안내합니다.
+ * @param ExceptionInfo 예외 정보 포인터 (nullptr 가능)
+ * @param DumpFilePath 생성된 덤프 파일 경로
+ * @param CallStackInfo 호출 스택 정보 문자열
+ */
+void ShowCrashDialog(struct _EXCEPTION_POINTERS* ExceptionInfo, const wchar_t* DumpFilePath, const wchar_t* CallStackInfo);
