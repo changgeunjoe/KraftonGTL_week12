@@ -599,8 +599,9 @@ void SParticleEditorWindow::RenderEmittersPanel()
 					auto RenderModuleItem = [&](UParticleModule* module, int moduleIdx, bool isSpecialModule) {
 						if (!module) return;
 
-						const char* moduleName = module->GetClass()->Name;
-						ImVec4 moduleColor = GetModuleColor(moduleName);
+						const char* className = module->GetClass()->Name;
+						const char* moduleName = module->GetClass()->DisplayName ? module->GetClass()->DisplayName : className;
+						ImVec4 moduleColor = GetModuleColor(className);
 
 						// 컬러 바
 						ImVec2 pos = ImGui::GetCursorScreenPos();

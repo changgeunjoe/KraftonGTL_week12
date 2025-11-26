@@ -2,17 +2,22 @@
 #include "ParticleModuleSpawnBase.h"
 #include "UParticleModuleSpawn.generated.h"
 
-UCLASS()
+/**
+ * 파티클 스폰 속도를 제어하는 모듈.
+ * 초당 생성되는 파티클 수를 정의한다.
+ */
+UCLASS(DisplayName="Spawn", Description="파티클 스폰 속도 설정")
 class UParticleModuleSpawn : public UParticleModuleSpawnBase
 {
 	GENERATED_REFLECTION_BODY()
 
 public:
-	// @todo 현재는 float를 사용하지만, 언리얼엔진에서는 FRawDistributionFloat 사용한다. 이후 필요에따라 커브 데이터를 활용할 수 있다.
-	UPROPERTY(EditAnywhere, Category="Spawn")
+	/** 초당 스폰되는 파티클 수 */
+	UPROPERTY(EditAnywhere, Category="Rate")
 	float Rate;
 
-	UPROPERTY(EditAnywhere, Category="Spawn")
+	/** 스폰 속도에 적용되는 배율 */
+	UPROPERTY(EditAnywhere, Category="Rate")
 	float RateScale;
 
 public:

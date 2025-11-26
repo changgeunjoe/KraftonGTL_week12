@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -697,6 +697,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Generated\UParticleModuleColor.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleSize.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleSubUV.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleTypeDataMesh.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1047,6 +1048,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Generated\UParticleModuleColor.generated.h" />
     <ClInclude Include="Generated\UParticleModuleSize.generated.h" />
     <ClInclude Include="Generated\UParticleModuleSubUV.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleTypeDataMesh.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

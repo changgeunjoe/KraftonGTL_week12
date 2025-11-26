@@ -2,7 +2,11 @@
 #include "ParticleModule.h"
 #include "UParticleModuleLifetimeBase.generated.h"
 
-UCLASS()
+/**
+ * 파티클 수명 모듈의 기본 클래스.
+ * 파티클이 살아있는 시간을 제어하는 모듈들의 부모 클래스.
+ */
+UCLASS(DisplayName="Lifetime Base", Description="수명 모듈의 기본 클래스")
 class UParticleModuleLifetimeBase : public UParticleModule
 {
 	GENERATED_REFLECTION_BODY()
