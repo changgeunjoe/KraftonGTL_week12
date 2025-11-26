@@ -3,7 +3,12 @@
 #include "UParticleModuleTypeDataBase.generated.h"
 
 class UParticleSystemComponent;
-UCLASS()
+
+/**
+ * 파티클 타입 데이터 모듈의 기본 클래스.
+ * 이미터의 렌더링 타입(스프라이트, 메시 등)을 정의하는 모듈들의 부모 클래스.
+ */
+UCLASS(DisplayName="TypeData Base", Description="타입 데이터 모듈의 기본 클래스")
 class UParticleModuleTypeDataBase : public UParticleModule
 {
 	GENERATED_REFLECTION_BODY()

@@ -46,8 +46,9 @@ void UParticleModuleDetailWidget::RenderWidget()
 	// 선택된 모듈이 있으면 해당 모듈의 프로퍼티 표시
 	if (SelectedModule)
 	{
-		// 모듈 이름 표시
-		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "%s", SelectedModule->GetClass()->Name);
+		// 모듈 이름 표시 (DisplayName 우선 사용)
+		const char* moduleName = SelectedModule->GetClass()->DisplayName ? SelectedModule->GetClass()->DisplayName : SelectedModule->GetClass()->Name;
+		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "%s", moduleName);
 		ImGui::Separator();
 		ImGui::Spacing();
 

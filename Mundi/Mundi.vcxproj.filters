@@ -728,6 +728,7 @@
     <ClCompile Include="ThirdParty\Include\ImGui\utilities\drawing.cpp" />
     <ClCompile Include="ThirdParty\Include\ImGui\utilities\widgets.cpp" />
     <ClCompile Include="Generated\UParticleModuleRotation.generated.cpp">
+    <ClCompile Include="Generated\UParticleModuleTypeDataMesh.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1528,6 +1529,7 @@
     <ClInclude Include="Source\Slate\UObject\Windows\SlateTestWindow.h" />
     <ClInclude Include="Source\Slate\UObject\Windows\UIWindow.h" />
     <ClInclude Include="Generated\UParticleModuleRotation.generated.h">
+    <ClInclude Include="Generated\UParticleModuleTypeDataMesh.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>

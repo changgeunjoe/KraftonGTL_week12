@@ -3,7 +3,11 @@
 #include "ParticleModule.h"
 #include "UParticleModuleSpawnBase.generated.h"
 
-UCLASS()
+/**
+ * 파티클 스폰 모듈의 기본 클래스.
+ * 파티클 생성 수량과 속도를 제어하는 모듈들의 부모 클래스.
+ */
+UCLASS(DisplayName="Spawn Base", Description="스폰 모듈의 기본 클래스")
 class UParticleModuleSpawnBase : public UParticleModule
 {
 	GENERATED_REFLECTION_BODY()
@@ -16,7 +20,7 @@ public:
 
 	virtual ~UParticleModuleSpawnBase() = default;
 
-	/** * true이면, 이미터(emitter)의 SpawnModule에 있는 SpawnRate가 처리된다.
+	/** true이면, 이미터의 SpawnModule에 있는 SpawnRate가 처리된다.
 	 * 이미터에 여러 개의 Spawn 모듈이 '쌓여(stacked)' 있는 경우,
 	 * 그중 하나라도 이 값이 false로 설정되어 있으면 SpawnModule의 SpawnRate는 처리되지 않는다.
 	 */

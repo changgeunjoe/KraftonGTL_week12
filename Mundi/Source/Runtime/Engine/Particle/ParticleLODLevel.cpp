@@ -130,6 +130,41 @@ UParticleModule* UParticleLODLevel::AddModule(UClass* ModuleClass)
 	return NewModule;
 }
 
+bool UParticleLODLevel::RemoveModule(UParticleModule* Module)
+{
+	if (!Module)
+	{
+		return false;
+	}
+
+	// RequiredModule과 SpawnModule은 삭제 불가
+	if (Module == RequiredModule || Module == SpawnModule)
+	{
+		return false;
+	}
+
+	// TypeDataModule 삭제
+	if (Module == TypeDataModule)
+	{
+		DeleteObject(TypeDataModule);
+		TypeDataModule = nullptr;
+		UpdateModuleLists();
+		return true;
+	}
+
+	// 일반 Modules 배열에서 찾아서 삭제
+	int32 Index = Modules.Find(Module);
+	if (Index != -1)
+	{
+		Modules.RemoveAt(Index);
+		DeleteObject(Module);
+		UpdateModuleLists();
+		return true;
+	}
+
+	return false;
+}
+
 void UParticleLODLevel::UpdateModuleLists()
 {
 	SpawningModules.Empty();

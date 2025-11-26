@@ -22,21 +22,25 @@ enum EModuleType : int
 	EPMT_MAX
 };
 
-UCLASS()
+/**
+ * 파티클 모듈의 기본 클래스.
+ * 모든 파티클 모듈은 이 클래스를 상속받아 구현된다.
+ */
+UCLASS(DisplayName="Particle Module", Description="파티클 모듈의 기본 클래스")
 class UParticleModule : public UObject
 {
 	GENERATED_REFLECTION_BODY()
 public:
-	/** true일 경우, 모듈은 스폰 동안 파티클에 대하여 연산을 한다.				*/
+	/** true일 경우, 모듈은 스폰 동안 파티클에 대하여 연산을 한다. */
 	uint8 bSpawnModule:1;
 
-	/** true일 경우, 모듈은 업데이트 동안 파티클에 대하여 연산을 한다.			*/
+	/** true일 경우, 모듈은 업데이트 동안 파티클에 대하여 연산을 한다. */
 	uint8 bUpdateModule:1;
 
-	/** true일 경우, 모듈은 마지막 업데이트 동안 파티클에 대하여 연산을 한다.		*/
+	/** true일 경우, 모듈은 마지막 업데이트 동안 파티클에 대하여 연산을 한다. */
 	uint8 bFinalUpdateModule:1;
 
-	/** true일 경우, 모듈은 활성화된다.										*/
+	/** true일 경우, 모듈은 활성화된다. */
 	uint8 bEnabled:1;
 
 	/** @note Outer 변수가 없어서 임의로 Owner 변수 추가 */

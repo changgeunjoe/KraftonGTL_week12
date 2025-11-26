@@ -102,6 +102,16 @@ public:
 	 */
 	UParticleModule* AddModule(UClass* ModuleClass);
 
+	/**
+	 * 모듈을 제거한다.
+	 * RequiredModule, SpawnModule은 제거할 수 없다.
+	 * TypeDataModule과 일반 모듈은 제거 가능하다.
+	 *
+	 * @param Module 제거할 모듈의 포인터
+	 * @return 성공 시 true, 실패 시 false
+	 */
+	bool RemoveModule(UParticleModule* Module);
+
 	/** 모듈 리스트를 갱신하고 런타임 캐시 배열을 채운다. */
 	virtual void UpdateModuleLists();
 

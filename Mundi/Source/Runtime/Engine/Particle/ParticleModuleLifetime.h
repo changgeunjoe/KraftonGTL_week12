@@ -3,14 +3,18 @@
 #include "UParticleModuleLifetime.generated.h"
 #include "Source/Runtime/Engine/Distribution/Distributions.h"
 
-UCLASS()
+/**
+ * 파티클의 수명을 설정하는 모듈.
+ * 파티클이 생성된 후 소멸될 때까지의 시간을 정의한다.
+ */
+UCLASS(DisplayName="Lifetime", Description="파티클 수명 설정")
 class UParticleModuleLifetime : public UParticleModuleLifetimeBase
 {
 	GENERATED_REFLECTION_BODY()
 
 public:
 	/** 파티클의 기본 수명 (초 단위) */
-	UPROPERTY(EditAnywhere, Category="Spawn")
+	UPROPERTY(EditAnywhere, Category="Lifetime")
 	FRawDistributionFloat Lifetime;
 
 public:

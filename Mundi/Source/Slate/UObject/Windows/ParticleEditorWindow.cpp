@@ -591,12 +591,17 @@ void SParticleEditorWindow::RenderEmittersPanel()
 						return ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 					};
 
+					// 삭제 대기 모듈 (람다 내에서 바로 삭제하면 위험하므로 지연 삭제)
+					static UParticleModule* pendingDeleteModule = nullptr;
+					static int pendingDeleteEmitterIdx = -1;
+
 					// 렌더링할 모듈 람다 함수
 					auto RenderModuleItem = [&](UParticleModule* module, int moduleIdx, bool isSpecialModule) {
 						if (!module) return;
 
-						const char* moduleName = module->GetClass()->Name;
-						ImVec4 moduleColor = GetModuleColor(moduleName);
+						const char* className = module->GetClass()->Name;
+						const char* moduleName = module->GetClass()->DisplayName ? module->GetClass()->DisplayName : className;
+						ImVec4 moduleColor = GetModuleColor(className);
 
 						// 컬러 바
 						ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -632,12 +637,13 @@ void SParticleEditorWindow::RenderEmittersPanel()
 							}
 						}
 
-						// 우클릭 컨텍스트 메뉴 (특수 모듈은 삭제 불가)
+						// 우클릭 컨텍스트 메뉴 (RequiredModule, SpawnModule은 삭제 불가)
 						if (!isSpecialModule && ImGui::BeginPopupContextItem(("ModuleCtx_" + std::to_string(emitterIdx) + "_" + std::to_string(moduleIdx)).c_str()))
 						{
 							if (ImGui::MenuItem("Delete Module"))
 							{
-								// TODO: 모듈 삭제
+								pendingDeleteModule = module;
+								pendingDeleteEmitterIdx = emitterIdx;
 							}
 							ImGui::EndPopup();
 						}
@@ -645,28 +651,62 @@ void SParticleEditorWindow::RenderEmittersPanel()
 
 					int moduleIdx = 0;
 
-					// RequiredModule 먼저 표시
+					// RequiredModule 먼저 표시 (삭제 불가)
 					if (LODLevel->RequiredModule)
 					{
 						RenderModuleItem(LODLevel->RequiredModule, moduleIdx++, true);
 					}
 
-					// SpawnModule 표시
+					// SpawnModule 표시 (삭제 불가)
 					if (LODLevel->SpawnModule)
 					{
 						RenderModuleItem(LODLevel->SpawnModule, moduleIdx++, true);
 					}
 
-					// TypeDataModule 표시
+					// TypeDataModule 표시 (삭제 가능)
 					if (LODLevel->TypeDataModule)
 					{
-						RenderModuleItem(LODLevel->TypeDataModule, moduleIdx++, true);
+						RenderModuleItem(LODLevel->TypeDataModule, moduleIdx++, false);
 					}
 
-					// 일반 Modules 배열 표시
+					// 일반 Modules 배열 표시 (삭제 가능)
 					for (int i = 0; i < LODLevel->Modules.size(); i++)
 					{
 						RenderModuleItem(LODLevel->Modules[i], moduleIdx++, false);
+					}
+
+					// 지연 삭제 처리
+					if (pendingDeleteModule && pendingDeleteEmitterIdx == emitterIdx)
+					{
+						// 선택된 모듈이 삭제될 모듈이면 선택 해제
+						if (SelectedModule == pendingDeleteModule)
+						{
+							SelectedModule = nullptr;
+							SelectedModuleIndex = -1;
+							if (DetailWidget)
+							{
+								DetailWidget->SetSelectedModule(nullptr);
+							}
+						}
+
+						// 모듈 삭제
+						if (LODLevel->RemoveModule(pendingDeleteModule))
+						{
+							UE_LOG("Module deleted from emitter %d", emitterIdx);
+
+							// 파티클 시스템 재초기화
+							if (PreviewActor)
+							{
+								UParticleSystemComponent* Component = PreviewActor->GetParticleSystemComponent();
+								if (Component)
+								{
+									Component->InitializeSystem();
+								}
+							}
+						}
+
+						pendingDeleteModule = nullptr;
+						pendingDeleteEmitterIdx = -1;
 					}
 
 					// 빈 공간 우클릭으로 모듈 추가

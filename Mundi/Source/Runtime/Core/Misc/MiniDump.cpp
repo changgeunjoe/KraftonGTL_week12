@@ -159,6 +159,165 @@ std::wstring GetExceptionDescription(DWORD ExceptionCode)
 }
 
 // ============================================================================
+// 크래시 발생 위치 추출 (첫 번째 유효한 스택 프레임)
+// ============================================================================
+std::wstring GetCrashLocation(CONTEXT* Context)
+{
+    std::wstring Location;
+
+    HANDLE hProcess = GetCurrentProcess();
+    HANDLE hThread = GetCurrentThread();
+
+    SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_LOAD_LINES);
+    if (!SymInitialize(hProcess, nullptr, TRUE))
+    {
+        return L"(심볼 초기화 실패)";
+    }
+
+    STACKFRAME64 StackFrame = {};
+    DWORD MachineType;
+
+#ifdef _M_X64
+    MachineType = IMAGE_FILE_MACHINE_AMD64;
+    StackFrame.AddrPC.Offset = Context->Rip;
+    StackFrame.AddrPC.Mode = AddrModeFlat;
+    StackFrame.AddrFrame.Offset = Context->Rbp;
+    StackFrame.AddrFrame.Mode = AddrModeFlat;
+    StackFrame.AddrStack.Offset = Context->Rsp;
+    StackFrame.AddrStack.Mode = AddrModeFlat;
+#else
+    MachineType = IMAGE_FILE_MACHINE_I386;
+    StackFrame.AddrPC.Offset = Context->Eip;
+    StackFrame.AddrPC.Mode = AddrModeFlat;
+    StackFrame.AddrFrame.Offset = Context->Ebp;
+    StackFrame.AddrFrame.Mode = AddrModeFlat;
+    StackFrame.AddrStack.Offset = Context->Esp;
+    StackFrame.AddrStack.Mode = AddrModeFlat;
+#endif
+
+    char SymbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
+    PSYMBOL_INFO Symbol = (PSYMBOL_INFO)SymbolBuffer;
+    Symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    Symbol->MaxNameLen = MAX_SYM_NAME;
+
+    IMAGEHLP_LINE64 Line = {};
+    Line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+
+    // 첫 번째 유효한 프레임 찾기 (시스템 함수 스킵)
+    for (int i = 0; i < 10; i++)
+    {
+        if (!StackWalk64(MachineType, hProcess, hThread, &StackFrame, Context,
+            nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
+        {
+            break;
+        }
+
+        if (StackFrame.AddrPC.Offset == 0)
+        {
+            break;
+        }
+
+        DWORD64 Address = StackFrame.AddrPC.Offset;
+        DWORD64 Displacement64 = 0;
+        DWORD Displacement = 0;
+
+        std::wstringstream ss;
+
+        // 함수명 가져오기
+        if (SymFromAddr(hProcess, Address, &Displacement64, Symbol))
+        {
+            wchar_t WideName[MAX_SYM_NAME];
+            size_t Converted;
+            mbstowcs_s(&Converted, WideName, Symbol->Name, MAX_SYM_NAME);
+
+            // 시스템/예외 핸들러 함수는 스킵
+            if (wcsstr(WideName, L"RtlUserThreadStart") ||
+                wcsstr(WideName, L"BaseThreadInitThunk") ||
+                wcsstr(WideName, L"UnhandledExceptionHandler") ||
+                wcsstr(WideName, L"VectoredExceptionHandler") ||
+                wcsstr(WideName, L"CreateMiniDump") ||
+                wcsstr(WideName, L"CaptureCallStack") ||
+                wcsstr(WideName, L"GetCrashLocation") ||
+                wcsstr(WideName, L"KiUserExceptionDispatcher"))
+            {
+                continue;
+            }
+
+            ss << WideName;
+
+            // 파일명과 라인 번호 가져오기
+            if (SymGetLineFromAddr64(hProcess, Address, &Displacement, &Line))
+            {
+                wchar_t WideFileName[MAX_PATH];
+                mbstowcs_s(&Converted, WideFileName, Line.FileName, MAX_PATH);
+
+                // 파일 경로에서 파일명만 추출
+                wchar_t* FileName = wcsrchr(WideFileName, L'\\');
+                if (FileName)
+                    FileName++;
+                else
+                    FileName = WideFileName;
+
+                ss << L"\n(" << FileName << L":" << Line.LineNumber << L")";
+            }
+
+            Location = ss.str();
+            break;
+        }
+    }
+
+    SymCleanup(hProcess);
+
+    return Location.empty() ? L"(위치 정보 없음)" : Location;
+}
+
+// ============================================================================
+// 크래시 다이얼로그 표시 함수 (간단한 MessageBox 방식)
+// ============================================================================
+void ShowCrashDialog(struct _EXCEPTION_POINTERS* ExceptionInfo, const wchar_t* DumpFilePath, const wchar_t* CallStackInfo, const wchar_t* CrashLocation)
+{
+    // 클립보드에 호출 스택 복사
+    if (CallStackInfo && OpenClipboard(NULL))
+    {
+        EmptyClipboard();
+        size_t len = wcslen(CallStackInfo);
+        size_t size = (len + 1) * sizeof(wchar_t);
+        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, size);
+        if (hMem)
+        {
+            wchar_t* pMem = (wchar_t*)GlobalLock(hMem);
+            wcscpy_s(pMem, len + 1, CallStackInfo);
+            GlobalUnlock(hMem);
+            SetClipboardData(CF_UNICODETEXT, hMem);
+        }
+        CloseClipboard();
+    }
+
+    // 메시지 박스에 표시할 내용 구성
+    std::wstring message = L"프로그램에서 오류가 발생했습니다.\n\n";
+
+    // 크래시 발생 위치 표시
+    if (CrashLocation && wcslen(CrashLocation) > 0)
+    {
+        message += L"크래시 위치:\n";
+        message += CrashLocation;
+        message += L"\n\n";
+    }
+
+    if (DumpFilePath)
+    {
+        message += L"덤프 파일: ";
+        message += DumpFilePath;
+        message += L"\n\n";
+    }
+
+    message += L"호출 스택이 클립보드에 복사되었습니다.\n";
+    message += L"개발팀에 전달해 주시면 문제 해결에 도움이 됩니다.";
+
+    MessageBoxW(NULL, message.c_str(), L"Mundi Engine - Crash Report", MB_OK | MB_ICONERROR | MB_TOPMOST);
+}
+
+// ============================================================================
 // 1. 덤프 생성 로직을 함수 하나로 분리 (재사용 위해)
 // ============================================================================
 void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
@@ -394,16 +553,79 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
         }
         // 서버 접속 실패 시 로컬 덤프만 남기고 계속 진행
     }
+
+    // 크래시 다이얼로그 표시 (덤프 파일 경로와 호출 스택 정보 전달)
+    std::wstring CallStackStr;
+    std::wstring CrashLocationStr;
+
+    if (ExceptionInfo && ExceptionInfo->ContextRecord)
+    {
+        // 컨텍스트 복사 (CaptureCallStack과 GetCrashLocation이 각각 사용)
+        CONTEXT ContextCopy = *ExceptionInfo->ContextRecord;
+        CallStackStr = CaptureCallStack(&ContextCopy);
+
+        CONTEXT ContextCopy2 = *ExceptionInfo->ContextRecord;
+        CrashLocationStr = GetCrashLocation(&ContextCopy2);
+    }
+    else
+    {
+        CONTEXT CurrentContext = {};
+        CurrentContext.ContextFlags = CONTEXT_FULL;
+        RtlCaptureContext(&CurrentContext);
+        CallStackStr = CaptureCallStack(&CurrentContext);
+
+        CONTEXT CurrentContext2 = {};
+        CurrentContext2.ContextFlags = CONTEXT_FULL;
+        RtlCaptureContext(&CurrentContext2);
+        CrashLocationStr = GetCrashLocation(&CurrentContext2);
+    }
+
+    // 예외 정보 추가
+    std::wstringstream CrashInfo;
+    CrashInfo << L"========== Crash Report ==========\r\n";
+    CrashInfo << L"Git Commit: " << GIT_COMMIT_HASH << L"\r\n";
+
+    if (ExceptionInfo && ExceptionInfo->ExceptionRecord)
+    {
+        DWORD ExCode = ExceptionInfo->ExceptionRecord->ExceptionCode;
+        CrashInfo << L"Exception Code: 0x" << std::hex << ExCode << std::dec << L"\r\n";
+        CrashInfo << L"Exception Type: " << GetExceptionDescription(ExCode) << L"\r\n";
+        CrashInfo << L"Exception Address: 0x" << std::hex
+                  << (DWORD64)ExceptionInfo->ExceptionRecord->ExceptionAddress << std::dec << L"\r\n";
+
+        if (ExCode == EXCEPTION_ACCESS_VIOLATION && ExceptionInfo->ExceptionRecord->NumberParameters >= 2)
+        {
+            ULONG_PTR AccessType = ExceptionInfo->ExceptionRecord->ExceptionInformation[0];
+            ULONG_PTR AccessAddress = ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
+            CrashInfo << L"Access Type: " << (AccessType == 0 ? L"Read" : (AccessType == 1 ? L"Write" : L"Execute")) << L"\r\n";
+            CrashInfo << L"Access Address: 0x" << std::hex << AccessAddress << std::dec << L"\r\n";
+        }
+    }
+
+    CrashInfo << L"\r\nCrash Location: " << CrashLocationStr << L"\r\n";
+    CrashInfo << L"\r\n" << CallStackStr;
+
+    ShowCrashDialog(ExceptionInfo, DumpFileName.c_str(), CrashInfo.str().c_str(), CrashLocationStr.c_str());
 }
 
 // ============================================================================
 // 2. 각종 핸들러 구현
 // ============================================================================
 
+// 재진입 방지 플래그 (크래시 핸들러가 중복 호출되는 것을 방지)
+static volatile LONG g_CrashHandlerEntered = 0;
+
 // [A] SEH 핸들러 (기존꺼)
 LONG WINAPI UnhandledExceptionHandler(struct _EXCEPTION_POINTERS* ExceptionInfo)
 {
+    // 재진입 방지
+    if (InterlockedCompareExchange(&g_CrashHandlerEntered, 1, 0) != 0)
+    {
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+
     CreateMiniDump(ExceptionInfo);
+    TerminateProcess(GetCurrentProcess(), ExceptionInfo ? ExceptionInfo->ExceptionRecord->ExceptionCode : 0xDEAD);
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -415,6 +637,13 @@ LONG WINAPI VectoredExceptionHandler(struct _EXCEPTION_POINTERS* ExceptionInfo)
         ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_ARRAY_BOUNDS_EXCEEDED ||
         ExceptionInfo->ExceptionRecord->ExceptionCode == 0xC0000374 /*STATUS_HEAP_CORRUPTION*/)
     {
+        // 재진입 방지
+        if (InterlockedCompareExchange(&g_CrashHandlerEntered, 1, 0) != 0)
+        {
+            TerminateProcess(GetCurrentProcess(), ExceptionInfo->ExceptionRecord->ExceptionCode);
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
+
         CreateMiniDump(ExceptionInfo);
 
         // 덤프 떴으면 강제 종료 (계속 실행하면 무한 루프 돔)
@@ -428,8 +657,12 @@ LONG WINAPI VectoredExceptionHandler(struct _EXCEPTION_POINTERS* ExceptionInfo)
 // [C] CRT 잘못된 파라미터 핸들러 (delete에 쓰레기값 넣었을 때 호출)
 void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved)
 {
-    // 여기서 덤프 생성 (ExceptionInfo가 없으므로 nullptr 전달하거나 가짜 생성 가능)
-    // 보통은 여기서 강제로 예외를 발생시켜 VEH가 잡게 하거나 직접 덤프를 뜸
+    // 재진입 방지
+    if (InterlockedCompareExchange(&g_CrashHandlerEntered, 1, 0) != 0)
+    {
+        TerminateProcess(GetCurrentProcess(), 0xC000000D);
+        return;
+    }
 
     // 간단히 덤프만 남기고 종료
     CreateMiniDump(nullptr);
@@ -439,6 +672,13 @@ void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function,
 // [D] Pure Virtual Function Call 핸들러
 void PureCallHandler()
 {
+    // 재진입 방지
+    if (InterlockedCompareExchange(&g_CrashHandlerEntered, 1, 0) != 0)
+    {
+        TerminateProcess(GetCurrentProcess(), 0xC0000025);
+        return;
+    }
+
     CreateMiniDump(nullptr);
     TerminateProcess(GetCurrentProcess(), 0xC0000025); // STATUS_NONCONTINUABLE_EXCEPTION
 }

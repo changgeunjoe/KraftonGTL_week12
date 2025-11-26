@@ -2,7 +2,6 @@
 #include "ParticleModuleTypeDataMesh.h"
 #include "ParticleEmitterInstances.h"
 
-IMPLEMENT_CLASS(UParticleModuleTypeDataMesh, UParticleModuleTypeDataBase)
 
 UParticleModuleTypeDataMesh::UParticleModuleTypeDataMesh()
 	: Mesh(nullptr)

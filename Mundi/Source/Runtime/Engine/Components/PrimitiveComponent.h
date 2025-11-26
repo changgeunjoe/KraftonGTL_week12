@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "SceneComponent.h"
 #include "Material.h"
