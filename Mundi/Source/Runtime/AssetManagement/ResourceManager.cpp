@@ -534,6 +534,16 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["Shaders/Particles/ParticleSprite.hlsl"] = layout;
     layout.clear();
 
+    // ────────────────────────────────
+    // Beam Particle: Position + UV (스프라이트와 동일, 구조화 버퍼 사용)
+    // ────────────────────────────────
+    layout.Add({ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12,
+                 D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    ShaderToInputLayoutMap["Shaders/Particles/ParticleBeam.hlsl"] = layout;
+    layout.clear();
+
     ShaderToInputLayoutMap["Shaders/Utility/FullScreenTriangle_VS.hlsl"] = {};  // FullScreenTriangle 는 InputLayout을 사용하지 않는다
 }
 

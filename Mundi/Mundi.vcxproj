@@ -497,6 +497,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleSubUV.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataMesh.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBeam.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleModuleVelocity.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Particle\ParticleSystem.cpp" />
@@ -700,6 +701,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClCompile Include="Generated\UParticleModuleSubUV.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleRotation.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTypeDataMesh.generated.cpp" />
+    <ClCompile Include="Generated\UParticleModuleTypeDataBeam.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -854,6 +856,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleSubUV.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBase.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataMesh.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleTypeDataBeam.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleModuleVelocity.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSpriteEmitter.h" />
     <ClInclude Include="Source\Runtime\Engine\Particle\ParticleSystem.h" />
@@ -1053,6 +1056,7 @@ cmd /c ""C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore.exe" add 
     <ClInclude Include="Generated\UParticleModuleSubUV.generated.h" />
     <ClInclude Include="Generated\UParticleModuleRotation.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTypeDataMesh.generated.h" />
+    <ClInclude Include="Generated\UParticleModuleTypeDataBeam.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\Common\LightingBuffers.hlsl" />

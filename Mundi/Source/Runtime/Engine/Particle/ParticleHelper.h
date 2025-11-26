@@ -131,6 +131,52 @@ struct FMeshRotationPayloadData
 	FVector RotationRateBase;
 };
 
+/*-----------------------------------------------------------------------------
+	Beam Particle Data
+-----------------------------------------------------------------------------*/
+
+/** 빔 세그먼트 데이터 */
+struct FBeamSegment
+{
+	FVector Position;    // 세그먼트 위치
+	FVector Tangent;     // 방향 벡터
+	float Width;         // 해당 위치에서의 너비
+	float TexCoord;      // UV 좌표 (0~1 또는 타일링)
+};
+
+/** 빔 파티클 페이로드 */
+struct FBeamParticlePayloadData
+{
+	FVector SourcePoint;           // 시작점
+	FVector TargetPoint;           // 끝점
+	FVector SourceTangent;         // 시작 방향
+	FVector TargetTangent;         // 끝 방향
+
+	int32 SegmentCount;            // 세그먼트 수
+	float BeamLength;              // 빔 전체 길이
+
+	// 노이즈 관련
+	float NoiseSeed;               // 노이즈 시드 (일관된 노이즈를 위해)
+	float NoiseTime;               // 노이즈 애니메이션 시간
+};
+
+/** GPU에 전달되는 빔 파티클 데이터 (셰이더의 FBeamParticleData와 일치) */
+struct alignas(16) FBeamParticleVertex
+{
+	/** 시작점 */
+	FVector SourcePoint;
+	/** 너비 */
+	float Width;
+
+	/** 끝점 */
+	FVector TargetPoint;
+	/** 텍스처 타일링 횟수 */
+	float TextureTile;
+
+	/** 색상 */
+	FLinearColor Color;
+};
+
 struct FBaseParticle
 {
 	// 16 bytes
@@ -271,6 +317,29 @@ struct FDynamicMeshEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 	}
 };
 
+struct FDynamicBeamEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
+{
+	/** 빔 페이로드 오프셋 */
+	int32 BeamPayloadOffset;
+
+	/** 세그먼트 수 */
+	int32 MaxSegments;
+
+	/** 텍스처 타일링 횟수 */
+	float TextureTile;
+
+	/** 세그먼트 데이터 배열 */
+	TArray<FBeamSegment> SegmentData;
+
+	FDynamicBeamEmitterReplayData()
+		: BeamPayloadOffset(0)
+		, MaxSegments(0)
+		, TextureTile(1.0f)
+	{
+		eEmitterType = DET_Beam2;
+	}
+};
+
 // ===== Dynamic Emitter Data =====
 
 /** 모든 이미터 타입에 대한 베이스 클래스 */
@@ -391,4 +460,47 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 	FDynamicMeshEmitterReplayData Source;
 
 	UStaticMesh* StaticMesh;
+};
+
+struct FParticleBeamEmitterInstance;
+
+struct FDynamicBeamEmitterData : public FDynamicSpriteEmitterDataBase
+{
+	FDynamicBeamEmitterData();
+
+	virtual ~FDynamicBeamEmitterData();
+
+	void Init(bool bInSelected, const FParticleBeamEmitterInstance* InEmitterInstance);
+
+	virtual int32 GetDynamicParameterVertexStride() const override
+	{
+		return sizeof(FBeamParticleVertex);
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual const FDynamicSpriteEmitterReplayDataBase* GetSourceData() const override
+	{
+		return &Source;
+	}
+
+	virtual void GetDynamicMeshElementsEmitter(TArray<FMeshBatchElement>& Collector, const FSceneView* View) override;
+
+	FDynamicBeamEmitterReplayData Source;
+
+	/** 빔 정점 버퍼 (현재 미사용) */
+	ID3D11Buffer* BeamVertexBuffer = nullptr;
+
+	/** 빔 인덱스 버퍼 (현재 미사용) */
+	ID3D11Buffer* BeamIndexBuffer = nullptr;
+
+	/** 캐시된 세그먼트 수 (현재 미사용) */
+	int32 CachedSegmentCount = 0;
+
+	// 스프라이트와 동일한 방식을 위한 버퍼
+	ID3D11Buffer* VertexBuffer = nullptr;
+	ID3D11Buffer* IndexBuffer = nullptr;
 };

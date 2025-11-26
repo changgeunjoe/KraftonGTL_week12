@@ -778,7 +778,7 @@ void SParticleEditorWindow::RenderCurveEditorPanel()
 	}
 
 	// 선택된 모듈의 이름 표시
-	ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "Module: %s", SelectedModule->GetClass()->DisplayName);
+	ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "Module: %s", SelectedModule->GetClass()->Name);
 	ImGui::Separator();
 	ImGui::Spacing();
 

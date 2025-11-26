@@ -158,16 +158,17 @@ void UParticleEmitter::CacheEmitterModuleInfo()
 
 		if (ParticleModule->IsA(UParticleModuleTypeDataBase::StaticClass()) == false)
 		{
+			//1. 파티클당 페이로드 계산
 			int32 ReqBytes = ParticleModule->RequiredBytes(HighTypeData);
 
 			if (ReqBytes)
 			{
-				ModuleOffsetMap.Add(ParticleModule, ParticleSize);
+				ModuleOffsetMap.Add(ParticleModule, ParticleSize);//오프셋 저장
 
-				ParticleSize += ReqBytes;
+				ParticleSize += ReqBytes;//크기 누적
 			}
 		}
-
+		//인스턴스당 데이터 계산
 		int32 TempInstanceBytes = ParticleModule->RequiredBytesPerInstance();
 		if (TempInstanceBytes > 0)
 		{
@@ -184,7 +185,7 @@ void UParticleEmitter::CacheEmitterModuleInfo()
 	}
 }
 
-void UParticleEmitter::Build()
+void UParticleEmitter::Build()//모듈 추가시 페이로드를 이용해서 메모리증가
 {
 	const int32 LODCount = LODLevels.Num();
 	if (LODCount > 0)
@@ -195,7 +196,7 @@ void UParticleEmitter::Build()
 		{
 			// @todo TypeDataModule
 		}
-		CacheEmitterModuleInfo();
+		CacheEmitterModuleInfo();//
 	}
 }
 

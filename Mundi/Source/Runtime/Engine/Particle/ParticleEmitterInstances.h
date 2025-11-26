@@ -1,6 +1,9 @@
 #pragma once
 
 class UParticleModuleTypeDataMesh;
+class UParticleModuleTypeDataBeam;
+struct FBeamSegment;
+struct FBeamParticlePayloadData;
 struct FDynamicEmitterReplayDataBase;
 struct FDynamicEmitterDataBase;
 class UParticleModule;
@@ -305,4 +308,57 @@ protected:
 	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
 
 	class FDynamicMeshEmitterData* NewEmitterData;
+};
+
+/*-----------------------------------------------------------------------------
+	ParticleBeamEmitterInstance
+-----------------------------------------------------------------------------*/
+
+struct FParticleBeamEmitterInstance : public FParticleEmitterInstance
+{
+	UParticleModuleTypeDataBeam* BeamTypeData;
+
+	/** 빔 페이로드 오프셋 */
+	int32 BeamPayloadOffset;
+
+	/** 세그먼트 데이터 저장소 (렌더링에 사용) */
+	TArray<FBeamSegment> SegmentData;
+
+	FParticleBeamEmitterInstance(UParticleSystemComponent* InComponent);
+
+	virtual ~FParticleBeamEmitterInstance();
+
+	//~ FParticleEmitterInstance 인터페이스 구현
+	virtual void InitParameters(UParticleEmitter* InTemplate) override;
+	virtual void Init() override;
+
+	/** 빔 페이로드 크기 반환 */
+	virtual uint32 RequiredBytes() override;
+
+	/** 빔 초기화 (Source/Target 계산) */
+	virtual void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
+
+	/** 빔 업데이트 (노이즈, 세그먼트 재계산) */
+	virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
+
+	/** 렌더링 데이터 생성 */
+	virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
+	virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
+
+protected:
+	virtual bool FillReplayData(FDynamicEmitterReplayDataBase& OutData) override;
+
+	/** Source 위치 계산 */
+	FVector CalculateSourcePoint(FBaseParticle* Particle);
+
+	/** Target 위치 계산 */
+	FVector CalculateTargetPoint(FBaseParticle* Particle);
+
+	/** 세그먼트 생성 (Source → Target 사이 분할) */
+	void BuildSegments(FBaseParticle* Particle, FBeamParticlePayloadData* PayloadData);
+
+	/** 노이즈 적용 */
+	void ApplyNoise(FBeamParticlePayloadData* PayloadData, float DeltaTime);
+
+	class FDynamicBeamEmitterData* NewEmitterData;
 };
