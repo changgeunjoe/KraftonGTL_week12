@@ -28,7 +28,7 @@
               "bUseLocalSpace" : false
             }, {
               "Rate" : 50.000000,
-              "RateScale" : 5.000000,
+              "RateScale" : 2.000000,
               "Type" : "UParticleModuleSpawn"
             }, {
               "Lifetime" : {
@@ -43,15 +43,15 @@
                 "DistributionType" : "Constant"
               },
               "StartColor" : {
-                "Constant" : [1.000000, 1.000000, 1.000000],
+                "Constant" : [0.000000, 0.300000, 4.100000],
                 "DistributionType" : "Constant"
               },
               "Type" : "UParticleModuleColor"
             }, {
               "StartVelocity" : {
                 "DistributionType" : "Uniform",
-                "Max" : [5.000000, 5.000000, 15.000000],
-                "Min" : [-5.000000, -5.000000, 10.000000]
+                "Max" : [1.000000, 1.000000, 10.000000],
+                "Min" : [-1.000000, -1.000000, 10.000000]
               },
               "StartVelocityRadial" : {
                 "Constant" : 0.000000,
@@ -89,7 +89,7 @@
             }],
           "bEnabled" : true
         }],
-      "PeakActiveParticles" : 62,
+      "PeakActiveParticles" : 383,
       "Type" : "UParticleEmitter"
     }],
   "Type" : "UParticleSystem"

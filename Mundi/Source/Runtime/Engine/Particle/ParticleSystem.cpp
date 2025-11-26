@@ -165,6 +165,17 @@ bool UParticleSystem::SaveToFile(const FWideString& FilePath)
 		return false;
 	}
 
+	FString FinalPathStr = ResolveAssetRelativePath(WideToUTF8(FilePath), "");
+	UParticleSystem* ParticleSystem = UResourceManager::GetInstance().Get<UParticleSystem>(FinalPathStr);
+	if (ParticleSystem)
+	{
+		ParticleSystem->Serialize(true, ParticleSystemJson);
+	}
+	else
+	{
+		UResourceManager::GetInstance().Load<UParticleSystem>(FinalPathStr);
+	}
+
 	UE_LOG("Saved particle system to: %s", WideToUTF8(FilePath).c_str());
 	return true;
 }
