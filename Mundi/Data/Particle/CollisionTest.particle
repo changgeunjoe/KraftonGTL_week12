@@ -15,7 +15,7 @@
 
                   },
                   "Textures" : {
-                    "0" : "Data/Textures/FakeLight.png"
+                    "0" : "Data/Model/Freshly_Bitten_Apple_tgzpdhlpa_Mid_2K_BaseColor.jpg"
                   },
                   "Vectors" : {
 
@@ -30,6 +30,14 @@
               "Rate" : 12.000000,
               "RateScale" : 1.000000,
               "Type" : "UParticleModuleSpawn"
+            }, {
+              "Mesh" : "Data/Model/apple_mid.obj",
+              "RollPitchYawRange" : {
+                "DistributionType" : "Uniform",
+                "Max" : [90.000000, 90.000000, 90.000000],
+                "Min" : [0.000000, 0.000000, 0.000000]
+              },
+              "Type" : "UParticleModuleTypeDataMesh"
             }, {
               "Lifetime" : {
                 "DistributionType" : "Uniform",
@@ -96,7 +104,7 @@
             }],
           "bEnabled" : true
         }],
-      "PeakActiveParticles" : 252,
+      "PeakActiveParticles" : 62,
       "Type" : "UParticleEmitter"
     }],
   "Type" : "UParticleSystem"
