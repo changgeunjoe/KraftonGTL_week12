@@ -341,34 +341,34 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)
 	PIEWorld->RenderSettings = InEditorWorld->RenderSettings;
 
 	// PlayerController 자동 생성 (GameMode 없이)
-	APlayerController* NewPlayerController = PIEWorld->SpawnActor<APlayerController>();
-	if (NewPlayerController)
-	{
-		UE_LOG("[World] PlayerController created for PIE: %s", NewPlayerController->GetName().c_str());
+	// APlayerController* NewPlayerController = PIEWorld->SpawnActor<APlayerController>();
+	// if (NewPlayerController)
+	// {
+	// 	UE_LOG("[World] PlayerController created for PIE: %s", NewPlayerController->GetName().c_str());
 
-		// 첫 번째 Character 찾아서 자동으로 Possess
-		ACharacter* Character = nullptr;
-		for (AActor* Actor : PIEWorld->GetActors())
-		{
-			if (Actor->IsA(ACharacter::StaticClass()))
-			{
-				Character = Cast<ACharacter>(Actor);
-				break;
-			}
-		}
+	// 	// 첫 번째 Character 찾아서 자동으로 Possess
+	// 	ACharacter* Character = nullptr;
+	// 	for (AActor* Actor : PIEWorld->GetActors())
+	// 	{
+	// 		if (Actor->IsA(ACharacter::StaticClass()))
+	// 		{
+	// 			Character = Cast<ACharacter>(Actor);
+	// 			break;
+	// 		}
+	// 	}
 
-		// 없을 시 생성
-		if (!Character)
-		{
-			Character = PIEWorld->SpawnActor<ACharacter>();
-		}
+	// 	// 없을 시 생성
+	// 	if (!Character)
+	// 	{
+	// 		Character = PIEWorld->SpawnActor<ACharacter>();
+	// 	}
 
-		if (Character)
-		{
-			NewPlayerController->Possess(Character);
-			UE_LOG("[World] PlayerController possessed Pawn: %s", Character->GetName().c_str());
-		}
-	}
+	// 	if (Character)
+	// 	{
+	// 		NewPlayerController->Possess(Character);
+	// 		UE_LOG("[World] PlayerController possessed Pawn: %s", Character->GetName().c_str());
+	// 	}
+	// }
 
 	return PIEWorld;
 }
