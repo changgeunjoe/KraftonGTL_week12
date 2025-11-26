@@ -2612,16 +2612,17 @@ bool UPropertyRenderer::RenderParticleSystemProperty(const FProperty& Prop, void
 			NewParticle = ResMgr.Load<UParticleSystem>(SelectedPath);
 		}
 
-		// 프로퍼티 포인터 업데이트
-		*ParticlePtr = NewParticle;
-
 		// ParticleSystemComponent일 경우 SetTemplate 호출
 		UObject* Obj = static_cast<UObject*>(Instance);
 		if (UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(Obj))
 		{
 			ParticleComp->SetTemplate(NewParticle);
 		}
-
+		else
+		{
+			// 프로퍼티 포인터 업데이트
+			*ParticlePtr = NewParticle;
+		}
 		bChanged = true;
 	}
 
