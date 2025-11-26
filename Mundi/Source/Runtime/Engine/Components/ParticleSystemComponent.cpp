@@ -175,6 +175,12 @@ void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& Out
 	}
 }
 
+void UParticleSystemComponent::DuplicateSubObjects()
+{
+	EmitterInstances.Empty();
+	EmitterRenderData.Empty();
+	InitializeSystem();
+}
 
 void UParticleSystemComponent::ClearDynamicData()
 {
