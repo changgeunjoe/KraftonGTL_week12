@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include "ParticleModule.h"
 
@@ -390,7 +390,7 @@ void UParticleModule::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				{
 					// MID 로드
 					JSON MaterialJson = InOutHandle[Prop.Name];
-					UMaterialInstanceDynamic* MID = new UMaterialInstanceDynamic();
+					UMaterialInstanceDynamic* MID = NewObject<UMaterialInstanceDynamic>();;
 					MID->Serialize(true, MaterialJson);
 					*ValuePtr = MID;
 				}

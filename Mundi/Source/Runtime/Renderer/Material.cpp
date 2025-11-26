@@ -159,7 +159,10 @@ UMaterialInstanceDynamic* UMaterialInstanceDynamic::Create(UMaterialInterface* I
 		return nullptr;
 	}
 
-	return new UMaterialInstanceDynamic(InParentMaterial);
+	UMaterialInstanceDynamic* MaterialInstanceDynamic = NewObject<UMaterialInstanceDynamic>();
+	MaterialInstanceDynamic->ParentMaterial = InParentMaterial;
+
+	return MaterialInstanceDynamic;
 }
 
 void UMaterialInstanceDynamic::Serialize(const bool bInIsLoading, JSON& InOutHandle)
@@ -298,12 +301,6 @@ void UMaterialInstanceDynamic::CopyParametersFrom(const UMaterialInstanceDynamic
 	this->OverriddenColorParameters = Other->OverriddenColorParameters;
 
 	this->bIsCachedMaterialInfoDirty = true;
-}
-
-UMaterialInstanceDynamic::UMaterialInstanceDynamic(UMaterialInterface* InParentMaterial)
-	: ParentMaterial(InParentMaterial)
-{
-	// 생성자에서는 부모 포인터를 저장하는 것 외에 아무것도 하지 않습니다.
 }
 
 UShader* UMaterialInstanceDynamic::GetShader()

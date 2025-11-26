@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ResourceBase.h"
 #include "Enums.h"
 
@@ -104,10 +104,6 @@ public:
 	const TMap<FString, FLinearColor>& GetOverriddenVectorParameters() const { return OverriddenColorParameters; }	// 덮어쓴 벡터 맵 반환 (저장 시 사용)
 	void SetColorParameterValue(const FString& ParameterName, const FLinearColor& Value);	// 벡터 파라미터 값을 런타임에 변경하는 함수 (실시간 수정 시 사용)
 	void SetOverriddenVectorParameters(const TMap<FString, FLinearColor>& InVectors);	// 덮어쓴 벡터 맵 설정 (로드 시 사용)
-
-protected:
-	// 생성자에서 부모 머티리얼의 포인터를 저장합니다.
-	UMaterialInstanceDynamic(UMaterialInterface* InParentMaterial);
 
 private:
 	UMaterialInterface* ParentMaterial{};
