@@ -30,6 +30,11 @@ UParticleSystemComponent::UParticleSystemComponent()
 
 UParticleSystemComponent::~UParticleSystemComponent()
 {
+	if (Template)
+	{
+		Template->OnParticleChanged.Remove(TemplateChangedHandle);
+	}
+
 	ResetParticles(true);
 	ClearDynamicData();
 
@@ -319,8 +324,18 @@ void UParticleSystemComponent::SetTemplate(UParticleSystem* NewTemplate, bool bA
 		return;
 	}
 
+	if (Template)
+	{
+		Template->OnParticleChanged.Remove(TemplateChangedHandle);
+	}
+
 	// 새로운 템플릿 설정
 	Template = NewTemplate;
+
+	if (Template)
+	{
+		TemplateChangedHandle = Template->OnParticleChanged.AddDynamic(this, &UParticleSystemComponent::InitializeSystem);
+	}
 
 	InitializeSystem();
 

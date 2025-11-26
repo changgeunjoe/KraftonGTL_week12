@@ -118,4 +118,6 @@ private:
 
 	/** 현재 활성화된 총 파티클 수 */
 	int32 TotalActiveParticles;
+
+	FDelegateHandle TemplateChangedHandle;
 };
