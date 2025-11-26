@@ -1303,6 +1303,8 @@ bool FParticleBeamEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase&
     BeamReplayData->BeamPayloadOffset = BeamPayloadOffset;
     BeamReplayData->MaxSegments = BeamTypeData ? BeamTypeData->MaxBeamCount : 10;
     BeamReplayData->TextureTile = BeamTypeData ? BeamTypeData->TextureTile : 1.0f;
+    BeamReplayData->SourceTaperScale = BeamTypeData ? BeamTypeData->SourceTaperScale : 1.0f;
+    BeamReplayData->TargetTaperScale = BeamTypeData ? BeamTypeData->TargetTaperScale : 1.0f;
 
     // 세그먼트 데이터 복사
     BeamReplayData->SegmentData = SegmentData;

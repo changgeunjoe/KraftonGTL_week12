@@ -551,6 +551,8 @@ void FDynamicBeamEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchEle
 				GpuBeams[i].Width = BaseParticle->Size.X;  // Size.X를 너비로 사용
 				GpuBeams[i].TextureTile = Src->TextureTile;  // 텍스처 타일링
 				GpuBeams[i].Color = BaseParticle->Color;
+				GpuBeams[i].SourceTaper = Src->SourceTaperScale;
+				GpuBeams[i].TargetTaper = Src->TargetTaperScale;
 			}
 
 			memcpy(Mapped.pData, GpuBeams.GetData(), sizeof(FBeamParticleVertex) * ParticleCount);

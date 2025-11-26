@@ -175,6 +175,14 @@ struct alignas(16) FBeamParticleVertex
 
 	/** 색상 */
 	FLinearColor Color;
+
+	/** Source 굵기 배율 */
+	float SourceTaper;
+	/** Target 굵기 배율 */
+	float TargetTaper;
+	/** 패딩 */
+	float Pad1;
+	float Pad2;
 };
 
 struct FBaseParticle
@@ -328,6 +336,12 @@ struct FDynamicBeamEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 	/** 텍스처 타일링 횟수 */
 	float TextureTile;
 
+	/** Source 굵기 배율 */
+	float SourceTaperScale;
+
+	/** Target 굵기 배율 */
+	float TargetTaperScale;
+
 	/** 세그먼트 데이터 배열 */
 	TArray<FBeamSegment> SegmentData;
 
@@ -335,6 +349,8 @@ struct FDynamicBeamEmitterReplayData : public FDynamicSpriteEmitterReplayDataBas
 		: BeamPayloadOffset(0)
 		, MaxSegments(0)
 		, TextureTile(1.0f)
+		, SourceTaperScale(1.0f)
+		, TargetTaperScale(1.0f)
 	{
 		eEmitterType = DET_Beam2;
 	}

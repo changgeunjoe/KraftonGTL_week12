@@ -33,6 +33,12 @@ struct FBeamParticleData
 
 	// 색상
 	float4 Color;
+
+	// Taper (굵기 변화)
+	float SourceTaper;
+	float TargetTaper;
+	float Pad1;
+	float Pad2;
 };
 
 // 파티클 데이터를 담는 구조화 버퍼 (VS에서만 사용)
@@ -101,9 +107,16 @@ PS_INPUT mainVS(VS_INPUT input)
 	// 정점 위치 계산
 	// input.Position.x: -0.5 ~ 0.5 (빔 길이 방향)
 	// input.Position.y: -0.5 ~ 0.5 (빔 너비 방향)
+
+	// Taper 계산: 빔 위치에 따라 굵기 보간
+	// t = 0 (Source), t = 1 (Target)
+	float t = input.Position.x + 0.5f;  // -0.5~0.5 -> 0~1
+	float taperScale = lerp(beam.SourceTaper, beam.TargetTaper, t);
+	float currentWidth = beam.Width * taperScale;
+
 	float3 worldPosition = beamCenter;
 	worldPosition += beamDir * input.Position.x * beamLength;      // 길이 방향
-	worldPosition += right * input.Position.y * beam.Width;        // 너비 방향
+	worldPosition += right * input.Position.y * currentWidth;      // 너비 방향 (Taper 적용)
 
 	// 최종 화면 좌표로 변환
 	output.Position = mul(float4(worldPosition, 1.0f), mul(ViewMatrix, ProjectionMatrix));
