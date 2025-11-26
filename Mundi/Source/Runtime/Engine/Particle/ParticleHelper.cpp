@@ -176,6 +176,7 @@ void FDynamicSpriteEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 				if (!BaseParticle) continue;
 
 				GpuParticles[i].Position = BaseParticle->Location;
+				GpuParticles[i].Rotation = BaseParticle->Rotation;
 				GpuParticles[i].Size = FVector2D(BaseParticle->Size.X, BaseParticle->Size.Y);
 				GpuParticles[i].Color = BaseParticle->Color;
 

@@ -27,19 +27,19 @@
               "Type" : "UParticleModuleRequired",
               "bUseLocalSpace" : false
             }, {
-              "Rate" : 30.000000,
-              "RateScale" : 1.000000,
+              "Rate" : 50.000000,
+              "RateScale" : 5.000000,
               "Type" : "UParticleModuleSpawn"
             }, {
               "Lifetime" : {
                 "DistributionType" : "Uniform",
-                "Max" : 2.000000,
+                "Max" : 1.500000,
                 "Min" : 1.000000
               },
               "Type" : "UParticleModuleLifetime"
             }, {
               "StartAlpha" : {
-                "Constant" : 1.000000,
+                "Constant" : 0.500000,
                 "DistributionType" : "Constant"
               },
               "StartColor" : {
@@ -79,10 +79,17 @@
               "SubImages_Horizontal" : 7,
               "SubImages_Vertical" : 8,
               "Type" : "UParticleModuleSubUV"
+            }, {
+              "StartRotation" : {
+                "DistributionType" : "Uniform",
+                "Max" : 1.000000,
+                "Min" : 0.000000
+              },
+              "Type" : "UParticleModuleRotation"
             }],
           "bEnabled" : true
         }],
-      "PeakActiveParticles" : 22,
+      "PeakActiveParticles" : 62,
       "Type" : "UParticleEmitter"
     }],
   "Type" : "UParticleSystem"
