@@ -159,9 +159,122 @@ std::wstring GetExceptionDescription(DWORD ExceptionCode)
 }
 
 // ============================================================================
+// 크래시 발생 위치 추출 (첫 번째 유효한 스택 프레임)
+// ============================================================================
+std::wstring GetCrashLocation(CONTEXT* Context)
+{
+    std::wstring Location;
+
+    HANDLE hProcess = GetCurrentProcess();
+    HANDLE hThread = GetCurrentThread();
+
+    SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS | SYMOPT_LOAD_LINES);
+    if (!SymInitialize(hProcess, nullptr, TRUE))
+    {
+        return L"(심볼 초기화 실패)";
+    }
+
+    STACKFRAME64 StackFrame = {};
+    DWORD MachineType;
+
+#ifdef _M_X64
+    MachineType = IMAGE_FILE_MACHINE_AMD64;
+    StackFrame.AddrPC.Offset = Context->Rip;
+    StackFrame.AddrPC.Mode = AddrModeFlat;
+    StackFrame.AddrFrame.Offset = Context->Rbp;
+    StackFrame.AddrFrame.Mode = AddrModeFlat;
+    StackFrame.AddrStack.Offset = Context->Rsp;
+    StackFrame.AddrStack.Mode = AddrModeFlat;
+#else
+    MachineType = IMAGE_FILE_MACHINE_I386;
+    StackFrame.AddrPC.Offset = Context->Eip;
+    StackFrame.AddrPC.Mode = AddrModeFlat;
+    StackFrame.AddrFrame.Offset = Context->Ebp;
+    StackFrame.AddrFrame.Mode = AddrModeFlat;
+    StackFrame.AddrStack.Offset = Context->Esp;
+    StackFrame.AddrStack.Mode = AddrModeFlat;
+#endif
+
+    char SymbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
+    PSYMBOL_INFO Symbol = (PSYMBOL_INFO)SymbolBuffer;
+    Symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    Symbol->MaxNameLen = MAX_SYM_NAME;
+
+    IMAGEHLP_LINE64 Line = {};
+    Line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+
+    // 첫 번째 유효한 프레임 찾기 (시스템 함수 스킵)
+    for (int i = 0; i < 10; i++)
+    {
+        if (!StackWalk64(MachineType, hProcess, hThread, &StackFrame, Context,
+            nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
+        {
+            break;
+        }
+
+        if (StackFrame.AddrPC.Offset == 0)
+        {
+            break;
+        }
+
+        DWORD64 Address = StackFrame.AddrPC.Offset;
+        DWORD64 Displacement64 = 0;
+        DWORD Displacement = 0;
+
+        std::wstringstream ss;
+
+        // 함수명 가져오기
+        if (SymFromAddr(hProcess, Address, &Displacement64, Symbol))
+        {
+            wchar_t WideName[MAX_SYM_NAME];
+            size_t Converted;
+            mbstowcs_s(&Converted, WideName, Symbol->Name, MAX_SYM_NAME);
+
+            // 시스템/예외 핸들러 함수는 스킵
+            if (wcsstr(WideName, L"RtlUserThreadStart") ||
+                wcsstr(WideName, L"BaseThreadInitThunk") ||
+                wcsstr(WideName, L"UnhandledExceptionHandler") ||
+                wcsstr(WideName, L"VectoredExceptionHandler") ||
+                wcsstr(WideName, L"CreateMiniDump") ||
+                wcsstr(WideName, L"CaptureCallStack") ||
+                wcsstr(WideName, L"GetCrashLocation") ||
+                wcsstr(WideName, L"KiUserExceptionDispatcher"))
+            {
+                continue;
+            }
+
+            ss << WideName;
+
+            // 파일명과 라인 번호 가져오기
+            if (SymGetLineFromAddr64(hProcess, Address, &Displacement, &Line))
+            {
+                wchar_t WideFileName[MAX_PATH];
+                mbstowcs_s(&Converted, WideFileName, Line.FileName, MAX_PATH);
+
+                // 파일 경로에서 파일명만 추출
+                wchar_t* FileName = wcsrchr(WideFileName, L'\\');
+                if (FileName)
+                    FileName++;
+                else
+                    FileName = WideFileName;
+
+                ss << L"\n(" << FileName << L":" << Line.LineNumber << L")";
+            }
+
+            Location = ss.str();
+            break;
+        }
+    }
+
+    SymCleanup(hProcess);
+
+    return Location.empty() ? L"(위치 정보 없음)" : Location;
+}
+
+// ============================================================================
 // 크래시 다이얼로그 표시 함수 (간단한 MessageBox 방식)
 // ============================================================================
-void ShowCrashDialog(struct _EXCEPTION_POINTERS* ExceptionInfo, const wchar_t* DumpFilePath, const wchar_t* CallStackInfo)
+void ShowCrashDialog(struct _EXCEPTION_POINTERS* ExceptionInfo, const wchar_t* DumpFilePath, const wchar_t* CallStackInfo, const wchar_t* CrashLocation)
 {
     // 클립보드에 호출 스택 복사
     if (CallStackInfo && OpenClipboard(NULL))
@@ -182,6 +295,14 @@ void ShowCrashDialog(struct _EXCEPTION_POINTERS* ExceptionInfo, const wchar_t* D
 
     // 메시지 박스에 표시할 내용 구성
     std::wstring message = L"프로그램에서 오류가 발생했습니다.\n\n";
+
+    // 크래시 발생 위치 표시
+    if (CrashLocation && wcslen(CrashLocation) > 0)
+    {
+        message += L"크래시 위치:\n";
+        message += CrashLocation;
+        message += L"\n\n";
+    }
 
     if (DumpFilePath)
     {
@@ -435,9 +556,16 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
 
     // 크래시 다이얼로그 표시 (덤프 파일 경로와 호출 스택 정보 전달)
     std::wstring CallStackStr;
+    std::wstring CrashLocationStr;
+
     if (ExceptionInfo && ExceptionInfo->ContextRecord)
     {
-        CallStackStr = CaptureCallStack(ExceptionInfo->ContextRecord);
+        // 컨텍스트 복사 (CaptureCallStack과 GetCrashLocation이 각각 사용)
+        CONTEXT ContextCopy = *ExceptionInfo->ContextRecord;
+        CallStackStr = CaptureCallStack(&ContextCopy);
+
+        CONTEXT ContextCopy2 = *ExceptionInfo->ContextRecord;
+        CrashLocationStr = GetCrashLocation(&ContextCopy2);
     }
     else
     {
@@ -445,6 +573,11 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
         CurrentContext.ContextFlags = CONTEXT_FULL;
         RtlCaptureContext(&CurrentContext);
         CallStackStr = CaptureCallStack(&CurrentContext);
+
+        CONTEXT CurrentContext2 = {};
+        CurrentContext2.ContextFlags = CONTEXT_FULL;
+        RtlCaptureContext(&CurrentContext2);
+        CrashLocationStr = GetCrashLocation(&CurrentContext2);
     }
 
     // 예외 정보 추가
@@ -469,9 +602,10 @@ void CreateMiniDump(struct _EXCEPTION_POINTERS* ExceptionInfo)
         }
     }
 
+    CrashInfo << L"\r\nCrash Location: " << CrashLocationStr << L"\r\n";
     CrashInfo << L"\r\n" << CallStackStr;
 
-    ShowCrashDialog(ExceptionInfo, DumpFileName.c_str(), CrashInfo.str().c_str());
+    ShowCrashDialog(ExceptionInfo, DumpFileName.c_str(), CrashInfo.str().c_str(), CrashLocationStr.c_str());
 }
 
 // ============================================================================
