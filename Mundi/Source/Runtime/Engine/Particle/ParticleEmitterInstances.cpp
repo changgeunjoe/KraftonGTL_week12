@@ -1430,6 +1430,12 @@ void FParticleRibbonEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawnin
     // 기본 파티클 틱 처리
     FParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
 
+    // 리본은 파티클 1개만 사용 (여러 개면 끊어져 보임)
+    if (ActiveParticles > 1)
+    {
+        ActiveParticles = 1;
+    }
+
     // 리본 히스토리 업데이트
     float MinSpawnDistance = RibbonTypeData ? RibbonTypeData->MinSpawnDistance : 5.0f;
     int32 MaxTrailCount = RibbonTypeData ? RibbonTypeData->MaxTrailCount : 32;
@@ -1444,6 +1450,10 @@ void FParticleRibbonEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawnin
         FBaseParticle* Particle = reinterpret_cast<FBaseParticle*>(ParticleData + ParticleIndex * ParticleStride);
         FRibbonParticlePayloadData* RibbonPayload = reinterpret_cast<FRibbonParticlePayloadData*>(
             reinterpret_cast<uint8*>(Particle) + RibbonPayloadOffset);
+
+        // 리본 파티클은 수명 무한 (RelativeTime이 1을 넘지 않도록)
+        // 리본의 사라짐은 TrailLifetime으로 제어
+        Particle->RelativeTime = 0.0f;
 
         // 월드 위치 계산
         FVector WorldPosition;
@@ -1475,29 +1485,22 @@ void FParticleRibbonEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawnin
             RibbonPayload->AgeHistory[Idx] += DeltaTime;
         }
 
-        // TrailLifetime을 초과한 오래된 포인트 제거
-        float TrailLifetime = RibbonTypeData ? RibbonTypeData->TrailLifetime : 1.0f;
-        if (TrailLifetime > 0.0f)
-        {
-            while (RibbonPayload->PointCount > 1)
-            {
-                // 가장 오래된 포인트의 인덱스
-                int32 TailIdx = (RibbonPayload->HeadIndex - RibbonPayload->PointCount + 1 + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
-                if (RibbonPayload->AgeHistory[TailIdx] > TrailLifetime)
-                {
-                    RibbonPayload->PointCount--;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-
-        // MaxTrailCount 제한 적용
+        // MaxTrailCount 제한 적용 (포인트 수 기반으로 꼬리가 바로 따라옴)
         if (RibbonPayload->PointCount > MaxTrailCount)
         {
             RibbonPayload->PointCount = MaxTrailCount;
+        }
+
+        // 멈춰있을 때도 꼬리가 따라오도록: 매 프레임 오래된 포인트 하나씩 제거
+        // (새 포인트가 추가되지 않아도 꼬리가 줄어듦)
+        float TrailLifetime = RibbonTypeData ? RibbonTypeData->TrailLifetime : 1.0f;
+        if (RibbonPayload->PointCount > 1)
+        {
+            int32 TailIdx = (RibbonPayload->HeadIndex - RibbonPayload->PointCount + 1 + FRibbonParticlePayloadData::MAX_TRAIL_POINTS) % FRibbonParticlePayloadData::MAX_TRAIL_POINTS;
+            if (RibbonPayload->AgeHistory[TailIdx] > TrailLifetime)
+            {
+                RibbonPayload->PointCount--;
+            }
         }
     }
 

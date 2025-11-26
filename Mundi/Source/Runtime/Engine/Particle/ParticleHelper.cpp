@@ -845,6 +845,7 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 	};
 
 	// 세그먼트당 보간 포인트 수 (원본 포인트 사이에 추가할 포인트 수)
+	// 1 = 보간 없음, 3 = 각 세그먼트마다 3개 포인트
 	const int32 SubdivisionCount = 3;
 
 	uint32 BaseVertexIndex = 0;
@@ -896,15 +897,10 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 			// Catmull-Rom 보간으로 위치 계산
 			FVector Pos = CatmullRom(P0, P1, P2, P3, localT);
 
-			// Age도 보간
-			float Age1 = RibbonPayload->AgeHistory[Idx1];
-			float Age2 = RibbonPayload->AgeHistory[Idx2];
-			float Age = FMath::Lerp(Age1, Age2, localT);
-			float t = FMath::Clamp(Age / TrailLifetime, 0.0f, 1.0f);
-
-			// Width와 Alpha 계산
-			float Width = Src->RibbonWidth * FMath::Lerp(1.0f, TailWidthScale, t);
-			float Alpha = FMath::Lerp(1.0f, TailAlphaScale, t);
+			// 위치 기반 페이드 (globalT: 0=머리, 1=꼬리 끝)
+			// Width와 Alpha 계산 (위치 기반 - 꼬리 끝에서 페이드)
+			float Width = Src->RibbonWidth * FMath::Lerp(1.0f, TailWidthScale, globalT);
+			float Alpha = FMath::Lerp(1.0f, TailAlphaScale, globalT);
 
 			// 리본 방향 계산 (스플라인 접선)
 			FVector Dir;
@@ -980,12 +976,13 @@ void FDynamicRibbonEmitterData::GetDynamicMeshElementsEmitter(TArray<FMeshBatchE
 			IndexData.Add(V2);
 			IndexData.Add(V3);
 		}
+
 	}
 
 	if (Vertices.Num() == 0 || IndexData.Num() == 0) return;
 
-	UE_LOG("Ribbon: Vertices=%d, Indices=%d, Points=%d, Segments=%d",
-		Vertices.Num(), IndexData.Num(), TotalPointCount, TotalSegmentCount);
+	UE_LOG("Ribbon: Vertices=%d, Indices=%d, Points=%d, Segments=%d, ParticleCount=%d",
+		Vertices.Num(), IndexData.Num(), TotalPointCount, TotalSegmentCount, ParticleCount);
 
 	// 동적 정점 버퍼 생성/업데이트
 	static ID3D11Buffer* DynamicVertexBuffer = nullptr;

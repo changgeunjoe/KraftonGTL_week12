@@ -14,28 +14,28 @@
               "Type" : "UParticleModuleRequired",
               "bUseLocalSpace" : false
             }, {
-              "Rate" : 10.000000,
+              "Rate" : 1.000000,
               "RateScale" : 1.000000,
               "Type" : "UParticleModuleSpawn"
             }, {
               "MaxTrailCount" : 32,
-              "MinSpawnDistance" : 0.100000,
+              "MinSpawnDistance" : 1.000000,
               "RibbonWidth" : {
-                "Constant" : 10.000000,
+                "Constant" : 3.000000,
                 "DistributionType" : "Constant"
               },
               "SpawnInterval" : 0.000000,
               "TailAlphaScale" : 0.000000,
-              "TailWidthScale" : 0.500000,
+              "TailWidthScale" : 0.400000,
               "TextureScrollSpeed" : 0.000000,
               "TextureTile" : 1.000000,
-              "TrailLifetime" : 3.000000,
+              "TrailLifetime" : 0.800000,
               "Type" : "UParticleModuleTypeDataRibbon"
             }, {
               "Lifetime" : {
                 "DistributionType" : "Uniform",
-                "Max" : 1.000000,
-                "Min" : 0.100000
+                "Max" : 10.000000,
+                "Min" : 5.000000
               },
               "Type" : "UParticleModuleLifetime"
             }, {
