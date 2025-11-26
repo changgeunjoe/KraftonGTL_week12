@@ -44,7 +44,75 @@ void UBoxComponent::OnRegister(UWorld* InWorld)
 void UBoxComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
-} 
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Bounds 관련 함수
+// ────────────────────────────────────────────────────────────────────────────
+
+void UBoxComponent::UpdateBounds()
+{
+	FVector ScaledExtent = GetScaledBoxExtent();
+	FVector Center = GetWorldLocation();
+
+	// 회전을 고려한 AABB 계산
+	FQuat Rotation = GetWorldRotation();
+
+	// 회전이 없으면 기존 방식 사용
+	if (Rotation.IsIdentity())
+	{
+		CachedBounds = FBoxSphereBounds(Center, ScaledExtent);
+		return;
+	}
+
+	// 회전된 Box의 8개 꼭짓점을 계산하여 AABB 구하기
+	FVector Corners[8];
+	Corners[0] = FVector(-ScaledExtent.X, -ScaledExtent.Y, -ScaledExtent.Z);
+	Corners[1] = FVector(+ScaledExtent.X, -ScaledExtent.Y, -ScaledExtent.Z);
+	Corners[2] = FVector(+ScaledExtent.X, +ScaledExtent.Y, -ScaledExtent.Z);
+	Corners[3] = FVector(-ScaledExtent.X, +ScaledExtent.Y, -ScaledExtent.Z);
+	Corners[4] = FVector(-ScaledExtent.X, -ScaledExtent.Y, +ScaledExtent.Z);
+	Corners[5] = FVector(+ScaledExtent.X, -ScaledExtent.Y, +ScaledExtent.Z);
+	Corners[6] = FVector(+ScaledExtent.X, +ScaledExtent.Y, +ScaledExtent.Z);
+	Corners[7] = FVector(-ScaledExtent.X, +ScaledExtent.Y, +ScaledExtent.Z);
+
+	// 회전 적용
+	FVector Min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	FVector Max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (int32 i = 0; i < 8; ++i)
+	{
+		FVector RotatedCorner = Rotation.RotateVector(Corners[i]) + Center;
+		Min.X = FMath::Min(Min.X, RotatedCorner.X);
+		Min.Y = FMath::Min(Min.Y, RotatedCorner.Y);
+		Min.Z = FMath::Min(Min.Z, RotatedCorner.Z);
+		Max.X = FMath::Max(Max.X, RotatedCorner.X);
+		Max.Y = FMath::Max(Max.Y, RotatedCorner.Y);
+		Max.Z = FMath::Max(Max.Z, RotatedCorner.Z);
+	}
+
+	// AABB의 중심과 Extent 계산
+	FVector AABBCenter = (Min + Max) * 0.5f;
+	FVector AABBExtent = (Max - Min) * 0.5f;
+
+	CachedBounds = FBoxSphereBounds(AABBCenter, AABBExtent);
+}
+
+FBoxSphereBounds UBoxComponent::GetScaledBounds() const
+{
+	return CachedBounds;
+}
+
+FVector UBoxComponent::GetScaledBoxExtent() const
+{
+	FVector Scale = GetWorldScale();
+	return FVector(
+		BoxExtent.X * FMath::Abs(Scale.X),
+		BoxExtent.Y * FMath::Abs(Scale.Y),
+		BoxExtent.Z * FMath::Abs(Scale.Z)
+	);
+}
+
 void UBoxComponent::GetShape(FShape& Out) const
 {
 	Out.Kind = EShapeKind::Box;

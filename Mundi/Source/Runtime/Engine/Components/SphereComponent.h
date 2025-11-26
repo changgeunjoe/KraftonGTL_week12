@@ -13,6 +13,15 @@ public:
     USphereComponent();
     void OnRegister(UWorld* InWorld) override;
 
+    void SetSphereRadius(float InRadius) { SphereRadius = InRadius; UpdateBounds(); }
+    float GetSphereRadius() const { return SphereRadius; }
+    float GetScaledSphereRadius() const;
+    FVector GetSphereCenter() const;
+
+    // Bounds override
+    virtual void UpdateBounds() override;
+    virtual FBoxSphereBounds GetScaledBounds() const override;
+
     // Duplication
     virtual void DuplicateSubObjects() override;
 

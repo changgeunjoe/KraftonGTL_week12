@@ -180,6 +180,10 @@ enum class EEngineShowFlags : uint64
 
 	SF_Particles = 1ull << 19,
 
+    // Collision debug visualization
+    SF_Collision = 1ull << 20,        // Show/hide collision component debug shapes
+    SF_CollisionBVH = 1ull << 21,     // Show/hide collision BVH debug visualization
+
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_SkeletalMeshes | SF_Grid | SF_Lighting | SF_Decals |
         SF_Fog | SF_FXAA | SF_Billboard | SF_EditorIcon | SF_Shadows | SF_ShadowAntiAliasing | SF_Particles,

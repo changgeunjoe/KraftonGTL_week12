@@ -48,6 +48,41 @@ void USphereComponent::DuplicateSubObjects()
     Super::DuplicateSubObjects();
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Bounds 관련 함수
+// ────────────────────────────────────────────────────────────────────────────
+
+void USphereComponent::UpdateBounds()
+{
+    float ScaledRadius = GetScaledSphereRadius();
+    FVector Center = GetSphereCenter();
+
+    // Sphere의 Bounds는 반지름을 Extent로 하는 Box
+    FVector Extent(ScaledRadius, ScaledRadius, ScaledRadius);
+
+    CachedBounds = FBoxSphereBounds(Center, Extent);
+}
+
+FBoxSphereBounds USphereComponent::GetScaledBounds() const
+{
+    return CachedBounds;
+}
+
+float USphereComponent::GetScaledSphereRadius() const
+{
+    FVector Scale = GetWorldScale();
+
+    // 최대 스케일 값을 사용 (구는 균등 스케일 가정)
+    float MaxScale = FMath::Max(FMath::Abs(Scale.X), FMath::Max(FMath::Abs(Scale.Y), FMath::Abs(Scale.Z)));
+
+    return SphereRadius * MaxScale;
+}
+
+FVector USphereComponent::GetSphereCenter() const
+{
+    return GetWorldLocation();
+}
+
 void USphereComponent::GetShape(FShape& Out) const
 {
     Out.Kind = EShapeKind::Sphere;

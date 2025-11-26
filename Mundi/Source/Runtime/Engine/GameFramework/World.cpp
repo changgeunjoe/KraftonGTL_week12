@@ -39,6 +39,7 @@
 #include "Hash.h"
 #include"Character.h"
 #include "LuaBindHelpers.h"
+#include "Collision/CollisionManager.h"
 
 IMPLEMENT_CLASS(UWorld)
 
@@ -50,6 +51,10 @@ UWorld::UWorld() : Partition(nullptr)  // Will be created in Initialize() based 
 	LightManager = std::make_unique<FLightManager>();
 	LightManager->SetOwningWorld(this);  // Set owning world for optimization decisions
 	LuaManager = std::make_unique<FLuaManager>();
+
+	// CollisionManager 초기화
+	CollisionManager = std::make_unique<UCollisionManager>();
+	CollisionManager->SetWorld(this);
 
 	UnscaledDelta = 0;
 	SlomoOnlyDelta = 0;
@@ -290,8 +295,14 @@ void UWorld::Tick(float DeltaSeconds)
 		LuaManager->Tick(GetDeltaTime(EDeltaTime::Game));
 	}
 
-	// 지연 삭제 처리
+	// 지연 삭제 처리 (CollisionManager UpdateCollisions 이전에 호출되어야 함)
 	ProcessPendingKillActors();
+
+	// 충돌 감지 업데이트 (PIE에서만 동작)
+	if (CollisionManager && bPie)
+	{
+		CollisionManager->UpdateCollisions(GetDeltaTime(EDeltaTime::Game));
+	}
 }
 
 UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)

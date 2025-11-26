@@ -13,6 +13,18 @@ public:
 	UCapsuleComponent();
 	void OnRegister(UWorld* World) override;
 
+	void SetCapsuleSize(float InRadius, float InHalfHeight) { CapsuleRadius = InRadius; CapsuleHalfHeight = InHalfHeight; UpdateBounds(); }
+	float GetCapsuleRadius() const { return CapsuleRadius; }
+	float GetCapsuleHalfHeight() const { return CapsuleHalfHeight; }
+	float GetScaledCapsuleRadius() const;
+	float GetScaledCapsuleHalfHeight() const;
+	FVector GetCapsuleCenter() const;
+	void GetCapsuleSegment(FVector& OutStart, FVector& OutEnd) const;
+
+	// Bounds override
+	virtual void UpdateBounds() override;
+	virtual FBoxSphereBounds GetScaledBounds() const override;
+
 	// Duplication
 	virtual void DuplicateSubObjects() override;
 

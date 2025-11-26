@@ -10,10 +10,16 @@ public:
 
 	GENERATED_REFLECTION_BODY();
 
-	UBoxComponent(); 
+	UBoxComponent();
 	void OnRegister(UWorld* InWorld) override;
 
-	void SetBoxExtent(const FVector& InExtent) { BoxExtent = InExtent; }
+	void SetBoxExtent(const FVector& InExtent) { BoxExtent = InExtent; UpdateBounds(); }
+	FVector GetBoxExtent() const { return BoxExtent; }
+	FVector GetScaledBoxExtent() const;
+
+	// Bounds override
+	virtual void UpdateBounds() override;
+	virtual FBoxSphereBounds GetScaledBounds() const override;
 
 	// Duplication
 	virtual void DuplicateSubObjects() override;
@@ -28,6 +34,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="BoxExtent")
 	FVector BoxExtent; // Half Extent
-	//GetReenderCollection 
+
 	void RenderDebugVolume(class URenderer* Renderer) const override;
 };

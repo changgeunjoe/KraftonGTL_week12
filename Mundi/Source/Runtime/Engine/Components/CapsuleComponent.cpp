@@ -58,6 +58,92 @@ void UCapsuleComponent::DuplicateSubObjects()
     Super::DuplicateSubObjects();
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Bounds 관련 함수
+// ────────────────────────────────────────────────────────────────────────────
+
+void UCapsuleComponent::UpdateBounds()
+{
+    float ScaledRadius = GetScaledCapsuleRadius();
+    float ScaledHalfHeight = GetScaledCapsuleHalfHeight();
+    FVector Center = GetCapsuleCenter();
+
+    // 회전 정보 가져오기
+    FQuat Rotation = GetWorldRotation();
+
+    // 회전이 없으면 기존 방식 사용 (Z축 정렬 가정)
+    if (Rotation.IsIdentity())
+    {
+        FVector Extent(ScaledRadius, ScaledRadius, ScaledHalfHeight + ScaledRadius);
+        CachedBounds = FBoxSphereBounds(Center, Extent);
+        return;
+    }
+
+    // 회전된 Capsule의 끝점 계산
+    FVector SegmentStart, SegmentEnd;
+    GetCapsuleSegment(SegmentStart, SegmentEnd);
+
+    // Capsule을 감싸는 AABB 계산
+    // 선분의 끝점 + 반지름을 고려
+    FVector Min = FVector(
+        FMath::Min(SegmentStart.X, SegmentEnd.X) - ScaledRadius,
+        FMath::Min(SegmentStart.Y, SegmentEnd.Y) - ScaledRadius,
+        FMath::Min(SegmentStart.Z, SegmentEnd.Z) - ScaledRadius
+    );
+
+    FVector Max = FVector(
+        FMath::Max(SegmentStart.X, SegmentEnd.X) + ScaledRadius,
+        FMath::Max(SegmentStart.Y, SegmentEnd.Y) + ScaledRadius,
+        FMath::Max(SegmentStart.Z, SegmentEnd.Z) + ScaledRadius
+    );
+
+    // AABB의 중심과 Extent 계산
+    FVector AABBCenter = (Min + Max) * 0.5f;
+    FVector AABBExtent = (Max - Min) * 0.5f;
+
+    CachedBounds = FBoxSphereBounds(AABBCenter, AABBExtent);
+}
+
+FBoxSphereBounds UCapsuleComponent::GetScaledBounds() const
+{
+    return CachedBounds;
+}
+
+float UCapsuleComponent::GetScaledCapsuleRadius() const
+{
+    FVector Scale = GetWorldScale();
+
+    // XY 평면 스케일 사용 (Capsule은 Z축 방향)
+    float MaxRadialScale = FMath::Max(FMath::Abs(Scale.X), FMath::Abs(Scale.Y));
+
+    return CapsuleRadius * MaxRadialScale;
+}
+
+float UCapsuleComponent::GetScaledCapsuleHalfHeight() const
+{
+    FVector Scale = GetWorldScale();
+
+    // Z축 스케일 사용
+    return CapsuleHalfHeight * FMath::Abs(Scale.Z);
+}
+
+FVector UCapsuleComponent::GetCapsuleCenter() const
+{
+    return GetWorldLocation();
+}
+
+void UCapsuleComponent::GetCapsuleSegment(FVector& OutStart, FVector& OutEnd) const
+{
+    FVector Center = GetCapsuleCenter();
+    float HalfHeight = GetScaledCapsuleHalfHeight();
+
+    // Z축 방향 (로컬)
+    FVector UpDirection = GetWorldRotation().GetUpVector();
+
+    OutStart = Center - UpDirection * HalfHeight;
+    OutEnd = Center + UpDirection * HalfHeight;
+}
+
 void UCapsuleComponent::GetShape(FShape& Out) const
 {
 	Out.Kind = EShapeKind::Capsule;

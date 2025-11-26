@@ -27,6 +27,7 @@ class BVHierachy;
 class UStaticMesh;
 class FOcclusionCullingManagerCPU;
 class APlayerCameraManager;
+class UCollisionManager;
 
 struct FTransform;
 struct FSceneCompData;
@@ -96,6 +97,7 @@ public:
     ULevel* GetLevel() const { return Level.get(); }
     FLightManager* GetLightManager() const { return LightManager.get(); }
     FLuaManager* GetLuaManager() const { return LuaManager.get(); }
+    UCollisionManager* GetCollisionManager() const { return CollisionManager.get(); }
 
     ACameraActor* GetEditorCameraActor() { return MainEditorCameraActor; }
     void SetEditorCameraActor(ACameraActor* InCamera);
@@ -167,7 +169,10 @@ private:
 
     /** === 루아 매니저 ===*/
     std::unique_ptr<FLuaManager> LuaManager;
-    
+
+    /** === 충돌 매니저 ===*/
+    std::unique_ptr<UCollisionManager> CollisionManager;
+
     // Object naming system
     TMap<FString, int32> ObjectTypeCounts;
 
