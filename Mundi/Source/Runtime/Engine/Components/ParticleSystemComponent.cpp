@@ -183,6 +183,16 @@ void UParticleSystemComponent::DuplicateSubObjects()
 	EmitterInstances.Empty();
 	EmitterRenderData.Empty();
 	SpriteComponent = nullptr;
+
+	if (Template)
+	{
+		TemplateChangedHandle = Template->OnParticleChanged.AddDynamic(this, &UParticleSystemComponent::InitializeSystem);
+	}
+	else
+	{
+		TemplateChangedHandle = 0;
+	}
+
 	InitializeSystem();
 }
 
