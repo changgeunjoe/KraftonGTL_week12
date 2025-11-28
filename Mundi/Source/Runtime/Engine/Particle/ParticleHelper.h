@@ -516,9 +516,7 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
 	FDynamicSpriteEmitterDataBase();
 
-	virtual ~FDynamicSpriteEmitterDataBase()
-	{
-	}
+	virtual ~FDynamicSpriteEmitterDataBase();
 
 	/** 정점 스트라이드를 반환한다. */
 	virtual int32 GetDynamicParameterVertexStride() const

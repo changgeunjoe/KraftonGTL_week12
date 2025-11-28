@@ -16,6 +16,20 @@ FDynamicSpriteEmitterDataBase::FDynamicSpriteEmitterDataBase() :
 {
 }
 
+FDynamicSpriteEmitterDataBase::~FDynamicSpriteEmitterDataBase()
+{
+	if (ParticleStructuredBuffer)
+	{
+		ParticleStructuredBuffer->Release();
+		ParticleStructuredBuffer = nullptr;
+	}
+	if (ParticleStructuredBufferSRV)
+	{
+		ParticleStructuredBufferSRV->Release();
+		ParticleStructuredBufferSRV = nullptr;
+	}
+}
+
 void FDynamicSpriteEmitterDataBase::CreateParticleStructuredBuffer(uint32 Stride, uint32 NumElements)
 {
 	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
@@ -101,16 +115,6 @@ FDynamicSpriteEmitterData::FDynamicSpriteEmitterData()
 
 FDynamicSpriteEmitterData::~FDynamicSpriteEmitterData()
 {
-	if (ParticleStructuredBuffer)
-	{
-		ParticleStructuredBuffer->Release();
-		ParticleStructuredBuffer = nullptr;
-	}
-	if (ParticleStructuredBufferSRV)
-	{
-		ParticleStructuredBufferSRV->Release();
-		ParticleStructuredBufferSRV = nullptr;
-	}
 	if (VertexBuffer)
 	{
 		VertexBuffer->Release();
@@ -494,16 +498,6 @@ FDynamicBeamEmitterData::FDynamicBeamEmitterData()
 
 FDynamicBeamEmitterData::~FDynamicBeamEmitterData()
 {
-	if (ParticleStructuredBuffer)
-	{
-		ParticleStructuredBuffer->Release();
-		ParticleStructuredBuffer = nullptr;
-	}
-	if (ParticleStructuredBufferSRV)
-	{
-		ParticleStructuredBufferSRV->Release();
-		ParticleStructuredBufferSRV = nullptr;
-	}
 	if (BeamVertexBuffer)
 	{
 		BeamVertexBuffer->Release();
@@ -731,16 +725,6 @@ FDynamicRibbonEmitterData::FDynamicRibbonEmitterData()
 
 FDynamicRibbonEmitterData::~FDynamicRibbonEmitterData()
 {
-	if (ParticleStructuredBuffer)
-	{
-		ParticleStructuredBuffer->Release();
-		ParticleStructuredBuffer = nullptr;
-	}
-	if (ParticleStructuredBufferSRV)
-	{
-		ParticleStructuredBufferSRV->Release();
-		ParticleStructuredBufferSRV = nullptr;
-	}
 	if (VertexBuffer)
 	{
 		VertexBuffer->Release();
